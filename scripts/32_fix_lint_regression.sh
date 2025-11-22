@@ -1,3 +1,11 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚑 Sprint 6.10: Corrigindo Regressão de Lint em ToastContext..."
+
+# Reescreve ToastContext.tsx SEM a primeira linha de eslint-disable,
+# mas MANTENDO os comentários TSDoc adicionados na Sprint 6.9.
+cat > packages/ui/src/contexts/ToastContext.tsx <<EOF
 import { createContext, useState, useCallback, ReactNode } from 'react';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
@@ -76,3 +84,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     </ToastContext.Provider>
   );
 };
+EOF
+
+echo "✅ Regressão corrigida."
+echo "👉 Execute ./42_pipeline_checklist.sh para validar."
