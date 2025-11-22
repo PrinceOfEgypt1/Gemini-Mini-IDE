@@ -1,0 +1,22 @@
+{
+  "name": "@mini-ide/analysis-agent",
+  "version": "0.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/uuid": "^11.0.0",
+    "typescript": "^5.0.0"
+  },
+  "type": "module",
+  "dependencies": {
+    "@mini-ide/shared": "workspace:^",
+    "axios": "^1.13.2",
+    "uuid": "^13.0.0"
+  }
+}

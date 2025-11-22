@@ -1,0 +1,26 @@
+{
+  "name": "@mini-ide/cli",
+  "version": "0.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.0.0"
+  },
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.2",
+    "ora": "^9.0.0"
+  },
+  "bin": {
+    "mini-ide": "./dist/index.js"
+  }
+}
