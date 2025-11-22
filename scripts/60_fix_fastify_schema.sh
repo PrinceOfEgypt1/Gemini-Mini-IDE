@@ -1,3 +1,10 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚑 Sprint 8.8: Ajustando configuração do Ajv no Fastify (Schema Strict Mode)..."
+
+# Reescrevendo index.ts do servidor com a configuração correta do AJV
+cat > packages/server/src/index.ts <<EOF
 import Fastify, { FastifyError } from 'fastify';
 import cors from '@fastify/cors';
 import swagger from '@fastify/swagger';
@@ -133,8 +140,8 @@ const start = async () => {
     await persistence.init();
     await fastify.listen({ port: PORT, host: '0.0.0.0' });
     // eslint-disable-next-line no-console
-    console.log(`🚀 Mini-IDE Server rodando em http://localhost:${PORT}`);
-    console.log(`📚 Documentação disponível em http://localhost:${PORT}/docs`);
+    console.log(\`🚀 Mini-IDE Server rodando em http://localhost:\${PORT}\`);
+    console.log(\`📚 Documentação disponível em http://localhost:\${PORT}/docs\`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
@@ -142,3 +149,11 @@ const start = async () => {
 };
 
 start();
+EOF
+
+# Recompilar o servidor para aplicar a mudança
+echo "🏗️ Recompilando Server..."
+pnpm --filter @mini-ide/server build
+
+echo "✅ Fix de Schema aplicado."
+echo "👉 Execute ./42_pipeline_checklist.sh (Agora deve passar no Smoke Test!)"

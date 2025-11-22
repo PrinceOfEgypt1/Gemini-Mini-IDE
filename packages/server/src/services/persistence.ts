@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { AnalyzeResponse } from '@mini-ide/shared';
 
+/** Interface para itens listados no histórico. */
 export interface HistoryItem {
   filename: string;
   timestamp: string;
@@ -9,6 +10,9 @@ export interface HistoryItem {
   summary: string;
 }
 
+/**
+ * Serviço responsável por salvar artefatos e metadados em disco.
+ */
 export class PersistenceService {
   private baseDir: string;
 
@@ -16,14 +20,16 @@ export class PersistenceService {
     this.baseDir = path.resolve(process.cwd(), baseDir);
   }
 
+  /** Cria o diretório base se não existir. */
   async init(): Promise<void> {
     try {
       await fs.mkdir(this.baseDir, { recursive: true });
-    } catch (error) {
-      console.error('Erro ao criar diretório de bundles:', error);
+    } catch {
+      // Ignora erro se já existir ou falhar (logging seria ideal em prod)
     }
   }
 
+  /** Salva o resultado da análise em arquivo JSON. */
   async saveBundle(data: AnalyzeResponse): Promise<string> {
     const dateFolder = new Date().toISOString().split('T')[0];
     const targetDir = path.join(this.baseDir, dateFolder);
@@ -34,11 +40,10 @@ export class PersistenceService {
     return filePath;
   }
 
-  // NOVO: Listar histórico
+  /** Lista o histórico de análises ordenado por data. */
   async listHistory(): Promise<HistoryItem[]> {
     const items: HistoryItem[] = [];
     try {
-      // Lê pastas de data (ex: 2023-10-27)
       const days = await fs.readdir(this.baseDir);
       for (const day of days) {
         const dayPath = path.join(this.baseDir, day);
@@ -48,7 +53,6 @@ export class PersistenceService {
         const files = await fs.readdir(dayPath);
         for (const file of files) {
           if (!file.endsWith('.json')) continue;
-          // Lê apenas o início do arquivo para performance (ou lê tudo se for pequeno)
           const content = await fs.readFile(path.join(dayPath, file), 'utf-8');
           try {
             const json = JSON.parse(content) as AnalyzeResponse;
@@ -58,12 +62,11 @@ export class PersistenceService {
               requestId: json.requestId,
               summary: json.summary
             });
-          } catch (e) { /* Ignora arquivos corrompidos */ }
+          } catch { /* Ignora corrompidos */ }
         }
       }
-      // Ordena do mais recente para o mais antigo
       return items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    } catch (e) {
+    } catch {
       return [];
     }
   }

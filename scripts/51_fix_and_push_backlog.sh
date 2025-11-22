@@ -1,3 +1,13 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚑 Sprint 7.13: Forçando envio do BACKLOG.md para o GitHub..."
+
+# 1. Garantir existência do diretório e arquivo
+mkdir -p docs
+
+echo "📝 Recriando docs/BACKLOG.md..."
+cat > docs/BACKLOG.md <<EOF
 # Backlog de Histórias de Usuário — Mini-IDE
 
 **Status Geral:** 79 HUs Totais.
@@ -12,17 +22,17 @@
 ## 1. Épico E-Server: API & Observabilidade
 - ✅ **1.1 HU-Server-Analyze-200**: Endpoint POST /analyze (Happy Path).
 - ✅ **1.2 HU-Server-Analyze-400**: Validações 4xx.
-- ✅ **1.3 HU-Server-Analyze-500**: Tratamento 5xx e fallback.
+- 📅 **1.3 HU-Server-Analyze-500**: Tratamento 5xx e fallback.
 - ✅ **1.4 HU-Server-Healthz**: Endpoint GET /healthz.
 - ✅ **1.5 HU-Server-Logging-JSON**: Logs estruturados.
-- ✅ **1.6 HU-Server-OpenAPI**: Documentação Swagger.
+- 📅 **1.6 HU-Server-OpenAPI**: Documentação Swagger.
 - ✅ **1.7 HU-Server-Analyze-Shape-Contract**: Contrato TypeScript compartilhado.
 
 ## 2. Épico E-Analysis: Gateway Único
-- ✅ **2.1 HU-Analysis-CompactPrompt**: Otimização de prompt.
-- ✅ **2.2 HU-Analysis-Budget-Check**: Controle de custos.
+- 📅 **2.1 HU-Analysis-CompactPrompt**: Otimização de prompt.
+- 📅 **2.2 HU-Analysis-Budget-Check**: Controle de custos.
 - ✅ **2.3 HU-Analysis-Context**: Estrutura de prompt no Agente.
-- ✅ **2.4 HU-Analysis-RunId**: Rastreabilidade ponta a ponta.
+- 📅 **2.4 HU-Analysis-RunId**: Rastreabilidade ponta a ponta.
 
 ## 3. Épico E-LLM: Orquestração 8 Personas
 - ✅ **3.1 HU-LLM-Client-DeepSeek**: Cliente HTTP (com Mock fallback).
@@ -101,7 +111,7 @@
 
 ## 12. Épico E-Hardening
 - 📅 **12.1 HU-Gov-CI-CD**: GitHub Actions.
-- ✅ **12.2 HU-Server-Budget-Per-Context**: Orçamento isolado.
+- 📅 **12.2 HU-Server-Budget-Per-Context**: Orçamento isolado.
 - ✅ **12.3 HU-LLM-Provider-Abstraction**: Provider Pattern.
 - 📅 **12.4 HU-Quality-Coverage-Thresholds**: Limites de cobertura.
 - 📅 **12.5 HU-Quality-E2E-Flow**: Testes E2E.
@@ -113,3 +123,12 @@
 - ✅ **13.3 HU-UI-Analyze-Playground**: Chat integrado.
 - ✅ **13.4 HU-UI-Analyze-Contract-Guard**: Validação TS.
 - ✅ **13.5 HU-UI-Analyze-Result-History**: Painel Histórico.
+EOF
+
+# 2. Comandos Git
+echo "📤 Enviando para o GitHub..."
+git add docs/BACKLOG.md
+git commit -m "docs: add missing BACKLOG.md with full 79 HUs status"
+git push
+
+echo "✅ BACKLOG.md enviado com sucesso!"
