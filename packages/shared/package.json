@@ -2,7 +2,7 @@
   "name": "@mini-ide/shared",
   "version": "0.0.0",
   "private": true,
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run",
@@ -12,5 +12,12 @@
   "devDependencies": {
     "typescript": "^5.0.0"
   },
-  "type": "module"
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "types": "./dist/index.d.ts"
 }

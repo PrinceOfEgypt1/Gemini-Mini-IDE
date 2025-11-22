@@ -4,11 +4,10 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "jsx": "react-jsx",
-    
-    /* Overrides para Vite/Frontend */
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "composite": false
   },
   "include": ["src/**/*"]
 }

@@ -2,7 +2,7 @@
   "name": "@mini-ide/cli",
   "version": "0.0.0",
   "private": true,
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run",
@@ -22,5 +22,12 @@
   },
   "bin": {
     "mini-ide": "./dist/index.js"
-  }
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "types": "./dist/index.d.ts"
 }

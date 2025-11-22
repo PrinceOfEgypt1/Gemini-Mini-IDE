@@ -2,7 +2,7 @@
 
 Ambiente de desenvolvimento assistido por IA, capaz de transformar intenções em planos e código.
 
-> **Status Atual:** v0.6.0 (Beta UI) - UI Refinada + Feedback Visual + Backend Core
+> **Status Atual:** v0.7.0 (Beta Persistence) - Persistência de Dados + Histórico + UI Refinada
 > **Pipeline:** 🟢 Passing (Lint, Types, Tests, Build, Smoke)
 
 ## 🚀 Como Rodar
@@ -35,10 +35,10 @@ node packages/cli/dist/index.js analyze "Quero criar um sistema de login"
 
 ## 🏗 Estrutura do Monorepo
 
-- **@mini-ide/server**: Backend Fastify + Integração com Agente.
-- **@mini-ide/ui**: Interface React + Vite (Explore Workspace).
-- **@mini-ide/analysis-agent**: Lógica de IA, Personas e Providers.
-- **@mini-ide/shared**: Contratos de API e Tipos TypeScript.
+- **@mini-ide/server**: Backend Fastify + Persistência em Disco.
+- **@mini-ide/ui**: Interface React + Vite.
+- **@mini-ide/analysis-agent**: Lógica de IA e Providers.
+- **@mini-ide/shared**: Contratos de API.
 - **@mini-ide/cli**: Ferramenta de terminal.
 
 ## 🛡️ Qualidade e CI

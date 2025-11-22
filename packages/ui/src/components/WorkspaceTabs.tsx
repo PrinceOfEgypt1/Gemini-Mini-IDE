@@ -1,6 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import { ExploreTimeline, TimelineEvent } from './explore/ExploreTimeline';
+import { HistoryPanel } from './analyze/HistoryPanel';
 
 export type TabId = 'overview' | 'hus' | 'docs' | 'tests' | 'plan' | 'timeline' | 'runs' | 'metrics' | 'outputs' | 'analyze';
 
@@ -41,6 +42,7 @@ export const WorkspaceTabs: React.FC<WorkspaceTabsProps> = ({ activeTab, setActi
       </div>
 
       <div style={{ flex: 1, background: 'var(--panel-2)', borderRadius: 8, padding: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        
         {activeTab === 'overview' && (
           <div style={{ padding: 10 }}>
             <h2>Bem-vindo à Mini IDE</h2>
@@ -50,10 +52,20 @@ export const WorkspaceTabs: React.FC<WorkspaceTabsProps> = ({ activeTab, setActi
             </div>
           </div>
         )}
+
         {activeTab === 'timeline' && (
           <ExploreTimeline events={events} />
         )}
-        {!['overview', 'timeline'].includes(activeTab) && (
+
+        {/* Aba Runs agora mostra o Histórico Real */}
+        {activeTab === 'runs' && (
+          <div style={{ height: '100%', overflowY: 'auto' }}>
+             <h3 style={{ marginTop: 0 }}>Histórico de Execuções</h3>
+             <HistoryPanel />
+          </div>
+        )}
+
+        {!['overview', 'timeline', 'runs'].includes(activeTab) && (
           <div style={{ padding: 20, textAlign: 'center', color: 'var(--muted)' }}>
             <p>Conteúdo da aba <strong>{activeTab}</strong> será implementado em breve.</p>
           </div>

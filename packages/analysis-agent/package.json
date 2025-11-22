@@ -1,8 +1,8 @@
 {
   "name": "@mini-ide/analysis-agent",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run",
@@ -18,5 +18,12 @@
     "@mini-ide/shared": "workspace:^",
     "axios": "^1.13.2",
     "uuid": "^13.0.0"
-  }
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "types": "./dist/index.d.ts"
 }
