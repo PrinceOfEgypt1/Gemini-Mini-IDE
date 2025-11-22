@@ -2,47 +2,49 @@
 
 Ambiente de desenvolvimento assistido por IA, capaz de transformar intenções em planos e código.
 
-> **Status Atual:** v0.7.0 (Beta Persistence) - Persistência de Dados + Histórico + UI Refinada
+> **Versão:** v0.7.0 (Beta Persistence)
+> **Status:** ✅ Fase 7 Concluída (Persistência e Histórico)
 > **Pipeline:** 🟢 Passing (Lint, Types, Tests, Build, Smoke)
 
-## 🚀 Como Rodar
+## 🚀 Funcionalidades Ativas
+1. **Chat Inteligente:** Converse com o agente para definir requisitos (Mock/DeepSeek).
+2. **Exploração Visual:** Interface de 3 colunas (Sidebar, Tabs, Discovery Notes).
+3. **Persistência:** Todo histórico de análise é salvo em disco (`bundles/`).
+4. **Timeline:** Acompanhe a evolução do projeto cronologicamente.
+5. **CLI:** Interface de linha de comando completa.
 
-Este é um monorepo. Você precisará de terminais separados para rodar o sistema completo.
+## 🛠️ Como Rodar o Sistema Completo
 
-### 1. Iniciar o Cérebro (Backend)
-O servidor expõe a API e orquestra o agente de IA.
+Este é um monorepo. Você precisará de terminais separados.
+
+### Terminal 1: O Cérebro (Backend)
+Roda na porta 3200. Salva dados em `packages/server/bundles`.
 ```bash
-# Terminal 1
-# Roda na porta 3200
-export DEEPSEEK_API_KEY="sua-chave" # Opcional (sem chave usa Mock)
+# Opcional: export DEEPSEEK_API_KEY="sua-chave"
 pnpm --filter @mini-ide/server start
 ```
 
-### 2. Iniciar a Interface (Frontend)
-A UI visual para exploração, chat e visualização de planos.
+### Terminal 2: A Interface (Frontend)
+Roda na porta 5173. Abre no navegador.
 ```bash
-# Terminal 2
-# Roda na porta 5173 (abre no navegador)
 pnpm --filter @mini-ide/ui dev
 ```
 
-### 3. Usar via Linha de Comando (CLI)
-Ferramenta para uso rápido via terminal.
+### Terminal 3: Ferramentas (CLI)
+Use para análises rápidas sem abrir o navegador.
 ```bash
-# Terminal 3
-node packages/cli/dist/index.js analyze "Quero criar um sistema de login"
+node packages/cli/dist/index.js analyze "Criar um CRUD de usuários"
 ```
 
-## 🏗 Estrutura do Monorepo
+## 🏗 Estrutura
+- **@mini-ide/server**: Fastify, Persistência (FS), Integração IA.
+- **@mini-ide/ui**: React, Vite, Tailwind-like CSS, Context API.
+- **@mini-ide/analysis-agent**: Orquestrador de Personas.
+- **@mini-ide/shared**: Tipos TypeScript (Contratos de API).
+- **@mini-ide/cli**: Ferramenta de automação via terminal.
 
-- **@mini-ide/server**: Backend Fastify + Persistência em Disco.
-- **@mini-ide/ui**: Interface React + Vite.
-- **@mini-ide/analysis-agent**: Lógica de IA e Providers.
-- **@mini-ide/shared**: Contratos de API.
-- **@mini-ide/cli**: Ferramenta de terminal.
-
-## 🛡️ Qualidade e CI
-Antes de commitar, execute o guardião:
+## 🛡️ Governança e Qualidade
+Nenhum commit entra sem passar pelo guardião:
 ```bash
 ./42_pipeline_checklist.sh
 ```

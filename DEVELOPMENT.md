@@ -1,54 +1,57 @@
 # Mini-IDE — Manual de Engenharia
 
-> **Versão do Documento:** 5.1 (Phase 7 Done)
+> **Versão do Documento:** 5.2 (Pos-Fase 7)
 > **Versão do Software:** v0.7.0
 > **Data:** 2025-11-22
-> **Pipeline:** 🟢 Verde
 
 ---
 
-## 1. Status das Fases de Desenvolvimento
+## 1. Mapa de Fases e Entregas Técnicas
 
-| Fase | Descrição | Status | Entregáveis Chave |
-|---|---|---|---|
-| **1** | **Fundação e Governança** | ✅ Concluído | Monorepo, ESLint v9, Vitest, Pipeline Script. |
-| **2** | **Motor de Análise (Backend)** | ✅ Concluído | Servidor Fastify, Tipos em `shared`, Logs JSON. |
-| **3** | **Conectando o Cérebro (IA)** | ✅ Concluído | Agente, Provider Pattern, Mock/DeepSeek. |
-| **4** | **Primeira Interface (CLI)** | ✅ Concluído | CLI funcional validando fluxo ponta a ponta. |
-| **5** | **Interface Visual (UI Shell)** | ✅ Concluído | React + Vite, Proxy, Layout Base. |
-| **6** | **Refinamento e UX** | ✅ Concluído | Componentização, Toasts, Loading States, Testes UI. |
-| **7** | **Persistência e Histórico** | ✅ Concluído | `PersistenceService`, Bundles em disco, Histórico na UI. |
-| **8** | **Robustez do Backend** | 📅 Pendente | OpenAPI, Budget Check, RunId. |
+### ✅ Fase 1: Fundação e Governança
+*Objetivo: Setup do monorepo e pipeline.*
+- **Artefatos:** `pnpm-workspace.yaml`, `tsconfig.base.json`, `42_pipeline_checklist.sh`.
+- **HUs:** 11.3, 5.4.
 
----
+### ✅ Fase 2: Motor de Análise (Backend Core)
+*Objetivo: API HTTP e Contratos.*
+- **Artefatos:** `server/src/index.ts`, `shared/src/types/*.ts`.
+- **HUs:** 1.1, 1.2, 1.4, 1.5, 1.7.
 
-## 2. Histórias de Usuário (HUs) Entregues Recentemente
+### ✅ Fase 3: Inteligência Artificial
+*Objetivo: Integração LLM.*
+- **Artefatos:** `analysis-agent/src/providers/*`, `analysis-agent/src/index.ts`.
+- **HUs:** 2.3, 3.1, 3.10, 12.3.
 
-### Fase 7: Persistência e Histórico
-- **HU-Persistence-Bundles (6.1):** Implementado `PersistenceService` salvando JSONs em `packages/server/bundles/`.
-- **HU-Persistence-Logs (6.3):** Logs configurados com rotação via `pino-roll`.
-- **HU-UI-Analyze-Result-History (13.5):** Componente `HistoryPanel` na UI consumindo `GET /analyze/history`.
+### ✅ Fase 4: Interface CLI
+*Objetivo: MVP via terminal.*
+- **Artefatos:** `cli/src/index.ts`.
+- **HUs:** 7.1, 7.2.
 
-*(Para histórico completo das fases 1-6, consulte versões anteriores deste documento)*
+### ✅ Fase 5: Interface Visual (UI Shell)
+*Objetivo: Estrutura React.*
+- **Artefatos:** `ui/src/App.tsx`, `ui/vite.config.ts`.
+- **HUs:** 9.1, 9.4, 13.1, 13.2, 13.3.
 
----
+### ✅ Fase 6: Refinamento e UX
+*Objetivo: Interatividade e Feedback.*
+- **Artefatos:** `ToastContext.tsx`, `Button.tsx`, `ExploreTimeline.tsx`, `DiscoveryNotes.tsx`.
+- **HUs:** 9.2, 9.3, 9.9, 9.10, 9.11, 9.12, 9.13, 9.16, 9.17, 13.4.
 
-## 3. Roadmap Futuro (Fases 8+)
-
-### 📅 Fase 8: Robustez do Backend (Hardening)
-**Objetivo:** Controle de erros, custos e documentação.
-- [ ] **1.3** HU-Server-Analyze-500
-- [ ] **1.6** HU-Server-OpenAPI
-- [ ] **2.1** HU-Analysis-CompactPrompt
-- [ ] **2.2** HU-Analysis-Budget-Check
-- [ ] **2.4** HU-Analysis-RunId
-- [ ] **12.2** HU-Server-Budget-Per-Context
-
-### 📅 Fase 9: Orquestração de Personas
-- [ ] **3.2 a 3.9** Implementação das 8 Personas especializadas.
-
-### 📅 Fase 10: Fluxo de Engenharia (Wizard)
-- [ ] **9.6** HU-UI-Project-Creation-006
-- [ ] **10.4** HU-MINI-IDE-Env-004 (Scripts Bash)
+### ✅ Fase 7: Persistência e Histórico
+*Objetivo: Salvar dados em disco e histórico.*
+- **Artefatos:** 
+    - `server/src/services/persistence.ts`: Gerenciador de FS.
+    - `ui/src/components/analyze/HistoryPanel.tsx`: UI de Histórico.
+    - `packages/server/bundles/`: Diretório de armazenamento.
+- **HUs:** 6.1, 6.2, 6.3, 13.5.
 
 ---
+
+## 2. Planejamento Futuro (Fases 8-14)
+
+Consulte o arquivo `docs/BACKLOG.md` para o status detalhado de cada HU restante.
+
+### 📅 Próxima: Fase 8 - Robustez do Backend
+Foco em documentação automática (OpenAPI), rastreabilidade (RunID) e controle de orçamento.
+
