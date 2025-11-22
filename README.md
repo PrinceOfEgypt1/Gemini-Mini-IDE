@@ -2,8 +2,8 @@
 
 Ambiente de desenvolvimento assistido por IA, capaz de transformar intenções em planos e código.
 
-> **Status Atual:** v0.5.0 (Alpha) - UI Shell + Backend Core + CLI
-> **Pipeline:** 🟢 Passing
+> **Status Atual:** v0.6.0 (Beta UI) - UI Refinada + Feedback Visual + Backend Core
+> **Pipeline:** 🟢 Passing (Lint, Types, Tests, Build, Smoke)
 
 ## 🚀 Como Rodar
 
@@ -19,7 +19,7 @@ pnpm --filter @mini-ide/server start
 ```
 
 ### 2. Iniciar a Interface (Frontend)
-A UI visual para exploração e chat.
+A UI visual para exploração, chat e visualização de planos.
 ```bash
 # Terminal 2
 # Roda na porta 5173 (abre no navegador)
@@ -35,10 +35,10 @@ node packages/cli/dist/index.js analyze "Quero criar um sistema de login"
 
 ## 🏗 Estrutura do Monorepo
 
-- **@mini-ide/server**: Servidor Fastify + Integração com Agente.
+- **@mini-ide/server**: Backend Fastify + Integração com Agente.
 - **@mini-ide/ui**: Interface React + Vite (Explore Workspace).
-- **@mini-ide/analysis-agent**: Lógica de IA, Personas e Providers (Mock/DeepSeek).
-- **@mini-ide/shared**: Contratos de API e Tipos TypeScript (Fonte da Verdade).
+- **@mini-ide/analysis-agent**: Lógica de IA, Personas e Providers.
+- **@mini-ide/shared**: Contratos de API e Tipos TypeScript.
 - **@mini-ide/cli**: Ferramenta de terminal.
 
 ## 🛡️ Qualidade e CI
