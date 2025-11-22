@@ -1,6 +1,6 @@
 # Backlog de Histórias de Usuário — Mini-IDE
 
-**Status Geral:** 79 HUs Totais (Incluindo nova HU 10.7).
+**Status Geral:** 79 HUs Totais.
 
 ## Legenda
 - ✅ **Concluído**: Implementado e testado.
@@ -92,7 +92,7 @@
 - 📅 **10.4 HU-MINI-IDE-Env-004**: Scripts de ambiente.
 - 📅 **10.5 HU-MINI-IDE-Planning-005**: Planejamento.
 - 📅 **10.6 HU-MINI-IDE-Dev-006**: Desenvolvimento.
-- 📅 **10.7 HU-MINI-IDE-Gen-Quality-007**: Script de Pipeline para Usuário (NOVA).
+- 📅 **10.7 HU-MINI-IDE-Gen-Quality-007**: Script de Pipeline para Usuário.
 
 ## 11. Épico E-Governança
 - 📅 **11.1 HU-Gov-Release-Checklist**: Script de release.
