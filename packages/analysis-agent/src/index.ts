@@ -4,14 +4,18 @@ import { MockProvider } from './providers/mock-provider.js';
 import { DeepSeekProvider } from './providers/deepseek-provider.js';
 import { v4 as uuidv4 } from 'uuid';
 
+import { DiscoveryService } from './services/discovery-service.js';
+import { GeneratorService } from './services/generator-service.js';
+
 // Personas
 import { AnalysisPersona } from './personas/analysis.js';
 import { ProductPersona } from './personas/product.js';
 import { ArchitectPersona } from './personas/architect.js';
 import { EnginePersona } from './personas/engine.js';
-// ... importar outras personas conforme necessário no fluxo completo
 
 export { PromptOptimizer } from './utils/prompt-optimizer.js';
+export { DiscoveryService } from './services/discovery-service.js';
+export { GeneratorService } from './services/generator-service.js';
 
 function getProvider(): LLMProvider {
   if (process.env.DEEPSEEK_API_KEY) {
@@ -20,53 +24,64 @@ function getProvider(): LLMProvider {
   return new MockProvider();
 }
 
-/**
- * Orquestrador Principal (Chain of Thought).
- */
 export class AnalysisAgent {
   private provider: LLMProvider;
+  public discovery: DiscoveryService;
+  public generator: GeneratorService;
 
   constructor() {
     this.provider = getProvider();
+    this.discovery = new DiscoveryService(this.provider);
+    this.generator = new GeneratorService();
   }
 
   async process(request: AnalyzeRequest): Promise<AnalyzeResponse> {
     const requestId = uuidv4();
     
-    // Instanciar personas
     const analysisPersona = new AnalysisPersona(this.provider);
     const productPersona = new ProductPersona(this.provider);
     const architectPersona = new ArchitectPersona(this.provider);
     const enginePersona = new EnginePersona(this.provider);
-    // ... instanciar demais
 
-    // Executar Pipeline (Chain)
-    // Passo 1: Análise
+    // 1. Análise
     const analysisResult = await analysisPersona.execute(request.text);
     
-    // Passo 2: Produto (usa resultado da análise)
+    // 2. Produto
     const productResult = await productPersona.execute(analysisResult);
 
-    // Passo 3: Arquitetura
+    // 3. Arquitetura
     const archResult = await architectPersona.execute(productResult);
 
-    // Passo 4: Engenharia
-    const codeResult = await enginePersona.execute(archResult);
+    // 4. Engenharia
+    await enginePersona.execute(archResult);
 
-    // Consolidar (Simplificado por enquanto)
-    const finalSummary = `Análise: ${typeof analysisResult === 'string' ? analysisResult.slice(0, 50) : 'OK'}... | HUs Geradas | Código Gerado.`;
+    const finalSummary = `Análise completa. HUs geradas e arquitetura definida.`;
+    const estimatedCost = 0.02;
 
-    // Estimativa de custo (Mock)
-    const estimatedCost = 0.01;
+    // Tratamento do resultado LLM com catch preenchido
+    const prompt = `Contexto: ${request.text}\n\nInstrução: Gere um plano.`;
+    const llmResult = await this.provider.generate(prompt);
+    
+    let summary = llmResult.content;
+    try {
+        const parsed = JSON.parse(llmResult.content);
+        summary = parsed.summary || JSON.stringify(parsed);
+    } catch {
+        // Caso o conteúdo não seja JSON, mantém o texto original
+    }
+
+    if (request.maxLen && summary.length > request.maxLen) {
+        summary = summary.substring(0, request.maxLen) + '...';
+    }
 
     return {
       requestId,
-      summary: finalSummary.slice(0, request.maxLen || 500),
+      summary,
       inputLength: request.text.length,
-      outputLength: finalSummary.length,
+      outputLength: llmResult.content.length,
       timestamp: new Date().toISOString(),
       budgetUsed: estimatedCost,
-      budgetRemaining: 99.99 
+      budgetRemaining: 99.98
     };
   }
 }

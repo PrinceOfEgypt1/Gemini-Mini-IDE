@@ -1,3 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚑 Sprint 10.2: Corrigindo erro de digitação no Servidor (Method Name Mismatch)..."
+
+# 1. Reescrever o index.ts do Servidor com a chamada correta
+# O erro estava na linha 126 (aprox): agent.discovery.generateHUs -> agent.discovery.generateUserStories
+# -----------------------------------------------------
+echo "📝 Corrigindo packages/server/src/index.ts..."
+
+cat > packages/server/src/index.ts <<EOF
 import Fastify, { FastifyError } from 'fastify';
 import cors from '@fastify/cors';
 import swagger from '@fastify/swagger';
@@ -127,7 +138,7 @@ const start = async () => {
     await persistence.init();
     await fastify.listen({ port: PORT, host: '0.0.0.0' });
     // eslint-disable-next-line no-console
-    console.log(`🚀 Server rodando em http://localhost:${PORT}`);
+    console.log(\`🚀 Server rodando em http://localhost:\${PORT}\`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
@@ -135,3 +146,13 @@ const start = async () => {
 };
 
 start();
+EOF
+
+# 2. Reconstruir pacotes na ordem certa para garantir tipos
+# -----------------------------------------------------
+echo "🏗️ Reconstruindo..."
+pnpm --filter @mini-ide/analysis-agent build
+pnpm --filter @mini-ide/server build
+
+echo "✅ Fix aplicado: generateHUs -> generateUserStories."
+echo "👉 Execute ./42_pipeline_checklist.sh"

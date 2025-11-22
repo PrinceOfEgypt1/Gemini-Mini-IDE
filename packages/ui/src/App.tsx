@@ -7,6 +7,7 @@ import { Button } from './components/common/Button';
 import { TimelineEvent } from './components/explore/ExploreTimeline';
 import { WorkspaceTabs, TabId } from './components/WorkspaceTabs';
 import { DiscoveryNotes } from './components/discovery/DiscoveryNotes';
+import { ProjectWizard } from './components/wizard/ProjectWizard';
 
 interface Message {
   role: 'user' | 'agent';
@@ -18,6 +19,8 @@ const MiniIDEInterface = () => {
   const { addToast } = useToast();
   const [input, setInput] = useState('');
   const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [showWizard, setShowWizard] = useState(false);
+  
   const [messages, setMessages] = useState<Message[]>([
     { role: 'agent', text: 'Olá! Estou pronto para explorar o projeto. O que vamos construir?', timestamp: new Date().toISOString() }
   ]);
@@ -81,13 +84,16 @@ const MiniIDEInterface = () => {
 
   return (
     <div className="app-grid">
+      {showWizard && <ProjectWizard onClose={() => setShowWizard(false)} />}
+
       <header style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 16px', background: 'var(--panel)', borderBottom: '1px solid var(--border)' }}>
         <h3 style={{ margin: 0 }}>Mini IDE</h3>
         <span className="pill">Analysis Agent</span>
         <span className="pill ok">Explorando</span>
         <div style={{ flex: 1 }} />
-        <Button onClick={() => addToast('Funcionalidade em breve!', 'info')}><Box size={16}/> Provisionar</Button>
-        <Button variant="primary" onClick={() => addToast('Nenhum plano executável definido.', 'warning')}><Play size={16}/> Executar</Button>
+        {/* Botão Criar Projeto agora abre o Wizard */}
+        <Button onClick={() => setShowWizard(true)} variant="primary"><Box size={16}/> Criar Projeto</Button>
+        <Button onClick={() => addToast('Nenhum plano executável definido.', 'warning')}><Play size={16}/> Executar</Button>
         <Button onClick={() => addToast('Iniciando tour...', 'info')}><Zap size={16}/> Quick Start</Button>
       </header>
 

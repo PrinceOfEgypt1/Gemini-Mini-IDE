@@ -1,17 +1,12 @@
 import { BasePersona } from './base-persona.js';
 
-/**
- * Persona 3: Solution Architect.
- * Define a stack tecnológica e a estrutura de arquivos.
- */
 export class ArchitectPersona extends BasePersona {
   protected getRoleDescription(): string {
-    return `Você é o SOLUTION ARCHITECT.
-Seu objetivo: Definir a arquitetura, stack e estrutura de pastas.
-Saída esperada: Árvore de arquivos e lista de dependências.`;
+    return `Você é o SOLUTION ARCHITECT.\nObjetivo: Definir stack.\nSaída: Árvore de arquivos.`;
   }
 
-  async execute(productResult: string): Promise<any> {
-    return (await this.provider.generate(this.buildPrompt(productResult))).content;
+  async execute(productResult: unknown): Promise<unknown> {
+    const content = typeof productResult === 'string' ? productResult : JSON.stringify(productResult);
+    return (await this.provider.generate(this.buildPrompt(content))).content;
   }
 }

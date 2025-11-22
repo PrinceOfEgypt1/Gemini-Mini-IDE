@@ -16,16 +16,15 @@ export abstract class BasePersona {
 
   /**
    * Retorna o System Prompt específico desta persona.
-   * Define a "personalidade", regras e formato de saída esperado.
    */
   protected abstract getRoleDescription(): string;
 
   /**
    * Executa a tarefa da persona.
-   * @param input - O contexto de entrada (pode ser o prompt do usuário ou output de outra persona).
-   * @returns O resultado processado (geralmente uma string ou objeto JSON).
+   * @param input - O contexto de entrada.
+   * @returns O resultado processado.
    */
-  abstract execute(input: any): Promise<any>;
+  abstract execute(input: unknown): Promise<unknown>;
 
   /**
    * Helper para formatar o prompt final combinando System + User.

@@ -1,7 +1,7 @@
 # Mini-IDE — Manual de Engenharia
 
-> **Versão do Documento:** 5.4 (Full History Restored + Phase 8)
-> **Versão do Software: v0.9.0 (Multi-Persona Agent)
+> **Versão do Documento: 5.6 (Phase 10 Done)
+> **Versão do Software: v0.10.0 (Project Wizard)
 > **Data: 2025-11-22
 > **Pipeline:** 🟢 Verde (Lint, Types, Tests, Build, Smoke)
 
@@ -182,3 +182,24 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 ### Próximos Passos Imediatos (Fase 10)
 *   Implementar geração de HUs sob demanda (Wizard).
 *   Criar scripts de ambiente reais.
+
+---
+
+## 📋 Registro da Fase 10: Fluxo de Engenharia (Concluída)
+
+**Objetivo:** Implementar o "Golden Path" de criação de projetos: Intenção -> HUs -> Scripts.
+
+### Artefatos Técnicos Entregues
+*   **Backend Services:**
+    *   `analysis-agent/src/services/discovery-service.ts`: Gera HUs estruturadas via LLM.
+    *   `analysis-agent/src/services/generator-service.ts`: Gera scripts Bash (`setup.sh`, `pipeline.sh`).
+*   **API Endpoints:**
+    *   `POST /discovery/hus`: Endpoint para gerar HUs a partir de intenção.
+    *   `POST /wizard/generate`: Endpoint para gerar o pacote de scripts final.
+*   **Frontend Wizard:**
+    *   `ui/src/components/wizard/ProjectWizard.tsx`: Modal de 3 passos (Intenção, Revisão, Download).
+    *   Integração com botão "Criar Projeto" no Header.
+
+### Próximos Passos Imediatos (Fase 11)
+*   Implementar o **Consolidator** para transformar o plano abstrato em código-fonte real (arquivos de projeto).
+*   Permitir exportação do código gerado (.zip).

@@ -71,7 +71,7 @@
 - ✅ **9.3 HU-UI-Timeline-003**: Componente Timeline.
 - ✅ **9.4 HU-UI-Tabs-004**: Sistema de Abas.
 - 📅 **9.5 HU-UI-Export-005**: Botão Exportar.
-- 📅 **9.6 HU-UI-Project-Creation-006**: Wizard de criação.
+- ✅ **9.6 HU-UI-Project-Creation-006**: Wizard de criação.
 - 📅 **9.7 HU-UI-RealTime-Preview-007**: Preview de código.
 - 📅 **9.8 HU-UI-Theme-System-008**: Temas.
 - ✅ **9.9 HU-UI-Explore-Primary-Actions-009**: Botões Header.
@@ -86,13 +86,13 @@
 - 📅 **9.18 HU-UI-Explore-Micro-Interactions-018**: Animações finas.
 
 ## 10. Épico E-Flow: Fluxo de Descoberta
-- 📅 **10.1 HU-MINI-IDE-Discovery-001**: Geração de HUs.
-- 📅 **10.2 HU-MINI-IDE-Discovery-002**: Aprovação de HUs.
-- 📅 **10.3 HU-MINI-IDE-Env-003**: Solicitação de diretório.
-- 📅 **10.4 HU-MINI-IDE-Env-004**: Scripts de ambiente.
+- ✅ **10.1 HU-MINI-IDE-Discovery-001**: Geração de HUs.
+- ✅ **10.2 HU-MINI-IDE-Discovery-002**: Aprovação de HUs.
+- ✅ **10.3 HU-MINI-IDE-Env-003**: Solicitação de diretório.
+- ✅ **10.4 HU-MINI-IDE-Env-004**: Scripts de ambiente.
 - 📅 **10.5 HU-MINI-IDE-Planning-005**: Planejamento.
 - 📅 **10.6 HU-MINI-IDE-Dev-006**: Desenvolvimento.
-- 📅 **10.7 HU-MINI-IDE-Gen-Quality-007**: Script de Pipeline para Usuário.
+- ✅ **10.7 HU-MINI-IDE-Gen-Quality-007**: Script de Pipeline para Usuário.
 
 ## 11. Épico E-Governança
 - 📅 **11.1 HU-Gov-Release-Checklist**: Script de release.
