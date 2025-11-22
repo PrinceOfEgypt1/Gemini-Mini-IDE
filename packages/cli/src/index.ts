@@ -2,7 +2,7 @@
 import { Command } from 'commander';
 import fs from 'fs/promises';
 import path from 'path';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import chalk from 'chalk';
 import ora from 'ora';
 
@@ -33,7 +33,7 @@ program
         await fs.access(filePath);
         content = await fs.readFile(filePath, 'utf-8');
         console.log(chalk.blue(`📄 Lendo arquivo: ${filePath}`));
-      } catch (e) {
+      } catch {
         // Se falhar, assume que é texto se não for muito longo, ou erro
         if (input.length < 255 && !input.includes('\n')) {
            console.log(chalk.yellow('⚠️  Arquivo não encontrado. Tratando como texto direto.'));
@@ -64,15 +64,18 @@ program
       console.log(chalk.cyan(`ID: ${data.requestId}`));
       console.log(chalk.dim(`Tokens (Simulado): Entrou ${data.inputLength} / Saiu ${data.outputLength}`));
 
-    } catch (error: any) {
+    } catch (error) {
       spinner.fail(chalk.red('Falha na análise.'));
-      if (error.code === 'ECONNREFUSED') {
+      
+      const err = error as AxiosError | Error;
+
+      if ('code' in err && err.code === 'ECONNREFUSED') {
         console.error(chalk.red(`\n❌ Não foi possível conectar ao servidor em ${SERVER_URL}.`));
         console.error(chalk.yellow('Dica: O servidor está rodando? (pnpm start no pacote server)'));
       } else {
-        console.error(chalk.red(`Erro: ${error.message}`));
-        if (error.response) {
-            console.error(chalk.dim(JSON.stringify(error.response.data)));
+        console.error(chalk.red(`Erro: ${err.message}`));
+        if (axios.isAxiosError(err) && err.response) {
+            console.error(chalk.dim(JSON.stringify(err.response.data)));
         }
       }
       process.exit(1);

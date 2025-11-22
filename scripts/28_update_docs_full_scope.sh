@@ -1,8 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+echo "📚 Sincronizando DEVELOPMENT.md com o Plano Mestre v4.0 (78 HUs)..."
+
+cat > DEVELOPMENT.md <<EOF
 # Mini-IDE — DEVELOPMENT.md
 
 > **Versão do Documento:** 4.0 (Full Scope)
 > **Versão do Software:** v0.6.0 (Alpha Estável)
-> **Data:** 2025-11-22
+> **Data:** $(date +%Y-%m-%d)
 > **Pipeline:** 🟢 Verde (Lint, Types, Tests, Build, Smoke)
 
 ---
@@ -21,9 +27,9 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 
 | HU ID | Título | Implementação Técnica |
 | :--- | :--- | :--- |
-| **11.3** | HU-Gov-Docs-Minimas | Criação de `README.md` e `DEVELOPMENT.md`. |
-| **5.4** | HU-Quality-Pipeline-Checklist | Script `42_pipeline_checklist.sh` (Lint, Test, Build). |
-| **N/A** | Infraestrutura Monorepo | Configuração de `pnpm workspaces`, `tsconfig`, `eslint v9`. |
+| **11.3** | HU-Gov-Docs-Minimas | Criação de \`README.md\` e \`DEVELOPMENT.md\`. |
+| **5.4** | HU-Quality-Pipeline-Checklist | Script \`42_pipeline_checklist.sh\` (Lint, Test, Build). |
+| **N/A** | Infraestrutura Monorepo | Configuração de \`pnpm workspaces\`, \`tsconfig\`, \`eslint v9\`. |
 
 ### **Fase 2: Motor de Análise (Backend Core)**
 **Status:** ✅ CONCLUÍDO
@@ -31,11 +37,11 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 
 | HU ID | Título | Implementação Técnica |
 | :--- | :--- | :--- |
-| **1.1** | HU-Server-Analyze-200 | Rota `POST /analyze` no `@mini-ide/server`. |
+| **1.1** | HU-Server-Analyze-200 | Rota \`POST /analyze\` no \`@mini-ide/server\`. |
 | **1.2** | HU-Server-Analyze-400 | Validação de input (texto vazio, maxLen) no controller. |
-| **1.4** | HU-Server-Healthz | Rota `GET /healthz` retornando uptime. |
-| **1.5** | HU-Server-Logging-JSON | Configuração do `pino` logger no Fastify. |
-| **1.7** | HU-Server-Analyze-Shape-Contract | Interfaces `AnalyzeRequest/Response` em `@mini-ide/shared`. |
+| **1.4** | HU-Server-Healthz | Rota \`GET /healthz\` retornando uptime. |
+| **1.5** | HU-Server-Logging-JSON | Configuração do \`pino\` logger no Fastify. |
+| **1.7** | HU-Server-Analyze-Shape-Contract | Interfaces \`AnalyzeRequest/Response\` em \`@mini-ide/shared\`. |
 
 ### **Fase 3: Inteligência Artificial (O Cérebro)**
 **Status:** ✅ CONCLUÍDO
@@ -43,10 +49,10 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 
 | HU ID | Título | Implementação Técnica |
 | :--- | :--- | :--- |
-| **2.3** | HU-Analysis-Context | Classe `AnalysisAgent` recebendo contexto. |
-| **3.1** | HU-LLM-Client-DeepSeek | `DeepSeekProvider` implementado com `axios`. |
+| **2.3** | HU-Analysis-Context | Classe \`AnalysisAgent\` recebendo contexto. |
+| **3.1** | HU-LLM-Client-DeepSeek | \`DeepSeekProvider\` implementado com \`axios\`. |
 | **3.10** | HU-LLM-Response-Schema | Definição (lógica) do JSON de saída esperado. |
-| **12.3** | HU-LLM-Provider-Abstraction | Interface `LLMProvider` e `MockProvider` para testes. |
+| **12.3** | HU-LLM-Provider-Abstraction | Interface \`LLMProvider\` e \`MockProvider\` para testes. |
 
 ### **Fase 4: Primeira Interface (CLI)**
 **Status:** ✅ CONCLUÍDO
@@ -54,7 +60,7 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 
 | HU ID | Título | Implementação Técnica |
 | :--- | :--- | :--- |
-| **7.1** | HU-CLI-Analyze | Comando `analyze` em `@mini-ide/cli` lendo arquivos. |
+| **7.1** | HU-CLI-Analyze | Comando \`analyze\` em \`@mini-ide/cli\` lendo arquivos. |
 
 ### **Fase 5: Interface Visual (UI Shell)**
 **Status:** ✅ CONCLUÍDO
@@ -62,11 +68,11 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 
 | HU ID | Título | Implementação Técnica |
 | :--- | :--- | :--- |
-| **9.1** | HU-UI-Explore-Mode-001 | Layout 3 colunas (Grid) em `@mini-ide/ui`. |
-| **9.4** | HU-UI-Tabs-004 | Sistema de abas (`overview`, `hus`, etc.) no `App.tsx`. |
-| **13.1** | HU-UI-Server-BaseURL-Config | Proxy Vite configurado para `localhost:3200`. |
+| **9.1** | HU-UI-Explore-Mode-001 | Layout 3 colunas (Grid) em \`@mini-ide/ui\`. |
+| **9.4** | HU-UI-Tabs-004 | Sistema de abas (\`overview\`, \`hus\`, etc.) no \`App.tsx\`. |
+| **13.1** | HU-UI-Server-BaseURL-Config | Proxy Vite configurado para \`localhost:3200\`. |
 | **13.2** | HU-UI-Healthz-Status-Indicator | Indicador visual (Mock visual inicial). |
-| **13.3** | HU-UI-Analyze-Playground | Integração `axios.post` no chat do rodapé. |
+| **13.3** | HU-UI-Analyze-Playground | Integração \`axios.post\` no chat do rodapé. |
 
 ---
 
@@ -78,12 +84,12 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 
 | HU ID | Título | Implementação Técnica |
 | :--- | :--- | :--- |
-| **9.2** | HU-UI-Discovery-Notes-002 | Componente `DiscoveryNotes` estruturado. |
-| **9.3** | HU-UI-Timeline-003 | Componente `ExploreTimeline` com filtros e ícones. |
+| **9.2** | HU-UI-Discovery-Notes-002 | Componente \`DiscoveryNotes\` estruturado. |
+| **9.3** | HU-UI-Timeline-003 | Componente \`ExploreTimeline\` com filtros e ícones. |
 | **9.9** | HU-UI-Explore-Primary-Actions-009 | Botões do Header conectados ao Toast system. |
 | **9.10** | HU-UI-Explore-Chat-Flow-010 | Fluxo Chat -> Timeline -> Notes (State React). |
 | **9.11** | HU-UI-Explore-Tabs-Minimum-Content-011 | Abas com conteúdo ou placeholders informativos. |
-| **9.12** | HU-UI-Explore-Interactions-012 | `ToastContext` e `Button` (Loading state). |
+| **9.12** | HU-UI-Explore-Interactions-012 | \`ToastContext\` e \`Button\` (Loading state). |
 | **9.13** | HU-UI-Explore-Empty-States-013 | Componentes de "Estado Vazio". |
 | **9.16** | HU-UI-Explore-Error-Handling-016 | Tratamento de erro (Offline) com Toasts. |
 | **9.17** | HU-UI-Explore-Loading-States-017 | Spinners e desativação de inputs durante request. |
@@ -157,3 +163,6 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 - [ ] **12.6** HU-Server-Metrics-Observability
 
 ---
+EOF
+
+echo "✅ Documentação sincronizada com Plano v4.0 (78 HUs)."

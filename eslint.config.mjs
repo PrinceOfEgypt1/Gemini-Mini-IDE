@@ -18,12 +18,21 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
 
-  // Regras customizadas do Mini-IDE
+  // Regras globais
   {
     rules: {
       "no-console": "warn",
       "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
       "@typescript-eslint/no-explicit-any": "warn"
+    }
+  },
+
+  // Override específico para a CLI (Permite console.log e process.exit)
+  {
+    files: ["packages/cli/src/**/*.ts"],
+    rules: {
+      "no-console": "off",
+      "no-process-exit": "off"
     }
   }
 ];

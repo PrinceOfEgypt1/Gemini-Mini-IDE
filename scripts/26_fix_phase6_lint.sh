@@ -1,3 +1,83 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚑 Iniciando Hotfix de Lint (Fase 6)..."
+
+# 1. Corrigir ToastContext.tsx
+# Problema: Comentário eslint-disable referenciando regra inexistente.
+# Solução: Remover a primeira linha.
+# -----------------------------------------------------
+echo "📝 Corrigindo ToastContext.tsx..."
+cat > packages/ui/src/contexts/ToastContext.tsx <<EOF
+import { createContext, useState, useCallback, ReactNode } from 'react';
+import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
+
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
+
+export interface Toast {
+  id: string;
+  type: ToastType;
+  message: string;
+}
+
+export interface ToastContextProps {
+  addToast: (message: string, type?: ToastType) => void;
+  removeToast: (id: string) => void;
+}
+
+export const ToastContext = createContext<ToastContextProps | undefined>(undefined);
+
+export const ToastProvider = ({ children }: { children: ReactNode }) => {
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+
+  const addToast = useCallback((message: string, type: ToastType = 'info') => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, type, message }]);
+    setTimeout(() => removeToast(id), 5000);
+  }, [removeToast]);
+
+  return (
+    <ToastContext.Provider value={{ addToast, removeToast }}>
+      {children}
+      <div style={{
+        position: 'fixed', bottom: 20, right: 20, display: 'flex', flexDirection: 'column', gap: 10, zIndex: 9999
+      }}>
+        {toasts.map((toast) => (
+          <div key={toast.id} className="toast" style={{
+            background: 'var(--panel-2)', 
+            border: '1px solid var(--border)', 
+            borderRadius: '8px',
+            padding: '12px 16px',
+            minWidth: '300px',
+            display: 'flex', alignItems: 'center', gap: '12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            color: 'var(--text)'
+          }}>
+            {toast.type === 'success' && <CheckCircle size={20} color="var(--ok)" />}
+            {toast.type === 'error' && <AlertCircle size={20} color="var(--danger)" />}
+            {toast.type === 'info' && <Info size={20} color="var(--brand)" />}
+            <span style={{ flex: 1 }}>{toast.message}</span>
+            <button onClick={() => removeToast(toast.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)' }}>
+              <X size={16} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  );
+};
+EOF
+
+# 2. Corrigir App.tsx
+# Problema: console.error não permitido.
+# Solução: Remover console.error e manter apenas o Toast e a atualização de estado.
+# -----------------------------------------------------
+echo "📝 Corrigindo App.tsx..."
+cat > packages/ui/src/App.tsx <<EOF
 import { useState } from 'react';
 import axios from 'axios';
 import { Play, Box, Zap, Paperclip, Send, Loader2 } from 'lucide-react';
@@ -157,3 +237,100 @@ export default function App() {
     </ToastProvider>
   );
 }
+EOF
+
+# 3. Corrigir CLI index.ts
+# Problema: Variável não usada no catch.
+# Solução: Usar optional catch binding.
+# -----------------------------------------------------
+echo "📝 Corrigindo CLI..."
+cat > packages/cli/src/index.ts <<EOF
+#!/usr/bin/env node
+import { Command } from 'commander';
+import fs from 'fs/promises';
+import path from 'path';
+import axios, { AxiosError } from 'axios';
+import chalk from 'chalk';
+import ora from 'ora';
+
+// URL do servidor (padrão local)
+const SERVER_URL = process.env.MINI_IDE_SERVER_URL || 'http://localhost:3200';
+
+const program = new Command();
+
+program
+  .name('mini-ide')
+  .description('CLI para o Mini-IDE - Ambiente de Desenvolvimento Assistido por IA')
+  .version('0.0.1');
+
+program
+  .command('analyze')
+  .description('Envia um arquivo ou texto para análise do agente')
+  .argument('<input>', 'Caminho do arquivo ou string de texto')
+  .option('-m, --max-len <number>', 'Tamanho máximo do resumo', '200')
+  .option('--raw', 'Trata o input como texto puro, não arquivo')
+  .action(async (input, options) => {
+    let content = input;
+    
+    // Se não for modo raw, tenta ler como arquivo
+    if (!options.raw) {
+      try {
+        const filePath = path.resolve(process.cwd(), input);
+        // Verifica se arquivo existe
+        await fs.access(filePath);
+        content = await fs.readFile(filePath, 'utf-8');
+        console.log(chalk.blue(\`📄 Lendo arquivo: \${filePath}\`));
+      } catch {
+        // Se falhar, assume que é texto se não for muito longo, ou erro
+        if (input.length < 255 && !input.includes('\n')) {
+           console.log(chalk.yellow('⚠️  Arquivo não encontrado. Tratando como texto direto.'));
+           content = input;
+        } else {
+           console.error(chalk.red('❌ Erro: Arquivo não encontrado e input inválido.'));
+           process.exit(1);
+        }
+      }
+    }
+
+    const spinner = ora('Enviando para o Agente de Análise...').start();
+
+    try {
+      const response = await axios.post(\`\${SERVER_URL}/analyze\`, {
+        text: content,
+        maxLen: parseInt(options.maxLen)
+      });
+
+      spinner.succeed(chalk.green('Análise concluída!'));
+      
+      const data = response.data;
+      
+      console.log('\n' + chalk.bold('📊 Resultado da Análise:'));
+      console.log(chalk.gray('------------------------------------------------'));
+      console.log(chalk.white(data.summary));
+      console.log(chalk.gray('------------------------------------------------'));
+      console.log(chalk.cyan(\`ID: \${data.requestId}\`));
+      console.log(chalk.dim(\`Tokens (Simulado): Entrou \${data.inputLength} / Saiu \${data.outputLength}\`));
+
+    } catch (error) {
+      spinner.fail(chalk.red('Falha na análise.'));
+      
+      const err = error as AxiosError | Error;
+
+      if ('code' in err && err.code === 'ECONNREFUSED') {
+        console.error(chalk.red(\`\n❌ Não foi possível conectar ao servidor em \${SERVER_URL}.\`));
+        console.error(chalk.yellow('Dica: O servidor está rodando? (pnpm start no pacote server)'));
+      } else {
+        console.error(chalk.red(\`Erro: \${err.message}\`));
+        if (axios.isAxiosError(err) && err.response) {
+            console.error(chalk.dim(JSON.stringify(err.response.data)));
+        }
+      }
+      process.exit(1);
+    }
+  });
+
+program.parse();
+EOF
+
+echo "✅ Hotfix 6.7 aplicado! Arquivos limpos."
+echo "👉 Execute ./42_pipeline_checklist.sh para confirmar."
