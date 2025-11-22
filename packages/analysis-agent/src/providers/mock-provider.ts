@@ -1,28 +1,31 @@
 import { LLMProvider, LLMResponse } from './llm-provider.js';
 
 /**
- * Provedor simulado para desenvolvimento e testes.
- * Retorna respostas fixas sem consumir API externa.
+ * Provedor simulado.
+ * Retorna respostas fixas baseadas em palavras-chave do prompt para simular personas.
  */
 export class MockProvider implements LLMProvider {
   /**
-   * Gera uma resposta simulada.
-   * @param prompt - O texto de entrada (ignorado na lógica, usado apenas para log).
+   * Gera uma resposta simulada dependendo da "Persona" detectada no prompt.
    */
-  async generate(_prompt: string): Promise<LLMResponse> {
-    // Simula latência
-    await new Promise(resolve => setTimeout(resolve, 500));
+  async generate(prompt: string): Promise<LLMResponse> {
+    await new Promise(resolve => setTimeout(resolve, 300)); // Latência menor para testes
+
+    let content = "";
+
+    if (prompt.includes("ANALYSIS AGENT")) {
+      content = JSON.stringify({ summary: "Análise concluída", goals: ["Goal 1"] });
+    } else if (prompt.includes("PRODUCT STRATEGIST")) {
+      content = "HU-001: Como usuário...";
+    } else if (prompt.includes("ENGINE SPECIALIST")) {
+      content = "console.log('Hello World');";
+    } else {
+      content = "Processamento genérico realizado.";
+    }
 
     return {
-      content: JSON.stringify({
-        summary: "Análise Mockada das 8 Personas (Fase 8 Hardening)",
-        personas: {
-          product: { hus: ["HU-001: Exemplo"] },
-          architect: { stack: "Node.js + React" },
-          engine: { files: ["src/index.ts"] }
-        }
-      }, null, 2),
-      usage: { inputTokens: 50, outputTokens: 120 }
+      content,
+      usage: { inputTokens: 10, outputTokens: 20 }
     };
   }
 }

@@ -2,7 +2,7 @@
 
 Ambiente de desenvolvimento assistido por IA, capaz de transformar intenções em planos e código.
 
-> **Status Atual:** v0.8.0 (Hardened Backend) - API Documentada + Controle de Custos + UI Beta
+> **Status Atual:** v0.9.0 (Hardened Backend) - API Documentada + Controle de Custos + UI Beta
 > **Pipeline:** 🟢 Passing (Lint, Types, Tests, Build, Smoke)
 
 ## 🚀 Funcionalidades Principais

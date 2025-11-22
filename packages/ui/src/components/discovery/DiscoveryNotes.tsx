@@ -1,5 +1,9 @@
 import React from 'react';
 
+/**
+ * Painel lateral direito que exibe as notas de descoberta coletadas pelo Agente.
+ * Exibe Intenção, Requisitos, Restrições e Exemplos.
+ */
 export const DiscoveryNotes: React.FC = () => {
   return (
     <aside className="panel" style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>

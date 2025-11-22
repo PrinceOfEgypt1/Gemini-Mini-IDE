@@ -3,14 +3,23 @@ import clsx from 'clsx';
 import { ExploreTimeline, TimelineEvent } from './explore/ExploreTimeline';
 import { HistoryPanel } from './analyze/HistoryPanel';
 
+/** Identificadores únicos para as abas do workspace. */
 export type TabId = 'overview' | 'hus' | 'docs' | 'tests' | 'plan' | 'timeline' | 'runs' | 'metrics' | 'outputs' | 'analyze';
 
+/** Propriedades do componente WorkspaceTabs. */
 interface WorkspaceTabsProps {
+  /** ID da aba atualmente ativa. */
   activeTab: TabId;
+  /** Função para alterar a aba ativa. */
   setActiveTab: (tab: TabId) => void;
+  /** Lista de eventos para exibir na aba Timeline. */
   events: TimelineEvent[];
 }
 
+/**
+ * Componente principal de navegação do painel central.
+ * Gerencia a exibição condicional do conteúdo baseado na aba selecionada.
+ */
 export const WorkspaceTabs: React.FC<WorkspaceTabsProps> = ({ activeTab, setActiveTab, events }) => {
   const tabs: { id: TabId; label: string }[] = [
     { id: 'overview', label: 'Overview' },
@@ -57,7 +66,6 @@ export const WorkspaceTabs: React.FC<WorkspaceTabsProps> = ({ activeTab, setActi
           <ExploreTimeline events={events} />
         )}
 
-        {/* Aba Runs agora mostra o Histórico Real */}
         {activeTab === 'runs' && (
           <div style={{ height: '100%', overflowY: 'auto' }}>
              <h3 style={{ marginTop: 0 }}>Histórico de Execuções</h3>

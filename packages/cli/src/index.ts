@@ -9,6 +9,10 @@ import ora from 'ora';
 // URL do servidor (padrão local)
 const SERVER_URL = process.env.MINI_IDE_SERVER_URL || 'http://localhost:3200';
 
+/**
+ * Inicializa a ferramenta de linha de comando (CLI) do Mini-IDE.
+ * Utiliza a biblioteca 'commander' para gerenciar argumentos e opções.
+ */
 const program = new Command();
 
 program

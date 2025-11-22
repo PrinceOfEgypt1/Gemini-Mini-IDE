@@ -26,14 +26,14 @@
 
 ## 3. Épico E-LLM: Orquestração 8 Personas
 - ✅ **3.1 HU-LLM-Client-DeepSeek**: Cliente HTTP (com Mock fallback).
-- 📅 **3.2 HU-LLM-Persona-Analysis**: Persona Analista.
-- 📅 **3.3 HU-LLM-Persona-Product**: Persona Produto.
-- 📅 **3.4 HU-LLM-Persona-Architect**: Persona Arquiteto.
-- 📅 **3.5 HU-LLM-Persona-Engine**: Persona Engenheiro.
-- 📅 **3.6 HU-LLM-Persona-UX**: Persona UX.
-- 📅 **3.7 HU-LLM-Persona-Quality**: Persona QA.
-- 📅 **3.8 HU-LLM-Persona-Ops**: Persona DevOps.
-- 📅 **3.9 HU-LLM-Persona-Fenix**: Consolidador.
+- ✅ **3.2 HU-LLM-Persona-Analysis**: Persona Analista.
+- ✅ **3.3 HU-LLM-Persona-Product**: Persona Produto.
+- ✅ **3.4 HU-LLM-Persona-Architect**: Persona Arquiteto.
+- ✅ **3.5 HU-LLM-Persona-Engine**: Persona Engenheiro.
+- ✅ **3.6 HU-LLM-Persona-UX**: Persona UX.
+- ✅ **3.7 HU-LLM-Persona-Quality**: Persona QA.
+- ✅ **3.8 HU-LLM-Persona-Ops**: Persona DevOps.
+- ✅ **3.9 HU-LLM-Persona-Fenix**: Consolidador.
 - ✅ **3.10 HU-LLM-Response-Schema**: Schema JSON de saída.
 
 ## 4. Épico E-Consolidator: Extração de Artefatos

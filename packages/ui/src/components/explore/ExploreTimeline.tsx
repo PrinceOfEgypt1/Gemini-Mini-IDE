@@ -1,26 +1,47 @@
 import React, { useMemo, useState } from 'react';
 import { Clock, CheckCircle, AlertCircle, Play, FileText, MessageSquare } from 'lucide-react';
 
+/** Tipos de eventos suportados na timeline de exploração. */
 export type TimelineEventType = 'analysis' | 'discovery' | 'project' | 'execution' | 'system' | 'user-message';
 
+/**
+ * Representa um evento individual na linha do tempo.
+ */
 export interface TimelineEvent {
+  /** ID único do evento. */
   id: string;
+  /** Tipo do evento para renderização de ícone. */
   type: TimelineEventType;
+  /** Categoria para filtragem (geralmente igual ao tipo, mas pode agrupar). */
   category: string; 
+  /** Título curto do evento. */
   title: string;
+  /** Descrição detalhada ou subtítulo opcional. */
   description?: string;
+  /** Data e hora da ocorrência. */
   timestamp: Date;
 }
 
+/**
+ * Propriedades do componente ExploreTimeline.
+ */
 interface ExploreTimelineProps {
+  /** Lista de eventos a serem exibidos. Se omitido, exibe estado vazio. */
   events?: TimelineEvent[];
 }
 
+/**
+ * Componente que exibe uma lista cronológica de eventos da sessão.
+ * Inclui funcionalidades de filtragem por categoria e ordenação automática (mais recente primeiro).
+ */
 export const ExploreTimeline: React.FC<ExploreTimelineProps> = ({ events = [] }) => {
   const [activeFilters, setActiveFilters] = useState<Set<string>>(
     new Set(['analysis', 'discovery', 'project', 'execution', 'system', 'user-message'])
   );
 
+  /**
+   * Retorna o ícone correspondente ao tipo de evento.
+   */
   const getIcon = (type: TimelineEventType) => {
     switch (type) {
       case 'analysis': return <FileText size={14} />;
@@ -33,6 +54,7 @@ export const ExploreTimeline: React.FC<ExploreTimelineProps> = ({ events = [] })
     }
   };
 
+  // Filtra e ordena os eventos (Memoizado para performance)
   const filteredEvents = useMemo(() => {
     const safeEvents = Array.isArray(events) ? events : [];
     return safeEvents

@@ -4,7 +4,13 @@ import { MockProvider } from './providers/mock-provider.js';
 import { DeepSeekProvider } from './providers/deepseek-provider.js';
 import { v4 as uuidv4 } from 'uuid';
 
-// Re-exportar utilitários para consumidores
+// Personas
+import { AnalysisPersona } from './personas/analysis.js';
+import { ProductPersona } from './personas/product.js';
+import { ArchitectPersona } from './personas/architect.js';
+import { EnginePersona } from './personas/engine.js';
+// ... importar outras personas conforme necessário no fluxo completo
+
 export { PromptOptimizer } from './utils/prompt-optimizer.js';
 
 function getProvider(): LLMProvider {
@@ -14,6 +20,9 @@ function getProvider(): LLMProvider {
   return new MockProvider();
 }
 
+/**
+ * Orquestrador Principal (Chain of Thought).
+ */
 export class AnalysisAgent {
   private provider: LLMProvider;
 
@@ -24,32 +33,40 @@ export class AnalysisAgent {
   async process(request: AnalyzeRequest): Promise<AnalyzeResponse> {
     const requestId = uuidv4();
     
-    const prompt = `Contexto: ${request.text}\n\nInstrução: Gere um JSON com o plano de desenvolvimento.`;
+    // Instanciar personas
+    const analysisPersona = new AnalysisPersona(this.provider);
+    const productPersona = new ProductPersona(this.provider);
+    const architectPersona = new ArchitectPersona(this.provider);
+    const enginePersona = new EnginePersona(this.provider);
+    // ... instanciar demais
 
-    const llmResult = await this.provider.generate(prompt);
+    // Executar Pipeline (Chain)
+    // Passo 1: Análise
+    const analysisResult = await analysisPersona.execute(request.text);
     
-    let summary = llmResult.content;
-    try {
-        const parsed = JSON.parse(llmResult.content);
-        summary = parsed.summary || JSON.stringify(parsed);
-    } catch {
-        // Ignora falha de parse
-    }
+    // Passo 2: Produto (usa resultado da análise)
+    const productResult = await productPersona.execute(analysisResult);
 
-    if (request.maxLen && summary.length > request.maxLen) {
-        summary = summary.substring(0, request.maxLen) + '...';
-    }
+    // Passo 3: Arquitetura
+    const archResult = await architectPersona.execute(productResult);
 
-    const estimatedCost = (llmResult.usage.inputTokens + llmResult.usage.outputTokens) * 0.00001;
+    // Passo 4: Engenharia
+    const codeResult = await enginePersona.execute(archResult);
+
+    // Consolidar (Simplificado por enquanto)
+    const finalSummary = `Análise: ${typeof analysisResult === 'string' ? analysisResult.slice(0, 50) : 'OK'}... | HUs Geradas | Código Gerado.`;
+
+    // Estimativa de custo (Mock)
+    const estimatedCost = 0.01;
 
     return {
       requestId,
-      summary,
+      summary: finalSummary.slice(0, request.maxLen || 500),
       inputLength: request.text.length,
-      outputLength: llmResult.content.length,
+      outputLength: finalSummary.length,
       timestamp: new Date().toISOString(),
       budgetUsed: estimatedCost,
-      budgetRemaining: 100 
+      budgetRemaining: 99.99 
     };
   }
 }

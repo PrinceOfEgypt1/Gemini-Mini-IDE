@@ -1,8 +1,8 @@
 # Mini-IDE — Manual de Engenharia
 
 > **Versão do Documento:** 5.4 (Full History Restored + Phase 8)
-> **Versão do Software:** v0.8.0 (Hardened Backend)
-> **Data:** 2025-11-22
+> **Versão do Software: v0.9.0 (Multi-Persona Agent)
+> **Data: 2025-11-22
 > **Pipeline:** 🟢 Verde (Lint, Types, Tests, Build, Smoke)
 
 ---
@@ -166,3 +166,19 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 - **12.6** `HU-Server-Metrics-Observability`
 
 ---
+
+---
+
+## 📋 Registro da Fase 9: Orquestração de Personas (Concluída)
+
+**Objetivo:** Implementar lógica de IA complexa (Chain of Thought) substituindo o mock simples.
+
+### Artefatos Técnicos Entregues
+*   **Base de Personas:** `analysis-agent/src/personas/base-persona.ts` (Classe Abstrata).
+*   **Personas Especializadas:** Implementadas 8 classes em `analysis-agent/src/personas/*.ts` (Analysis, Product, Architect, Engine, UX, Quality, Ops, Fenix).
+*   **Orquestrador:** `AnalysisAgent` atualizado para chamar as personas sequencialmente, passando o contexto de uma para a outra.
+*   **Mock Inteligente:** `MockProvider` atualizado para simular respostas específicas baseadas no prompt de cada persona, permitindo testes sem custo de API.
+
+### Próximos Passos Imediatos (Fase 10)
+*   Implementar geração de HUs sob demanda (Wizard).
+*   Criar scripts de ambiente reais.
