@@ -94,10 +94,10 @@ SERVER_PID=""
 if [[ "$SKIP_SERVER_START" == "0" ]]; then
   log_info "ETAPA 5/6: Smoke test - endpoint /healthz"
 
-  # FIX CRÍTICO: Caminho aponta para dist/src/index.js
-  # Verifique se este arquivo existe com 'ls packages/server/dist/src/index.js'
+  # FIX CRÍTICO: Caminho aponta para dist/index.js
+  # Verifique se este arquivo existe com 'ls packages/server/dist/index.js'
   log_info "Iniciando servidor na porta $SERVER_PORT..."
-  PORT=$SERVER_PORT node packages/server/dist/src/index.js > /tmp/server.log 2>&1 &
+  PORT=$SERVER_PORT node packages/server/dist/index.js > /tmp/server.log 2>&1 &
   SERVER_PID=$!
 
   # Aguardar servidor inicializar

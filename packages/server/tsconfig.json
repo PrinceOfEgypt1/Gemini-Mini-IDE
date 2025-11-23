@@ -2,8 +2,12 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "."
+    "rootDir": "./src",
+    "composite": true
   },
-  "include": ["src/**/*", "test/**/*"],
-  "references": [{"path": "../shared"}, {"path": "../analysis-agent"}]
+  "include": ["src/**/*"],
+  "references": [
+    { "path": "../shared" },
+    { "path": "../analysis-agent" }
+  ]
 }

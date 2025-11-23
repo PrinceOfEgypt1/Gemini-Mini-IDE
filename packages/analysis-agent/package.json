@@ -1,29 +1,26 @@
 {
   "name": "@mini-ide/analysis-agent",
   "version": "0.0.1",
-  "private": true,
-  "main": "./dist/src/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run",
-    "lint": "eslint src/",
-    "typecheck": "tsc --noEmit"
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "@mini-ide/shared": "workspace:*",
+    "dotenv": "^16.3.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/uuid": "^11.0.0",
-    "typescript": "^5.0.0"
-  },
-  "type": "module",
-  "dependencies": {
-    "@mini-ide/shared": "workspace:^",
-    "axios": "^1.13.2",
-    "uuid": "^13.0.0"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/src/index.js",
-      "types": "./dist/src/index.d.ts"
-    }
-  },
-  "types": "./dist/src/index.d.ts"
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  }
 }
