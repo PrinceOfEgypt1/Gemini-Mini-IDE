@@ -1,3 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚑 [Phase 11] Removendo console.log do ProjectWizard..."
+
+# ==============================================================================
+# 1. Reescrever ProjectWizard.tsx sem console.log
+# ==============================================================================
+echo "📝 Atualizando packages/ui/src/components/wizard/ProjectWizard.tsx..."
+
+cat > packages/ui/src/components/wizard/ProjectWizard.tsx <<EOF
 import React from 'react';
 import { Button } from '../Button';
 
@@ -30,3 +41,12 @@ export const ProjectWizard: React.FC<ProjectWizardProps> = ({ isOpen, onClose })
     </div>
   );
 };
+EOF
+
+# ==============================================================================
+# 2. Validação
+# ==============================================================================
+echo "🛡️  Validando Lint da UI..."
+pnpm --filter @mini-ide/ui lint
+
+echo "✅ ProjectWizard corrigido."

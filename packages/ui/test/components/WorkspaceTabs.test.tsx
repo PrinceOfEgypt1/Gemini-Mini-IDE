@@ -1,38 +1,33 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { WorkspaceTabs, TabId } from '../../src/components/WorkspaceTabs';
-import { TimelineEvent } from '../../src/components/explore/ExploreTimeline';
+import { WorkspaceTabs } from '../../src/components/WorkspaceTabs';
+import React from 'react';
 
 describe('WorkspaceTabs', () => {
-  const mockSetActive = vi.fn();
-  const events: TimelineEvent[] = [];
-
-  const renderComponent = (activeTab: TabId = 'overview') => {
-    return render(
-      <WorkspaceTabs 
-        activeTab={activeTab} 
-        setActiveTab={mockSetActive} 
-        events={events} 
-      />
-    );
-  };
+  const mockOnTabChange = vi.fn();
 
   it('renderiza os botões das abas principais', () => {
-    renderComponent();
+    render(<WorkspaceTabs activeTab="overview" onTabChange={mockOnTabChange} />);
+    
     expect(screen.getByText('Overview')).toBeDefined();
     expect(screen.getByText('HUs')).toBeDefined();
-    expect(screen.getByText('Timeline')).toBeDefined();
+    expect(screen.getByText('Docs')).toBeDefined();
   });
 
-  it('dispara setActiveTab ao clicar', () => {
-    renderComponent();
+  it('dispara onTabChange ao clicar', () => {
+    render(<WorkspaceTabs activeTab="overview" onTabChange={mockOnTabChange} />);
+    
     const tabDocs = screen.getByText('Docs');
     fireEvent.click(tabDocs);
-    expect(mockSetActive).toHaveBeenCalledWith('docs');
+    
+    expect(mockOnTabChange).toHaveBeenCalledWith('docs');
   });
 
-  it('exibe o conteúdo da aba Overview por padrão', () => {
-    renderComponent('overview');
-    expect(screen.getByText(/Bem-vindo à Mini IDE/i)).toBeDefined();
+  it('aplica estilo ativo na aba selecionada', () => {
+    render(<WorkspaceTabs activeTab="hus" onTabChange={mockOnTabChange} />);
+    
+    const tabHu = screen.getByText('HUs');
+    // Verifica se tem a classe de fundo azul (bg-[#4ba3ff]) ou similar
+    expect(tabHu.className).toContain('bg-[#4ba3ff]');
   });
 });

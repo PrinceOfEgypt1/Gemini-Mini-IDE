@@ -85,3 +85,4 @@ export class AnalysisAgent {
     };
   }
 }
+export { ConsolidatorService } from './services/consolidator-service';

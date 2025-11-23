@@ -1,3 +1,24 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚑 [Phase 11] Corrigindo erros de Build da UI (ToastContext e Vite Types)..."
+
+# ==============================================================================
+# 1. Corrigir Tipagem do Vite
+# Resolve: Property 'env' does not exist on type 'ImportMeta'
+# ==============================================================================
+echo "📝 Criando packages/ui/src/vite-env.d.ts..."
+cat > packages/ui/src/vite-env.d.ts <<EOF
+/// <reference types="vite/client" />
+EOF
+
+# ==============================================================================
+# 2. Implementar ToastContext Completo
+# Resolve: has no exported member 'useToast'
+# ==============================================================================
+echo "📝 Reescrevendo packages/ui/src/contexts/ToastContext.tsx..."
+
+cat > packages/ui/src/contexts/ToastContext.tsx <<EOF
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
 type ToastType = 'success' | 'error' | 'info' | 'warning';
@@ -45,11 +66,11 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white animate-in fade-in slide-in-from-right-5 pointer-events-auto flex items-center gap-2 ${
+            className={\`px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white animate-in fade-in slide-in-from-right-5 pointer-events-auto flex items-center gap-2 \${
               toast.type === 'success' ? 'bg-[#00b17a]' :
               toast.type === 'error' ? 'bg-[#ff3e5e]' :
               'bg-[#4ba3ff]'
-            }`}
+            }\`}
           >
             <span>{toast.message}</span>
           </div>
@@ -58,3 +79,12 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     </ToastContext.Provider>
   );
 };
+EOF
+
+# ==============================================================================
+# 3. Validação
+# ==============================================================================
+echo "🛡️  Validando Build da UI..."
+pnpm --filter @mini-ide/ui build
+
+echo "✅ Correções aplicadas. A UI deve compilar agora."

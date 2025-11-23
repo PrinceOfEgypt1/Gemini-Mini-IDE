@@ -1,3 +1,73 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🔌 [Phase 11] Conectando UI ao Backend de Exportação..."
+
+# ==============================================================================
+# 1. Criar Serviço de API na UI
+# Centraliza as chamadas HTTP (Melhor prática de arquitetura)
+# ==============================================================================
+mkdir -p packages/ui/src/services
+echo "📝 Criando packages/ui/src/services/api.ts..."
+
+cat > packages/ui/src/services/api.ts <<EOF
+const API_BASE_URL = import.meta.env.VITE_MINI_IDE_SERVER_URL || 'http://localhost:3200';
+
+export const api = {
+  /**
+   * Solicita a exportação do projeto como ZIP
+   * @param projectData Dados do projeto (HUs, código, etc)
+   */
+  exportProjectZip: async (projectData: any) => {
+    try {
+      const response = await fetch(\`\${API_BASE_URL}/export\`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ projectData }),
+      });
+
+      if (!response.ok) {
+        throw new Error(\`Erro na exportação: \${response.statusText}\`);
+      }
+
+      // Converte a resposta em Blob (arquivo binário)
+      const blob = await response.blob();
+      
+      // Cria um link temporário para forçar o download
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      // Tenta pegar o nome do arquivo do header ou usa default
+      a.download = 'mini-ide-project.zip';
+      document.body.appendChild(a);
+      a.click();
+      
+      // Limpeza
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      return true;
+    } catch (error) {
+      console.error('Falha no download:', error);
+      throw error;
+    }
+  }
+};
+EOF
+
+# ==============================================================================
+# 2. Atualizar App.tsx para usar o Serviço
+# Conecta o botão "Exportar .zip" à lógica real
+# ==============================================================================
+echo "🔄 Atualizando packages/ui/src/App.tsx..."
+
+# Vamos ler o arquivo atual e substituir a lógica do botão
+# Nota: Em um cenário real, faríamos um parse mais inteligente, 
+# mas aqui vamos injetar a função handleExport e conectar ao botão.
+
+cat > packages/ui/src/App.tsx <<EOF
 import { useState } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
@@ -35,7 +105,7 @@ const MainLayout = () => {
 
       await api.exportProjectZip(mockProjectData);
       showToast('Projeto exportado com sucesso!', 'success');
-    } catch {
+    } catch (error) {
       showToast('Falha ao exportar projeto.', 'error');
     } finally {
       setIsExporting(false);
@@ -168,3 +238,22 @@ function App() {
 }
 
 export default App;
+EOF
+
+# ==============================================================================
+# 3. Correção de Lint (no-console e unused vars)
+# ==============================================================================
+echo "🛡️  Ajustando Lint..."
+# O arquivo api.ts usa console.error, vamos permitir isso pois é um log de erro de rede
+sed -i 's/console.error/ \/\/ eslint-disable-next-line no-console\n      console.error/' packages/ui/src/services/api.ts
+
+# ==============================================================================
+# 4. Validação
+# ==============================================================================
+echo "🏗️  Validando build da UI..."
+pnpm --filter @mini-ide/ui build
+
+echo "✅ Frontend conectado ao Backend de exportação!"
+EOF
+
+chmod +x scripts/122_connect_ui_export.sh
