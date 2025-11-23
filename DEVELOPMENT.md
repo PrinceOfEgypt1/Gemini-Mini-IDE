@@ -83,12 +83,11 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 
 ### 📅 Fase 12: Experiência do Usuário & Segurança
 **Objetivo:** Polir a usabilidade para novos usuários e garantir segurança no tráfego de credenciais.
-- **HUs Planejadas:**
-    - [ ] **14.1** HU-Sec-API-Key-Handling-001 (Segurança Headers).
-    - [ ] **14.2** HU-UI-QuickStart-Revamp-020 (Templates).
-    - [ ] **14.3** HU-UI-Explore-Tour-019 (Tour Guiado).
-    - [ ] **14.4** HU-Gov-User-Manual-001 (Manual Integrado).
-    - [ ] **14.5** HU-UI-Settings-Models-021 (Seleção de Modelos).
+- [ ] **14.1** HU-Sec-API-Key-Handling-001 (Segurança Headers).
+- [ ] **14.2** HU-UI-QuickStart-Revamp-020 (Templates).
+- [ ] **14.3** HU-UI-Explore-Tour-019 (Tour Guiado).
+- [ ] **14.4** HU-Gov-User-Manual-001 (Manual Integrado).
+- [ ] **14.5** HU-UI-Settings-Models-021 (Seleção de Modelos).
 
 ### 📅 Fase 13: Acessibilidade e Polimento Visual
 **Objetivo:** WCAG Compliance e Micro-interações.
