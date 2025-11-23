@@ -1,28 +1,34 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🔌 [Phase 12] Conectando Chat da UI ao Backend (/analyze)..."
+
+# ==============================================================================
+# 1. Atualizar App.tsx com lógica de envio real
+# ==============================================================================
+echo "📝 Atualizando packages/ui/src/App.tsx..."
+
+cat > packages/ui/src/App.tsx <<EOF
 import { useState } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
 import { WorkspaceTabs } from './components/WorkspaceTabs';
 import { Button } from './components/Button';
 import { ProjectWizard } from './components/wizard/ProjectWizard';
-import { QuickStartGallery } from './components/wizard/QuickStartGallery';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { api } from './services/api';
 
+// Componente interno para usar o hook useToast
 const MainLayout = () => {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
-  
-  // Modais
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isQuickStartOpen, setIsQuickStartOpen] = useState(false);
-  
-  // Estados de Processamento
   const [isExporting, setIsExporting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
-  // Chat
+  // Estado do Chat
   const [chatInput, setChatInput] = useState('');
   const [chatHistory, setChatHistory] = useState<Array<{role: 'user' | 'agent', text: string}>>([
     { role: 'agent', text: 'Olá! Estou pronto para ajudar. Configure sua API Key em "Preferências" para começarmos.' }
@@ -30,8 +36,7 @@ const MainLayout = () => {
 
   const [mode] = useState<'Explorando' | 'Executando'>('Explorando');
 
-  // --- Handlers ---
-
+  // Lógica de Exportação
   const handleExportZip = async () => {
     setIsExporting(true);
     showToast('Iniciando exportação...', 'info');
@@ -49,20 +54,30 @@ const MainLayout = () => {
     }
   };
 
+  // Lógica de Análise (Chat)
   const handleSendMessage = async () => {
     if (!chatInput.trim()) return;
+
     const userMsg = chatInput;
-    setChatInput(''); 
+    setChatInput(''); // Limpa input
+    
+    // 1. Adiciona mensagem do usuário na tela
     setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsAnalyzing(true);
+
     try {
+      // 2. Chama o Backend real
       const response = await api.analyze(userMsg);
-      const agentText = `Análise concluída! (ID: ${response.requestId}).\nResumo: ${response.summary}`;
+      
+      // 3. Adiciona resposta do agente na tela
+      const agentText = \`Análise concluída! (ID: \${response.requestId}).\nResumo: \${response.summary}\`;
+      
       setChatHistory(prev => [...prev, { role: 'agent', text: agentText }]);
       showToast('Análise recebida do servidor!', 'success');
+
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : 'Erro desconhecido';
-      setChatHistory(prev => [...prev, { role: 'agent', text: `Erro: ${errMsg}` }]);
+      setChatHistory(prev => [...prev, { role: 'agent', text: \`Erro: \${errMsg}\` }]);
       showToast(errMsg, 'error');
     } finally {
       setIsAnalyzing(false);
@@ -70,19 +85,9 @@ const MainLayout = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.ctrlKey) handleSendMessage();
-  };
-
-  // HU-UI-QuickStart-Revamp-020: Preencher chat com template
-  const handleTemplateSelect = (prompt: string) => {
-    setChatInput(prompt);
-    // Opcional: focar no input
-    const textarea = document.querySelector('textarea');
-    if (textarea) textarea.focus();
-  };
-
-  const handleStartTour = () => {
-    showToast('Tour guiado será implementado na Sprint 12.3!', 'info');
+    if (e.key === 'Enter' && e.ctrlKey) {
+      handleSendMessage();
+    }
   };
 
   return (
@@ -90,20 +95,24 @@ const MainLayout = () => {
       {/* Header */}
       <header className="flex items-center gap-3 px-4 bg-[#141b2b]/90 border-b border-[#24304a] shadow-lg z-10 backdrop-blur-sm">
         <div className="font-bold text-lg tracking-tight">Mini IDE</div>
-        <span className="px-2.5 py-1 rounded-full bg-[#222b40] border border-[#24304a] text-[#9fb0d3] text-xs font-medium">Analysis Agent</span>
-        <span className="px-2.5 py-1 rounded-full bg-[#47e6a1]/15 border border-[#47e6a1]/40 text-[#47e6a1] text-xs font-medium">{mode}</span>
-        
+        <span className="px-2.5 py-1 rounded-full bg-[#222b40] border border-[#24304a] text-[#9fb0d3] text-xs font-medium">
+          Analysis Agent
+        </span>
+        <span className="px-2.5 py-1 rounded-full bg-[#47e6a1]/15 border border-[#47e6a1]/40 text-[#47e6a1] text-xs font-medium">
+          {mode}
+        </span>
         <div className="flex-1" />
-        
         <div className="flex gap-2.5">
-          <Button variant="ghost" onClick={() => setIsWizardOpen(true)}>Criar Projeto</Button>
-          {/* HU-UI-QuickStart-Revamp-020: Agora abre a Galeria */}
-          <Button variant="ghost" onClick={() => setIsQuickStartOpen(true)}>Quick Start</Button>
+          <Button variant="ghost" onClick={() => { /* TODO */ }}>Provisionar</Button>
+          <Button variant="primary" onClick={() => { /* TODO */ }}>Executar</Button>
+          <Button variant="ghost" onClick={() => setIsWizardOpen(true)}>Quick Start</Button>
         </div>
       </header>
 
       {/* Main Layout */}
       <main className="grid grid-cols-[280px_1fr_360px] gap-3.5 p-3.5 overflow-hidden">
+        
+        {/* Sidebar */}
         <aside className="bg-[#141b2b] border border-[#24304a] rounded-xl shadow-sm flex flex-col p-3 gap-3 overflow-hidden">
           <div className="flex justify-between items-center">
             <strong className="text-sm">Projeto Atual</strong>
@@ -114,26 +123,11 @@ const MainLayout = () => {
           </div>
         </aside>
 
+        {/* Workspace */}
         <section className="bg-[#141b2b] border border-[#24304a] rounded-xl shadow-sm flex flex-col p-3 gap-3 overflow-hidden relative">
           <WorkspaceTabs activeTab={activeTab} onTabChange={setActiveTab} />
           <div className="flex-1 overflow-auto bg-[#101727] border border-[#24304a] rounded-xl p-4 relative">
-            {activeTab === 'overview' && (
-              <div className="grid grid-cols-2 gap-4 h-full">
-                <div className="flex flex-col gap-4">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Bem-vindo à Mini IDE</h3>
-                    <p className="text-[#9fb0d3] text-sm">Seu assistente de engenharia de software.</p>
-                  </div>
-                  <div className="mt-auto p-4 bg-[#141b2b] border border-[#24304a] rounded-lg">
-                    <h4 className="text-sm font-medium mb-2">Ações Rápidas</h4>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => setIsQuickStartOpen(true)}>Explorar Templates</Button>
-                    </div>
-                  </div>
-                </div>
-                <div className="h-full"><DiscoveryNotes /></div>
-              </div>
-            )}
+            {activeTab === 'overview' && <DiscoveryNotes />}
             {activeTab === 'timeline' && <ExploreTimeline />}
             {activeTab === 'outputs' && (
               <div className="flex flex-col items-center justify-center h-full gap-4">
@@ -147,6 +141,7 @@ const MainLayout = () => {
           </div>
         </section>
 
+        {/* Right Panel (Chat Log) */}
         <aside className="bg-[#141b2b] border border-[#24304a] rounded-xl shadow-sm flex flex-col p-3 gap-3 overflow-hidden">
           <div className="flex justify-between items-center pb-2 border-b border-[#24304a]">
             <div className="flex gap-2">
@@ -156,10 +151,12 @@ const MainLayout = () => {
               Preferências
             </button>
           </div>
+          
+          {/* Histórico do Chat */}
           <div className="flex-1 bg-[#101727] border border-[#24304a] rounded-lg p-3 overflow-auto text-sm space-y-3">
             {chatHistory.map((msg, idx) => (
-              <div key={idx} className={`p-3 rounded-lg border ${msg.role === 'agent' ? 'bg-[#0f1420] border-[#24304a]/50' : 'bg-[#222b40] border-[#4ba3ff]/20'}`}>
-                <strong className={`block text-xs mb-1 ${msg.role === 'agent' ? 'text-[#4ba3ff]' : 'text-[#47e6a1]'}`}>
+              <div key={idx} className={\`p-3 rounded-lg border \${msg.role === 'agent' ? 'bg-[#0f1420] border-[#24304a]/50' : 'bg-[#222b40] border-[#4ba3ff]/20'}\`}>
+                <strong className={\`block text-xs mb-1 \${msg.role === 'agent' ? 'text-[#4ba3ff]' : 'text-[#47e6a1]'}\`}>
                   {msg.role === 'agent' ? 'Agente' : 'Você'}
                 </strong>
                 <div className="whitespace-pre-wrap">{msg.text}</div>
@@ -170,6 +167,7 @@ const MainLayout = () => {
         </aside>
       </main>
 
+      {/* Footer / Input Area */}
       <footer className="px-4 py-3 bg-[#141b2b] border-t border-[#24304a] grid grid-cols-[1fr_auto] gap-3">
         <textarea 
           value={chatInput}
@@ -186,14 +184,7 @@ const MainLayout = () => {
         </div>
       </footer>
 
-      {/* Modais */}
       <ProjectWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} />
-      <QuickStartGallery 
-        isOpen={isQuickStartOpen} 
-        onClose={() => setIsQuickStartOpen(false)} 
-        onSelectTemplate={handleTemplateSelect}
-        onStartTour={handleStartTour}
-      />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
@@ -208,3 +199,6 @@ function App() {
 }
 
 export default App;
+EOF
+
+echo "✅ Chat conectado ao backend!"
