@@ -1,8 +1,8 @@
 # Mini-IDE — Manual de Engenharia
 
 > **Versão do Documento:** 6.0 (Phase 10 Complete)
-> **Versão do Software:** v0.10.1 (Wizard Stable)
-> **Data:** 2025-11-22
+> **Versão do Software:** v0.11.0 (Export Stable) (Wizard Stable)
+> **Data:** 2025-11-23
 > **Pipeline:** 🟢 Verde (Lint, Types, Tests, Build, Smoke)
 
 ---
@@ -71,6 +71,16 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 
 ---
 
+
+### ✅ Fase 11: Consolidação e Exportação (A Fábrica)
+**Objetivo:** Materializar o projeto em arquivos reais e permitir download.
+- **Artefatos:**
+    - `analysis-agent/.../consolidator-service.ts` (Motor de geração de arquivos).
+    - `server/.../export.controller.ts` (Endpoint de streaming ZIP).
+    - `ui/.../SettingsModal.tsx` (Gestão de API Key).
+    - `scripts/127_fix_cors_brute_force.sh` (Hardening de ambiente dev).
+- **HUs Entregues:** 4.1, 4.2, 4.3, 4.6, 8.3, 9.5.
+- **Status:** Pipeline Verde, Exportação .zip funcional.
 ## 2. Roadmap Futuro (Backlog Pendente)
 
 ### 📅 Fase 11: Consolidação e Exportação

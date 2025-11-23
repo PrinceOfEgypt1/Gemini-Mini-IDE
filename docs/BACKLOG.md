@@ -37,12 +37,12 @@
 - ✅ **3.10 HU-LLM-Response-Schema**: Schema JSON de saída.
 
 ## 4. Épico E-Consolidator: Extração de Artefatos
-- 📅 **4.1 HU-Consolidator-Parse**: Parser robusto.
-- 📅 **4.2 HU-Consolidator-Extract-HUs**: Markdown generator.
-- 📅 **4.3 HU-Consolidator-Extract-Code**: Code generator.
+- ✅ **4.1 HU-Consolidator-Parse**: Parser robusto.
+- ✅ **4.2 HU-Consolidator-Extract-HUs**: Markdown generator.
+- ✅ **4.3 HU-Consolidator-Extract-Code**: Code generator.
 - 📅 **4.4 HU-Consolidator-Extract-Tests**: Test generator.
 - 📅 **4.5 HU-Consolidator-Extract-Docs**: Docs generator.
-- 📅 **4.6 HU-Consolidator-Extract-Scripts**: Script generator.
+- ✅ **4.6 HU-Consolidator-Extract-Scripts**: Script generator.
 
 ## 5. Épico E-Quality: Validação & Gates
 - 📅 **5.1 HU-Quality-Unit-Tests**: Coverage enforcement.
@@ -63,14 +63,14 @@
 ## 8. Épico E-UI: Interface do Usuário
 - 📅 **8.1 HU-UI-Chat**: Interface dedicada de chat.
 - 📅 **8.2 HU-UI-Results**: Tela de resultados detalhada.
-- 📅 **8.3 HU-UI-Settings**: Tela de configurações.
+- ✅ **8.3 HU-UI-Settings**: Tela de configurações.
 
 ## 9. Épico E-UI-Explore: Interface Explorar
 - ✅ **9.1 HU-UI-Explore-Mode-001**: Layout base.
 - ✅ **9.2 HU-UI-Discovery-Notes-002**: Painel lateral (Estrutura).
 - ✅ **9.3 HU-UI-Timeline-003**: Componente Timeline.
 - ✅ **9.4 HU-UI-Tabs-004**: Sistema de Abas.
-- 📅 **9.5 HU-UI-Export-005**: Botão Exportar.
+- ✅ **9.5 HU-UI-Export-005**: Botão Exportar.
 - ✅ **9.6 HU-UI-Project-Creation-006**: Wizard de criação.
 - 📅 **9.7 HU-UI-RealTime-Preview-007**: Preview de código.
 - 📅 **9.8 HU-UI-Theme-System-008**: Temas.
@@ -113,3 +113,10 @@
 - ✅ **13.3 HU-UI-Analyze-Playground**: Chat integrado.
 - ✅ **13.4 HU-UI-Analyze-Contract-Guard**: Validação TS.
 - ✅ **13.5 HU-UI-Analyze-Result-History**: Painel Histórico.
+
+## 14. Épico E-Experience: Usabilidade & Segurança (Fase 12)
+- 📅 **14.1 HU-Sec-API-Key-Handling-001**: Tráfego seguro de API Key (Bearer Token).
+- 📅 **14.2 HU-UI-QuickStart-Revamp-020**: Galeria de Templates/Início amigável.
+- 📅 **14.3 HU-UI-Explore-Tour-019**: Tour guiado (Onboarding).
+- 📅 **14.4 HU-Gov-User-Manual-001**: Manual do usuário integrado.
+- 📅 **14.5 HU-UI-Settings-Models-021**: Seletor de modelos avançado.

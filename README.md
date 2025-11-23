@@ -33,3 +33,8 @@ pnpm --filter @mini-ide/ui dev
 # Terminal 3
 node packages/cli/dist/index.js analyze "Criar um CRUD"
 ```
+
+### 🆕 Novidades da Versão v0.11.0
+- **Exportação de Projetos (.zip):** Baixe todo o código gerado, documentação e scripts em um clique.
+- **Painel de Configurações:** Configure sua API Key (DeepSeek/OpenAI) diretamente na interface.
+- **Backend Estabilizado:** Correção completa de dependências Fastify e Pipeline de CI local.
