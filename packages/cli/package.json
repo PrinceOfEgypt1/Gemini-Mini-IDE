@@ -21,7 +21,7 @@
     "ora": "^9.0.0"
   },
   "bin": {
-    "mini-ide": "./dist/index.js"
+    "mini-ide": "./dist/src/index.js"
   },
   "exports": {
     ".": {

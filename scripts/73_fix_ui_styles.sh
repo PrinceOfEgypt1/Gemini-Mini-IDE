@@ -1,3 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚑 Sprint 10.6: Restaurando camada visual (CSS Global e Entry Point)..."
+
+# 1. Restaurar global.css (Versão Completa e Limpa)
+# -----------------------------------------------------
+echo "🎨 Reescrevendo packages/ui/src/styles/global.css..."
+mkdir -p packages/ui/src/styles
+
+cat > packages/ui/src/styles/global.css <<EOF
 :root {
   /* Paleta de Cores (Dark Mode Default) */
   --bg: #0f1420;
@@ -153,3 +164,31 @@ body {
 .toast {
   animation: slideIn 0.3s ease-out;
 }
+EOF
+
+# 2. Restaurar main.tsx (Garantir importação do CSS)
+# -----------------------------------------------------
+echo "⚛️ Restaurando packages/ui/src/main.tsx..."
+cat > packages/ui/src/main.tsx <<EOF
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './styles/global.css'; // OBRIGATÓRIO: Importa o CSS que acabamos de criar
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
+EOF
+
+# 3. Limpar Cache do Vite
+# -----------------------------------------------------
+echo "🧹 Limpando cache do Vite..."
+rm -rf packages/ui/node_modules/.vite
+
+echo "✅ Restauração Visual Concluída."
+echo "👉 Por favor:"
+echo "   1. Pare o processo do frontend (Ctrl+C no Terminal 2)."
+echo "   2. Rode 'pnpm --filter @mini-ide/ui dev' novamente."
+echo "   3. Recarregue a página no navegador (F5)."

@@ -1,7 +1,7 @@
 # Mini-IDE — Manual de Engenharia
 
 > **Versão do Documento: 5.6 (Phase 10 Done)
-> **Versão do Software: v0.10.0 (Project Wizard)
+> **Versão do Software: v0.10.1 (Wizard Stable)
 > **Data: 2025-11-22
 > **Pipeline:** 🟢 Verde (Lint, Types, Tests, Build, Smoke)
 
