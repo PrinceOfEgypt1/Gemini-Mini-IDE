@@ -117,3 +117,12 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 - [ ] **12.4** HU-Quality-Coverage-Thresholds
 - [ ] **12.5** HU-Quality-E2E-Flow
 - [ ] **12.6** HU-Server-Metrics-Observability
+
+### 🚧 Fase 12: Experiência do Usuário & Segurança (Em Andamento)
+**Objetivo:** Polir a usabilidade para novos usuários e garantir segurança no tráfego de credenciais.
+- **Planejamento (Sprint 12.1):**
+    - [ ] **14.1** Segurança de API Key (Headers vs LocalStorage).
+    - [ ] **14.2** Novo fluxo de Quick Start (Templates).
+    - [ ] **14.3** Tour Guiado (Driver.js ou similar).
+    - [ ] **14.4** Manual do Usuário integrado.
+    - [ ] **14.5** Suporte a múltiplos modelos LLM.
