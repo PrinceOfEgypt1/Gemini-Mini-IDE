@@ -1,6 +1,6 @@
 # Backlog de Histórias de Usuário — Mini-IDE
 
-**Status Geral:** 79 HUs Totais.
+**Status Geral:** 84 HUs Totais.
 
 ## Legenda
 - ✅ **Concluído**: Implementado e testado.
@@ -26,14 +26,7 @@
 
 ## 3. Épico E-LLM: Orquestração 8 Personas
 - ✅ **3.1 HU-LLM-Client-DeepSeek**: Cliente HTTP (com Mock fallback).
-- ✅ **3.2 HU-LLM-Persona-Analysis**: Persona Analista.
-- ✅ **3.3 HU-LLM-Persona-Product**: Persona Produto.
-- ✅ **3.4 HU-LLM-Persona-Architect**: Persona Arquiteto.
-- ✅ **3.5 HU-LLM-Persona-Engine**: Persona Engenheiro.
-- ✅ **3.6 HU-LLM-Persona-UX**: Persona UX.
-- ✅ **3.7 HU-LLM-Persona-Quality**: Persona QA.
-- ✅ **3.8 HU-LLM-Persona-Ops**: Persona DevOps.
-- ✅ **3.9 HU-LLM-Persona-Fenix**: Consolidador.
+- ✅ **3.2 a 3.9**: Personas (Analysis, Product, Architect, Engine, UX, Quality, Ops, Fenix).
 - ✅ **3.10 HU-LLM-Response-Schema**: Schema JSON de saída.
 
 ## 4. Épico E-Consolidator: Extração de Artefatos
@@ -57,28 +50,21 @@
 
 ## 7. Épico E-CLI: Interface de Linha de Comando
 - ✅ **7.1 HU-CLI-Analyze**: Comando básico.
-- ✅ **7.2 HU-CLI-Config**: Configuração local (básica implementada).
+- ✅ **7.2 HU-CLI-Config**: Configuração local.
 - 📅 **7.3 HU-CLI-Workspace**: Gestão de múltiplos workspaces.
 
 ## 8. Épico E-UI: Interface do Usuário
 - 📅 **8.1 HU-UI-Chat**: Interface dedicada de chat.
 - 📅 **8.2 HU-UI-Results**: Tela de resultados detalhada.
-- ✅ **8.3 HU-UI-Settings**: Tela de configurações.
+- ✅ **8.3 HU-UI-Settings**: Tela de configurações (API Key).
 
 ## 9. Épico E-UI-Explore: Interface Explorar
-- ✅ **9.1 HU-UI-Explore-Mode-001**: Layout base.
-- ✅ **9.2 HU-UI-Discovery-Notes-002**: Painel lateral (Estrutura).
-- ✅ **9.3 HU-UI-Timeline-003**: Componente Timeline.
-- ✅ **9.4 HU-UI-Tabs-004**: Sistema de Abas.
-- ✅ **9.5 HU-UI-Export-005**: Botão Exportar.
+- ✅ **9.1 a 9.4**: Layout base, Discovery Notes, Timeline, Tabs.
+- ✅ **9.5 HU-UI-Export-005**: Botão Exportar (.zip).
 - ✅ **9.6 HU-UI-Project-Creation-006**: Wizard de criação.
 - 📅 **9.7 HU-UI-RealTime-Preview-007**: Preview de código.
 - 📅 **9.8 HU-UI-Theme-System-008**: Temas.
-- ✅ **9.9 HU-UI-Explore-Primary-Actions-009**: Botões Header.
-- ✅ **9.10 HU-UI-Explore-Chat-Flow-010**: Fluxo Chat->Timeline.
-- ✅ **9.11 HU-UI-Explore-Tabs-Minimum-Content-011**: Placeholders.
-- ✅ **9.12 HU-UI-Explore-Interactions-012**: Feedback Visual.
-- ✅ **9.13 HU-UI-Explore-Empty-States-013**: Estados vazios.
+- ✅ **9.9 a 9.13**: Ações, Fluxo Chat, Placeholders, Interações, Empty States.
 - 📅 **9.14 HU-UI-Explore-Keyboard-Nav-014**: Acessibilidade Teclado.
 - 📅 **9.15 HU-UI-Explore-Accessibility-015**: Acessibilidade Screen Reader.
 - ✅ **9.16 HU-UI-Explore-Error-Handling-016**: Toasts de erro.
@@ -86,10 +72,7 @@
 - 📅 **9.18 HU-UI-Explore-Micro-Interactions-018**: Animações finas.
 
 ## 10. Épico E-Flow: Fluxo de Descoberta
-- ✅ **10.1 HU-MINI-IDE-Discovery-001**: Geração de HUs.
-- ✅ **10.2 HU-MINI-IDE-Discovery-002**: Aprovação de HUs.
-- ✅ **10.3 HU-MINI-IDE-Env-003**: Solicitação de diretório.
-- ✅ **10.4 HU-MINI-IDE-Env-004**: Scripts de ambiente.
+- ✅ **10.1 a 10.4**: Geração HUs, Aprovação, Diretório, Scripts.
 - 📅 **10.5 HU-MINI-IDE-Planning-005**: Planejamento.
 - 📅 **10.6 HU-MINI-IDE-Dev-006**: Desenvolvimento.
 - ✅ **10.7 HU-MINI-IDE-Gen-Quality-007**: Script de Pipeline para Usuário.
@@ -108,103 +91,11 @@
 - 📅 **12.6 HU-Server-Metrics-Observability**: Prometheus.
 
 ## 13. Épico E-UI-Backend-Bridge
-- ✅ **13.1 HU-UI-Server-BaseURL-Config**: Proxy.
-- ✅ **13.2 HU-UI-Healthz-Status-Indicator**: Indicador Visual.
-- ✅ **13.3 HU-UI-Analyze-Playground**: Chat integrado.
-- ✅ **13.4 HU-UI-Analyze-Contract-Guard**: Validação TS.
-- ✅ **13.5 HU-UI-Analyze-Result-History**: Painel Histórico.
+- ✅ **13.1 a 13.5**: Proxy, Status, Playground, Contract Guard, History.
 
-## 14. Épico E-Experience: Usabilidade & Segurança (Fase 12)
-- 📅 **14.1 HU-Sec-API-Key-Handling-001**: Tráfego seguro de API Key (Bearer Token).
-- 📅 **14.2 HU-UI-QuickStart-Revamp-020**: Galeria de Templates/Início amigável.
-- 📅 **14.3 HU-UI-Explore-Tour-019**: Tour guiado (Onboarding).
-- 📅 **14.4 HU-Gov-User-Manual-001**: Manual do usuário integrado.
-- 📅 **14.5 HU-UI-Settings-Models-021**: Seletor de modelos avançado.
-
----
-
-## Detalhamento da Fase 12: Experiência do Usuário & Segurança
-
-### 14.1 HU-Sec-API-Key-Handling-001 - Segurança no Tráfego da API Key
-**Identificação**
-- **ID:** HU-Sec-API-Key-Handling-001
-- **Épico:** E-Hardening
-- **Prioridade:** P0 (Crítica)
-- **Sprint:** 12.1
-
-**História de Usuário**
-Como usuário consciente de segurança
-Quero que minha API Key seja enviada de forma segura ao backend
-Para garantir que ela não vaze em logs ou interceptações indevidas.
-
-**Critérios de Aceite**
-- [ ] O Frontend deve enviar a chave no Header `Authorization: Bearer sk-...`.
-- [ ] O Backend deve ler a chave do header e usá-la apenas para instanciar o cliente LLM.
-- [ ] O Backend deve ter filtros de log configurados para **nunca** escrever o conteúdo do header Authorization no terminal ou arquivos de log.
-
-### 14.2 HU-UI-QuickStart-Revamp-020 - Refatoração do Quick Start
-**Identificação**
-- **ID:** HU-UI-QuickStart-Revamp-020
-- **Épico:** E-UI-Explore
-- **Prioridade:** P1
-- **Sprint:** 12.1
-
-**História de Usuário**
-Como usuário iniciante
-Quero que o botão Quick Start abra um guia de exemplos ou templates (ex: "Criar API", "Criar Frontend")
-Para que eu não precise começar do zero ou configurar pastas antes de saber o que quero.
-
-**Critérios de Aceite**
-- [ ] Remover o link direto do botão "Quick Start" para o modal "Novo Projeto".
-- [ ] O botão deve abrir uma galeria de "Prompt Templates" ou iniciar o Tour Guiado.
-
-### 14.3 HU-UI-Explore-Tour-019 - Tour Guiado (Onboarding)
-**Identificação**
-- **ID:** HU-UI-Explore-Tour-019
-- **Épico:** E-UI-Explore
-- **Prioridade:** P1
-- **Sprint:** 12.1
-
-**História de Usuário**
-Como usuário novo na Mini-IDE
-Quero um tour interativo que destaque as principais áreas (Chat, Abas, Settings)
-Para entender o fluxo de trabalho sem precisar ler documentação externa imediatamente.
-
-**Critérios de Aceite**
-- [ ] Ao abrir a aplicação pela primeira vez, perguntar se deseja fazer o tour.
-- [ ] O tour deve destacar sequencialmente: 1. Chat (onde tudo começa), 2. Abas de Contexto (onde o plano aparece), 3. Settings (onde configura a IA).
-- [ ] Deve haver um botão visível "Reiniciar Tour" na área de ajuda ou settings.
-
-### 14.4 HU-Gov-User-Manual-001 - Manual do Usuário Didático
-**Identificação**
-- **ID:** HU-Gov-User-Manual-001
-- **Épico:** E-Governança
-- **Prioridade:** P1
-- **Sprint:** 12.1
-
-**História de Usuário**
-Como usuário da ferramenta
-Quero acessar um manual didático integrado ("Como funciona")
-Para saber exatamente o que a ferramenta pode fazer e o que não pode.
-
-**Critérios de Aceite**
-- [ ] Criar uma aba ou modal "Ajuda/Manual" na interface.
-- [ ] Explicar visualmente o fluxo: Conversa -> Plano -> Aprovação -> Código.
-- [ ] Seção clara de "Limitações" (ex: tamanho de contexto, linguagens suportadas).
-
-### 14.5 HU-UI-Settings-Models-021 - Expansão de Modelos LLM
-**Identificação**
-- **ID:** HU-UI-Settings-Models-021
-- **Épico:** E-UI-Settings
-- **Prioridade:** P2
-- **Sprint:** 12.1
-
-**História de Usuário**
-Como usuário avançado
-Quero selecionar entre uma lista maior de modelos (Claude 3.5 Sonnet, GPT-4o, Gemini 1.5 Pro)
-Para utilizar a inteligência que melhor se adapta ao meu custo/benefício.
-
-**Critérios de Aceite**
-- [ ] Dropdown de modelos deve incluir: DeepSeek-V3, GPT-4o, Claude 3.5 Sonnet, Gemini 1.5 Pro.
-- [ ] Permitir inserção de "Base URL" customizada (para suportar Ollama/LocalAI).
-
+## 14. Épico E-Experience: Usabilidade & Segurança
+- 📅 **14.1 HU-Sec-API-Key-Handling-001**: Segurança no Tráfego da API Key.
+- 📅 **14.2 HU-UI-QuickStart-Revamp-020**: Refatoração do Quick Start.
+- 📅 **14.3 HU-UI-Explore-Tour-019**: Tour Guiado (Onboarding).
+- 📅 **14.4 HU-Gov-User-Manual-001**: Manual do Usuário Didático.
+- 📅 **14.5 HU-UI-Settings-Models-021**: Expansão de Modelos LLM.

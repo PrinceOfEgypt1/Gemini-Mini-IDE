@@ -1,7 +1,7 @@
 # Mini-IDE — Manual de Engenharia
 
-> **Versão do Documento:** 6.0 (Phase 10 Complete)
-> **Versão do Software:** v0.11.0 (Export Stable) (Wizard Stable)
+> **Versão do Documento:** 7.0 (Phase 11 Complete)
+> **Versão do Software:** v0.11.0 (Export Stable)
 > **Data:** 2025-11-23
 > **Pipeline:** 🟢 Verde (Lint, Types, Tests, Build, Smoke)
 
@@ -56,51 +56,42 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 ### ✅ Fase 9: Orquestração de Personas (O Cérebro)
 **Objetivo:** Implementar lógica de IA complexa (Chain of Thought).
 - **Artefatos:**
-    - `analysis-agent/src/personas/base-persona.ts` (Classe Abstrata).
     - `analysis-agent/src/personas/*.ts` (8 classes especializadas).
-    - `MockProvider` atualizado para simulação inteligente.
-- **HUs:** 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9.
+- **HUs:** 3.2 a 3.9.
 
 ### ✅ Fase 10: Fluxo de Engenharia (Wizard)
-**Objetivo:** Implementar o "Golden Path" de criação de projetos (Intenção -> HUs -> Scripts).
+**Objetivo:** Implementar o "Golden Path" de criação de projetos.
 - **Artefatos:**
-    - `analysis-agent/src/services/discovery-service.ts` (Gera HUs).
-    - `analysis-agent/src/services/generator-service.ts` (Gera scripts Bash).
-    - `ui/src/components/wizard/ProjectWizard.tsx` (Interface Modal).
-- **HUs:** 9.6, 9.7, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7.
-
----
-
+    - `analysis-agent/src/services/discovery-service.ts`.
+    - `ui/src/components/wizard/ProjectWizard.tsx`.
+- **HUs:** 9.6, 10.1 a 10.4, 10.7.
 
 ### ✅ Fase 11: Consolidação e Exportação (A Fábrica)
 **Objetivo:** Materializar o projeto em arquivos reais e permitir download.
 - **Artefatos:**
-    - `analysis-agent/.../consolidator-service.ts` (Motor de geração de arquivos).
-    - `server/.../export.controller.ts` (Endpoint de streaming ZIP).
-    - `ui/.../SettingsModal.tsx` (Gestão de API Key).
-    - `scripts/127_fix_cors_brute_force.sh` (Hardening de ambiente dev).
-- **HUs Entregues:** 4.1, 4.2, 4.3, 4.6, 8.3, 9.5.
-- **Status:** Pipeline Verde, Exportação .zip funcional.
+    - `analysis-agent/src/services/consolidator-service.ts` (Motor de geração).
+    - `server/src/controllers/export.controller.ts` (Endpoint ZIP).
+    - `ui/src/components/settings/SettingsModal.tsx` (Configuração).
+- **HUs Entregues:**
+    - **4.1, 4.2, 4.3, 4.6** (Core do Consolidador)
+    - **8.3** (Settings/API Key UI)
+    - **9.5** (Exportação na UI)
+
+---
+
 ## 2. Roadmap Futuro (Backlog Pendente)
 
-### 📅 Fase 11: Consolidação e Exportação
-**Objetivo:** Transformar o plano abstrato em arquivos de código reais (.zip).
-- [ ] **4.1** HU-Consolidator-Parse
-- [ ] **4.2** HU-Consolidator-Extract-HUs
-- [ ] **4.3** HU-Consolidator-Extract-Code
-- [ ] **4.4** HU-Consolidator-Extract-Tests
-- [ ] **4.5** HU-Consolidator-Extract-Docs
-- [ ] **4.6** HU-Consolidator-Extract-Scripts
-- [ ] **9.5** HU-UI-Export-005
+### 📅 Fase 12: Experiência do Usuário & Segurança
+**Objetivo:** Polir a usabilidade para novos usuários e garantir segurança no tráfego de credenciais.
+- **HUs Planejadas:**
+    - [ ] **14.1** HU-Sec-API-Key-Handling-001 (Segurança Headers).
+    - [ ] **14.2** HU-UI-QuickStart-Revamp-020 (Templates).
+    - [ ] **14.3** HU-UI-Explore-Tour-019 (Tour Guiado).
+    - [ ] **14.4** HU-Gov-User-Manual-001 (Manual Integrado).
+    - [ ] **14.5** HU-UI-Settings-Models-021 (Seleção de Modelos).
 
-### 📅 Fase 12: CLI Avançada
-**Objetivo:** Power User Features.
-- [ ] **7.3** HU-CLI-Workspace
-- [ ] **8.1** HU-UI-Chat
-- [ ] **8.3** HU-UI-Settings
-
-### 📅 Fase 13: Acessibilidade e Polimento
-**Objetivo:** WCAG Compliance.
+### 📅 Fase 13: Acessibilidade e Polimento Visual
+**Objetivo:** WCAG Compliance e Micro-interações.
 - [ ] **9.8** HU-UI-Theme-System-008
 - [ ] **9.14** HU-UI-Explore-Keyboard-Nav-014
 - [ ] **9.15** HU-UI-Explore-Accessibility-015
@@ -117,12 +108,3 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 - [ ] **12.4** HU-Quality-Coverage-Thresholds
 - [ ] **12.5** HU-Quality-E2E-Flow
 - [ ] **12.6** HU-Server-Metrics-Observability
-
-### 🚧 Fase 12: Experiência do Usuário & Segurança (Em Andamento)
-**Objetivo:** Polir a usabilidade para novos usuários e garantir segurança no tráfego de credenciais.
-- **Planejamento (Sprint 12.1):**
-    - [ ] **14.1** Segurança de API Key (Headers vs LocalStorage).
-    - [ ] **14.2** Novo fluxo de Quick Start (Templates).
-    - [ ] **14.3** Tour Guiado (Driver.js ou similar).
-    - [ ] **14.4** Manual do Usuário integrado.
-    - [ ] **14.5** Suporte a múltiplos modelos LLM.
