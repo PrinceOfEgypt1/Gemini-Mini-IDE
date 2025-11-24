@@ -1,7 +1,7 @@
 # Mini-IDE — Manual de Engenharia
 
-> **Versão do Documento:** 7.0 (Phase 11 Complete)
-> **Versão do Software:** v0.12.0 (UX Versão do Software:** v0.11.0 (Export Stable) Security)
+> **Versão do Documento:** 8.0 (Phase 12 Cleaned)
+> **Versão do Software:** v0.12.1 (UX Polish)
 > **Data:** 2025-11-23
 > **Pipeline:** 🟢 Verde (Lint, Types, Tests, Build, Smoke)
 
@@ -72,13 +72,8 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
     - `analysis-agent/src/services/consolidator-service.ts` (Motor de geração).
     - `server/src/controllers/export.controller.ts` (Endpoint ZIP).
     - `ui/src/components/settings/SettingsModal.tsx` (Configuração).
-- **HUs Entregues:**
-    - **4.1, 4.2, 4.3, 4.6** (Core do Consolidador)
-    - **8.3** (Settings/API Key UI)
-    - **9.5** (Exportação na UI)
-
----
-
+    - `scripts/127_fix_cors_brute_force.sh` (Hardening de ambiente dev).
+- **HUs Entregues:** 4.1, 4.2, 4.3, 4.6, 8.3, 9.5.
 
 ### ✅ Fase 12: Experiência do Usuário & Segurança (Produto)
 **Objetivo:** Transformar a ferramenta técnica em um produto amigável e seguro.
@@ -86,22 +81,17 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
     - `ui/.../services/tour.ts` (Driver.js integration).
     - `ui/.../help/HelpModal.tsx` (Manual Markdown).
     - `ui/.../wizard/QuickStartGallery.tsx` (Templates).
-    - `scripts/140_implement_secure_apikey_flow.sh` (Security Middleware).
     - `ui/.../utils/discoveryParser.ts` (Lógica Regex Local).
+    - `scripts/140_implement_secure_apikey_flow.sh` (Security Middleware).
 - **HUs Entregues:** 14.1, 14.2, 14.3, 14.4, 14.5.
 - **Status:** Onboarding completo, API Key segura, Múltiplos Modelos.
+
+---
+
 ## 2. Roadmap Futuro (Backlog Pendente)
 
-### 📅 Fase 12: Experiência do Usuário & Segurança
-**Objetivo:** Polir a usabilidade para novos usuários e garantir segurança no tráfego de credenciais.
-- [x] **14.1** HU-Sec-API-Key-Handling-001 (Segurança Headers).
-- [x] **14.2** HU-UI-QuickStart-Revamp-020 (Templates).
-- [x] **14.3** HU-UI-Explore-Tour-019 (Tour Guiado).
-- [x] **14.4** HU-Gov-User-Manual-001 (Manual Integrado).
-- [x] **14.5** HU-UI-Settings-Models-021 (Seleção de Modelos).
-
-### 📅 Fase 13: Acessibilidade e Polimento Visual
-**Objetivo:** WCAG Compliance e Micro-interações.
+### 📅 Fase 13: Acessibilidade e Polimento Visual (Próxima)
+**Objetivo:** WCAG Compliance, Micro-interações e suporte total a temas.
 - [ ] **9.8** HU-UI-Theme-System-008
 - [ ] **9.14** HU-UI-Explore-Keyboard-Nav-014
 - [ ] **9.15** HU-UI-Explore-Accessibility-015
