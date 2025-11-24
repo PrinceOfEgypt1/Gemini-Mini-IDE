@@ -1,3 +1,101 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🎓 [Phase 12] Implementando Tour Guiado (Driver.js)..."
+
+UI_DIR="packages/ui"
+
+# ==============================================================================
+# 1. Instalar driver.js
+# Biblioteca leve para highlights na tela
+# ==============================================================================
+echo "📦 Instalando driver.js no pacote UI..."
+pnpm --filter @mini-ide/ui add driver.js
+
+# ==============================================================================
+# 2. Criar Serviço de Tour
+# Centraliza a configuração dos passos e textos
+# ==============================================================================
+mkdir -p $UI_DIR/src/services
+echo "📝 Criando packages/ui/src/services/tour.ts..."
+
+cat > $UI_DIR/src/services/tour.ts <<EOF
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
+
+export const startOnboardingTour = () => {
+  const tourDriver = driver({
+    showProgress: true,
+    animate: true,
+    nextBtnText: 'Próximo →',
+    prevBtnText: '← Anterior',
+    doneBtnText: 'Concluir',
+    steps: [
+      { 
+        element: '#btnQuickStart', 
+        popover: { 
+          title: 'Comece por aqui', 
+          description: 'Use o Quick Start para acessar templates prontos ou rever este tour a qualquer momento.', 
+          side: 'bottom', 
+          align: 'end' 
+        } 
+      },
+      { 
+        element: 'footer textarea', 
+        popover: { 
+          title: 'Descreva sua ideia', 
+          description: 'Digite o que você quer criar em linguagem natural. O Agente vai analisar e propor um plano.', 
+          side: 'top', 
+          align: 'start' 
+        } 
+      },
+      { 
+        element: '.tabs', // Classe do container de abas
+        popover: { 
+          title: 'Acompanhe o progresso', 
+          description: 'Navegue pelas abas para ver as Histórias de Usuário, Documentação e o Código gerado.', 
+          side: 'bottom', 
+          align: 'start' 
+        } 
+      },
+      { 
+        element: 'aside button:has(text="Preferências")', // Seletor mais específico se possível, ou usar ID
+        popover: { 
+          title: 'Configure sua IA', 
+          description: 'Não esqueça de configurar sua API Key (DeepSeek/OpenAI) nas Preferências antes de começar.', 
+          side: 'left', 
+          align: 'start' 
+        } 
+      },
+      { 
+        element: '#btnExportZIP', // Botão de exportar na aba Outputs (precisa estar visível ou o driver pula)
+        popover: { 
+          title: 'Exporte o resultado', 
+          description: 'Ao final, baixe todo o projeto gerado em um arquivo .zip pronto para uso.', 
+          side: 'top', 
+          align: 'end' 
+        } 
+      }
+    ],
+    onDestroyStarted: () => {
+      // Opcional: Salvar no localStorage que o usuário já viu o tour
+      localStorage.setItem('mini-ide-tour-seen', 'true');
+      // Força a destruição para evitar artefatos visuais
+      tourDriver.destroy();
+    },
+  });
+
+  tourDriver.drive();
+};
+EOF
+
+# ==============================================================================
+# 3. Atualizar App.tsx para usar o Tour
+# Adicionamos IDs nos elementos para facilitar o Driver.js e conectamos a função
+# ==============================================================================
+echo "🔄 Atualizando packages/ui/src/App.tsx com IDs e chamada do Tour..."
+
+cat > packages/ui/src/App.tsx <<EOF
 import { useState, useEffect } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
@@ -6,7 +104,6 @@ import { Button } from './components/Button';
 import { ProjectWizard } from './components/wizard/ProjectWizard';
 import { QuickStartGallery } from './components/wizard/QuickStartGallery';
 import { SettingsModal } from './components/settings/SettingsModal';
-import { HelpModal } from './components/help/HelpModal'; // NOVO
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { api } from './services/api';
 import { startOnboardingTour } from './services/tour';
@@ -19,11 +116,12 @@ const MainLayout = () => {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isQuickStartOpen, setIsQuickStartOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false); // NOVO
   
+  // Estados de Processamento
   const [isExporting, setIsExporting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
+  // Chat
   const [chatInput, setChatInput] = useState('');
   const [chatHistory, setChatHistory] = useState<Array<{role: 'user' | 'agent', text: string}>>([
     { role: 'agent', text: 'Olá! Estou pronto para ajudar. Configure sua API Key em "Preferências" para começarmos.' }
@@ -31,10 +129,14 @@ const MainLayout = () => {
 
   const [mode] = useState<'Explorando' | 'Executando'>('Explorando');
 
+  // Verificar se é a primeira vez do usuário (Auto-start tour)
   useEffect(() => {
     const hasSeenTour = localStorage.getItem('mini-ide-tour-seen');
     if (!hasSeenTour) {
+      // Pequeno delay para garantir que a UI carregou
       setTimeout(() => {
+        // Opcional: Perguntar antes ou iniciar direto. Vamos iniciar direto para engajamento.
+        // Mas só se não houver modais abertos.
         if (!isQuickStartOpen) startOnboardingTour();
       }, 1500);
     }
@@ -65,12 +167,12 @@ const MainLayout = () => {
     setIsAnalyzing(true);
     try {
       const response = await api.analyze(userMsg);
-      const agentText = `Análise concluída! (ID: ${response.requestId}).\nResumo: ${response.summary}`;
+      const agentText = \`Análise concluída! (ID: \${response.requestId}).\nResumo: \${response.summary}\`;
       setChatHistory(prev => [...prev, { role: 'agent', text: agentText }]);
       showToast('Análise recebida do servidor!', 'success');
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : 'Erro desconhecido';
-      setChatHistory(prev => [...prev, { role: 'agent', text: `Erro: ${errMsg}` }]);
+      setChatHistory(prev => [...prev, { role: 'agent', text: \`Erro: \${errMsg}\` }]);
       showToast(errMsg, 'error');
     } finally {
       setIsAnalyzing(false);
@@ -87,13 +189,16 @@ const MainLayout = () => {
     if (textarea) textarea.focus();
   };
 
+  // Implementação da HU-UI-Explore-Tour-019
   const handleStartTour = () => {
+    // Fecha a galeria se estiver aberta para o tour rodar na tela principal
     setIsQuickStartOpen(false);
     setTimeout(() => startOnboardingTour(), 300);
   };
 
   return (
     <div className="h-screen grid grid-rows-[56px_1fr_auto] bg-[#0f1420] text-[#e6ecff] font-sans overflow-hidden">
+      {/* Header */}
       <header className="flex items-center gap-3 px-4 bg-[#141b2b]/90 border-b border-[#24304a] shadow-lg z-10 backdrop-blur-sm">
         <div className="font-bold text-lg tracking-tight">Mini IDE</div>
         <span className="px-2.5 py-1 rounded-full bg-[#222b40] border border-[#24304a] text-[#9fb0d3] text-xs font-medium">Analysis Agent</span>
@@ -101,18 +206,10 @@ const MainLayout = () => {
         
         <div className="flex-1" />
         
-        <div className="flex gap-2.5 items-center">
+        <div className="flex gap-2.5">
           <Button variant="ghost" onClick={() => setIsWizardOpen(true)}>Criar Projeto</Button>
+          {/* ID adicionado para o Tour */}
           <Button id="btnQuickStart" variant="ghost" onClick={() => setIsQuickStartOpen(true)}>Quick Start</Button>
-          
-          {/* Botão de Ajuda NOVO */}
-          <button 
-            onClick={() => setIsHelpOpen(true)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-[#222b40] border border-[#24304a] text-[#9fb0d3] hover:text-white hover:border-[#4ba3ff] transition-all font-bold"
-            title="Manual do Usuário"
-          >
-            ?
-          </button>
         </div>
       </header>
 
@@ -151,6 +248,7 @@ const MainLayout = () => {
             {activeTab === 'outputs' && (
               <div className="flex flex-col items-center justify-center h-full gap-4">
                 <div className="text-[#9fb0d3]">Artefatos prontos para download.</div>
+                {/* ID adicionado para o Tour */}
                 <Button id="btnExportZIP" onClick={handleExportZip} disabled={isExporting}>
                   {isExporting ? 'Gerando ZIP...' : 'Exportar Projeto (.zip)'}
                 </Button>
@@ -165,6 +263,7 @@ const MainLayout = () => {
             <div className="flex gap-2">
               <span className="text-[10px] bg-[#222b40] px-2 py-0.5 rounded-full text-[#9fb0d3]">R$ 0,00</span>
             </div>
+            {/* ID adicionado para o Tour. Nota: O driver.js usa seletores CSS, então precisamos garantir que seja unico */}
             <button 
               id="btnPreferences"
               onClick={() => setIsSettingsOpen(true)}
@@ -175,8 +274,8 @@ const MainLayout = () => {
           </div>
           <div className="flex-1 bg-[#101727] border border-[#24304a] rounded-lg p-3 overflow-auto text-sm space-y-3">
             {chatHistory.map((msg, idx) => (
-              <div key={idx} className={`p-3 rounded-lg border ${msg.role === 'agent' ? 'bg-[#0f1420] border-[#24304a]/50' : 'bg-[#222b40] border-[#4ba3ff]/20'}`}>
-                <strong className={`block text-xs mb-1 ${msg.role === 'agent' ? 'text-[#4ba3ff]' : 'text-[#47e6a1]'}`}>
+              <div key={idx} className={\`p-3 rounded-lg border \${msg.role === 'agent' ? 'bg-[#0f1420] border-[#24304a]/50' : 'bg-[#222b40] border-[#4ba3ff]/20'}\`}>
+                <strong className={\`block text-xs mb-1 \${msg.role === 'agent' ? 'text-[#4ba3ff]' : 'text-[#47e6a1]'}\`}>
                   {msg.role === 'agent' ? 'Agente' : 'Você'}
                 </strong>
                 <div className="whitespace-pre-wrap">{msg.text}</div>
@@ -211,7 +310,6 @@ const MainLayout = () => {
         onStartTour={handleStartTour}
       />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </div>
   );
 };
@@ -225,3 +323,15 @@ function App() {
 }
 
 export default App;
+EOF
+
+# ==============================================================================
+# 4. Validação
+# ==============================================================================
+echo "🛡️  Validando Build..."
+pnpm --filter @mini-ide/ui build
+
+echo "✅ Tour Guiado implementado com sucesso!"
+EOF
+
+chmod +x scripts/143_implement_guided_tour.sh

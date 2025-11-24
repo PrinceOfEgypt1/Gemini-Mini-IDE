@@ -1,3 +1,148 @@
+#!/usr/bin/env bash
+set -e
+
+echo "📚 [Phase 12] Implementando Manual do Usuário Integrado..."
+
+UI_DIR="packages/ui"
+
+# ==============================================================================
+# 1. Instalar react-markdown
+# Para renderizar o manual com formatação rica e segura
+# ==============================================================================
+echo "📦 Instalando react-markdown..."
+pnpm --filter @mini-ide/ui add react-markdown
+
+# ==============================================================================
+# 2. Criar o Conteúdo e o Modal de Ajuda
+# ==============================================================================
+mkdir -p $UI_DIR/src/components/help
+echo "📝 Criando packages/ui/src/components/help/HelpModal.tsx..."
+
+cat > $UI_DIR/src/components/help/HelpModal.tsx <<EOF
+import React from 'react';
+import Markdown from 'react-markdown';
+import { Button } from '../Button';
+
+interface HelpModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const MANUAL_CONTENT = \`
+# Manual da Mini-IDE
+
+Bem-vindo! A Mini-IDE é um **Agente de Engenharia de Software** projetado para transformar ideias em código estruturado.
+
+## 🚀 Como Funciona
+
+O fluxo de trabalho é dividido em 3 etapas principais:
+
+1.  **Exploração (Chat):**
+    - Converse com o agente. Descreva sua ideia ("Quero um sistema de login").
+    - O agente coleta requisitos automaticamente no painel **Discovery Notes**.
+    
+2.  **Planejamento (Abas):**
+    - O agente gera Histórias de Usuário (HUs) e Documentação Técnica.
+    - Você pode revisar tudo nas abas **HUs**, **Docs** e **Timeline**.
+
+3.  **Materialização (Exportação):**
+    - Quando estiver satisfeito, clique em **Exportar Projeto (.zip)** na aba **Outputs**.
+    - Você receberá o código completo para rodar na sua máquina.
+
+## ⚠️ Limitações Importantes
+
+- **Ambiente Local:** A Mini-IDE roda no seu navegador e servidor local. Ela não faz deploy automático na nuvem (AWS, Vercel, etc).
+- **Contexto:** O agente lembra da conversa atual, mas se você recarregar a página (F5) sem exportar, o contexto da memória do agente será reiniciado (embora as configurações fiquem salvas).
+- **Segurança:** Sua API Key é salva apenas no seu navegador. Nós nunca a armazenamos em nossos servidores.
+
+## 💡 Dicas de Prompt
+
+- Seja específico: *"Quero uma API em Node.js com Fastify"* é melhor que *"Quero um backend"*.
+- Peça testes: *"Inclua testes unitários com Vitest"*.
+\`;
+
+export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-[#141b2b] border border-[#24304a] rounded-xl shadow-2xl w-[600px] max-w-full flex flex-col max-h-[85vh]">
+        
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-[#24304a] flex justify-between items-center bg-[#101727] rounded-t-xl">
+          <h2 className="text-[#e6ecff] font-bold text-lg flex items-center gap-2">
+            <span className="bg-[#4ba3ff]/20 text-[#4ba3ff] p-1 rounded text-xs">?</span> 
+            Manual do Usuário
+          </h2>
+          <button onClick={onClose} className="text-[#9fb0d3] hover:text-white transition-colors">✕</button>
+        </div>
+
+        {/* Content Scrollable */}
+        <div className="p-6 overflow-y-auto text-[#e6ecff] leading-relaxed prose prose-invert prose-sm max-w-none">
+          {/* Estilização customizada para o Markdown via Tailwind Typography ou CSS manual */}
+          <div className="markdown-body">
+            <Markdown>{MANUAL_CONTENT}</Markdown>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-[#24304a] bg-[#101727] rounded-b-xl flex justify-end">
+          <Button variant="primary" onClick={onClose}>Entendi</Button>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+EOF
+
+# ==============================================================================
+# 3. Adicionar Estilos para o Markdown (index.css)
+# Para que o texto não fique "cru"
+# ==============================================================================
+echo "🎨 Adicionando estilos de tipografia no packages/ui/src/index.css..."
+
+cat >> $UI_DIR/src/index.css <<EOF
+
+/* === Estilos do Manual (Markdown) === */
+.markdown-body h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #24304a;
+  padding-bottom: 0.5rem;
+}
+.markdown-body h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #4ba3ff;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.markdown-body p {
+  margin-bottom: 1rem;
+  color: #e6ecff;
+}
+.markdown-body ul, .markdown-body ol {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+  color: #9fb0d3;
+}
+.markdown-body strong {
+  color: #47e6a1; /* Destaque verde */
+}
+EOF
+
+# ==============================================================================
+# 4. Atualizar App.tsx
+# Adicionar botão "?" no Header e conectar ao Modal
+# ==============================================================================
+echo "🔄 Atualizando App.tsx com botão de Ajuda..."
+
+# Vamos reinjetar o App.tsx com o HelpModal importado e usado
+cat > packages/ui/src/App.tsx <<EOF
 import { useState, useEffect } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
@@ -65,12 +210,12 @@ const MainLayout = () => {
     setIsAnalyzing(true);
     try {
       const response = await api.analyze(userMsg);
-      const agentText = `Análise concluída! (ID: ${response.requestId}).\nResumo: ${response.summary}`;
+      const agentText = \`Análise concluída! (ID: \${response.requestId}).\nResumo: \${response.summary}\`;
       setChatHistory(prev => [...prev, { role: 'agent', text: agentText }]);
       showToast('Análise recebida do servidor!', 'success');
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : 'Erro desconhecido';
-      setChatHistory(prev => [...prev, { role: 'agent', text: `Erro: ${errMsg}` }]);
+      setChatHistory(prev => [...prev, { role: 'agent', text: \`Erro: \${errMsg}\` }]);
       showToast(errMsg, 'error');
     } finally {
       setIsAnalyzing(false);
@@ -175,8 +320,8 @@ const MainLayout = () => {
           </div>
           <div className="flex-1 bg-[#101727] border border-[#24304a] rounded-lg p-3 overflow-auto text-sm space-y-3">
             {chatHistory.map((msg, idx) => (
-              <div key={idx} className={`p-3 rounded-lg border ${msg.role === 'agent' ? 'bg-[#0f1420] border-[#24304a]/50' : 'bg-[#222b40] border-[#4ba3ff]/20'}`}>
-                <strong className={`block text-xs mb-1 ${msg.role === 'agent' ? 'text-[#4ba3ff]' : 'text-[#47e6a1]'}`}>
+              <div key={idx} className={\`p-3 rounded-lg border \${msg.role === 'agent' ? 'bg-[#0f1420] border-[#24304a]/50' : 'bg-[#222b40] border-[#4ba3ff]/20'}\`}>
+                <strong className={\`block text-xs mb-1 \${msg.role === 'agent' ? 'text-[#4ba3ff]' : 'text-[#47e6a1]'}\`}>
                   {msg.role === 'agent' ? 'Agente' : 'Você'}
                 </strong>
                 <div className="whitespace-pre-wrap">{msg.text}</div>
@@ -225,3 +370,15 @@ function App() {
 }
 
 export default App;
+EOF
+
+# ==============================================================================
+# 5. Validação
+# ==============================================================================
+echo "🛡️  Validando Build..."
+pnpm --filter @mini-ide/ui build
+
+echo "✅ Manual do Usuário implementado e estilizado!"
+EOF
+
+chmod +x scripts/145_implement_user_manual.sh
