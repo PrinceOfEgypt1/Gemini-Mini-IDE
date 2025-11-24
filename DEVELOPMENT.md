@@ -1,7 +1,7 @@
 # Mini-IDE — Manual de Engenharia
 
 > **Versão do Documento:** 7.0 (Phase 11 Complete)
-> **Versão do Software:** v0.11.0 (Export Stable)
+> **Versão do Software:** v0.12.0 (UX Versão do Software:** v0.11.0 (Export Stable) Security)
 > **Data:** 2025-11-23
 > **Pipeline:** 🟢 Verde (Lint, Types, Tests, Build, Smoke)
 
@@ -79,15 +79,25 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 
 ---
 
+
+### ✅ Fase 12: Experiência do Usuário & Segurança (Produto)
+**Objetivo:** Transformar a ferramenta técnica em um produto amigável e seguro.
+- **Artefatos:**
+    - `ui/.../services/tour.ts` (Driver.js integration).
+    - `ui/.../help/HelpModal.tsx` (Manual Markdown).
+    - `ui/.../wizard/QuickStartGallery.tsx` (Templates).
+    - `scripts/140_implement_secure_apikey_flow.sh` (Security Middleware).
+- **HUs Entregues:** 14.1, 14.2, 14.3, 14.4, 14.5.
+- **Status:** Onboarding completo, API Key segura, Múltiplos Modelos.
 ## 2. Roadmap Futuro (Backlog Pendente)
 
 ### 📅 Fase 12: Experiência do Usuário & Segurança
 **Objetivo:** Polir a usabilidade para novos usuários e garantir segurança no tráfego de credenciais.
-- [ ] **14.1** HU-Sec-API-Key-Handling-001 (Segurança Headers).
-- [ ] **14.2** HU-UI-QuickStart-Revamp-020 (Templates).
-- [ ] **14.3** HU-UI-Explore-Tour-019 (Tour Guiado).
-- [ ] **14.4** HU-Gov-User-Manual-001 (Manual Integrado).
-- [ ] **14.5** HU-UI-Settings-Models-021 (Seleção de Modelos).
+- [x] **14.1** HU-Sec-API-Key-Handling-001 (Segurança Headers).
+- [x] **14.2** HU-UI-QuickStart-Revamp-020 (Templates).
+- [x] **14.3** HU-UI-Explore-Tour-019 (Tour Guiado).
+- [x] **14.4** HU-Gov-User-Manual-001 (Manual Integrado).
+- [x] **14.5** HU-UI-Settings-Models-021 (Seleção de Modelos).
 
 ### 📅 Fase 13: Acessibilidade e Polimento Visual
 **Objetivo:** WCAG Compliance e Micro-interações.

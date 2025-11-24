@@ -38,3 +38,10 @@ node packages/cli/dist/index.js analyze "Criar um CRUD"
 - **Exportação de Projetos (.zip):** Baixe todo o código gerado, documentação e scripts em um clique.
 - **Painel de Configurações:** Configure sua API Key (DeepSeek/OpenAI) diretamente na interface.
 - **Backend Estabilizado:** Correção completa de dependências Fastify e Pipeline de CI local.
+
+### 🆕 Novidades da Versão v0.12.0 (UX & Security)
+- **Tour Guiado:** Um passo a passo interativo para novos usuários.
+- **Galeria de Templates:** Comece rápido com *API Node*, *React Dashboard*, *Python Script* e mais.
+- **Manual Integrado:** Documentação completa de uso sem sair da aplicação.
+- **Segurança de Verdade:** Sua API Key agora trafega via Headers HTTP seguros e nunca é logada.
+- **Multi-Modelos:** Suporte nativo para OpenAI, Anthropic, Google Gemini, DeepSeek e **Ollama (Local)**.

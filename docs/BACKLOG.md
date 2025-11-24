@@ -1,6 +1,6 @@
 # Backlog de Histórias de Usuário — Mini-IDE
 
-**Status Geral:** 84 HUs Totais.
+**Status Geral:** 84 HUs (Fase 12 Concluída) Totais.
 
 ## Legenda
 - ✅ **Concluído**: Implementado e testado.
@@ -94,8 +94,8 @@
 - ✅ **13.1 a 13.5**: Proxy, Status, Playground, Contract Guard, History.
 
 ## 14. Épico E-Experience: Usabilidade & Segurança
-- 📅 **14.1 HU-Sec-API-Key-Handling-001**: Segurança no Tráfego da API Key.
-- 📅 **14.2 HU-UI-QuickStart-Revamp-020**: Refatoração do Quick Start.
-- 📅 **14.3 HU-UI-Explore-Tour-019**: Tour Guiado (Onboarding).
-- 📅 **14.4 HU-Gov-User-Manual-001**: Manual do Usuário Didático.
-- 📅 **14.5 HU-UI-Settings-Models-021**: Expansão de Modelos LLM.
+- ✅ **14.1 HU-Sec-API-Key-Handling-001**: Segurança no Tráfego da API Key.
+- ✅ **14.2 HU-UI-QuickStart-Revamp-020**: Refatoração do Quick Start.
+- ✅ **14.3 HU-UI-Explore-Tour-019**: Tour Guiado (Onboarding).
+- ✅ **14.4 HU-Gov-User-Manual-001**: Manual do Usuário Didático.
+- ✅ **14.5 HU-UI-Settings-Models-021**: Expansão de Modelos LLM.
