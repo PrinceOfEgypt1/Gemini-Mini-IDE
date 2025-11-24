@@ -102,43 +102,11 @@
 ## 13. Épico E-UI-Backend-Bridge (✅ Concluído)
 - ✅ **13.1 a 13.5**: Proxy, Status, Playground, Contract Guard, History.
 
-## 14. Épico E-Experience & Intelligence (Histórico de Fases 12/14)
-*Nota de Governança: Este épico foi consolidado. As HUs desenvolvidas nas Fases 12 e 14 foram distribuídas para seus épicos temáticos definitivos para melhor organização.*
-
-- 🔄 **14.1 HU-Sec-API-Key-Handling-001** → Mapeada como **12.7** (Épico 12).
-- 🔄 **14.2 HU-UI-QuickStart-Revamp-020** → Mapeada como **9.20** (Épico 9).
-- 🔄 **14.3 HU-UI-Explore-Tour-019** → Mapeada como **9.19** (Épico 9).
-- 🔄 **14.4 HU-Gov-User-Manual-001** → Mapeada como **11.4** (Épico 11).
-- 🔄 **14.5 HU-UI-Settings-Models-021** → Mapeada como **8.4** (Épico 8).
-- 🔄 **14.6 a 14.8 (Backend Tasks)** → Integradas ao Épico 12.
+## 14. Épico E-Experience & Intelligence (Histórico)
+- 🔄 **Consolidado**: HUs distribuídas nos épicos 8, 9, 11 e 12.
 
 ## 15. Épico E-Visualization: Interatividade e Renderização (Próxima Fase)
 - 🚧 **15.1 HU-UI-Viz-Sidebar-022**: Árvore de arquivos dinâmica na lateral.
 - 🚧 **15.2 HU-UI-Viz-HUs-023**: Renderização visual das Histórias de Usuário.
 - 🚧 **15.3 HU-UI-Viz-Docs-024**: Visualizador Markdown para abas Docs e README.
 - 🚧 **15.4 HU-UI-Interaction-Refine-025**: Fluxo de refinamento via Chat.
-
----
-
-## Detalhamento Técnico: Fase 15 (Visualização)
-
-### 15.1 HU-UI-Viz-Sidebar-022
-**Objetivo:** Transformar a lista plana de arquivos do JSON em árvore visual.
-- **Entrada:** `generatedProject.engine.files` (Array de paths).
-- **Saída:** Componente `FileTree` recursivo.
-- **Interação:** `onSelectFile(path)`.
-
-### 15.2 HU-UI-Viz-HUs-023
-**Objetivo:** Renderizar plano de projeto.
-- **Entrada:** `generatedProject.product.userStories`.
-- **Componente:** `UserStoryCard`.
-
-### 15.3 HU-UI-Viz-Docs-024
-**Objetivo:** Visualizar documentação gerada.
-- **Lógica:** Filtrar arquivos que terminam em `.md`.
-- **Render:** Reutilizar `react-markdown` (já instalado).
-
-### 15.4 HU-UI-Interaction-Refine-025
-**Objetivo:** Iteração sobre o projeto.
-- **Backend:** O endpoint `/analyze` deve aceitar um `context` opcional com o projeto anterior.
-- **Frontend:** Manter histórico de versões.
