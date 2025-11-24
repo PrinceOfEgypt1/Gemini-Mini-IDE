@@ -6,6 +6,7 @@
 - ✅ **Concluído**: Implementado, testado e mergeado na main.
 - 🚧 **Em Andamento**: Foco da Fase 15 (Visualização).
 - 📅 **Pendente**: Planejado para fases futuras (Persistência/DevOps).
+- 🔄 **Migrado**: HU movida para outro Épico por organização temática.
 
 ---
 
@@ -57,7 +58,7 @@
 - 📅 **8.1 HU-UI-Chat**: Interface dedicada de chat (Full screen).
 - 📅 **8.2 HU-UI-Results**: Tela de resultados detalhada.
 - ✅ **8.3 HU-UI-Settings**: Tela de configurações e Preferências.
-- ✅ **8.4 HU-UI-Settings-Models-021**: Seletor de Modelos e Base URL.
+- ✅ **8.4 HU-UI-Settings-Models-021**: Seletor de Modelos e Base URL (Origem: Épico 14).
 
 ## 9. Épico E-UI-Explore: Interface Explorar
 - ✅ **9.1 a 9.4**: Layout base, Discovery Notes, Timeline, Tabs.
@@ -71,8 +72,8 @@
 - ✅ **9.16 HU-UI-Explore-Error-Handling-016**: Tratamento de erros e Toasts.
 - ✅ **9.17 HU-UI-Explore-Loading-States-017**: Spinners e Loadings contextuais.
 - ✅ **9.18 HU-UI-Explore-Micro-Interactions-018**: Animações e transições.
-- ✅ **9.19 HU-UI-Explore-Tour-019**: Tour Guiado (Onboarding).
-- ✅ **9.20 HU-UI-QuickStart-Revamp-020**: Galeria de Templates.
+- ✅ **9.19 HU-UI-Explore-Tour-019**: Tour Guiado (Origem: Épico 14).
+- ✅ **9.20 HU-UI-QuickStart-Revamp-020**: Galeria de Templates (Origem: Épico 14).
 
 ## 10. Épico E-Flow: Fluxo de Descoberta
 - ✅ **10.1 a 10.4**: Geração HUs, Aprovação, Diretório, Scripts.
@@ -84,7 +85,7 @@
 - 📅 **11.1 HU-Gov-Release-Checklist**: Script de release.
 - 📅 **11.2 HU-Gov-Announcements**: Templates de comunidade.
 - ✅ **11.3 HU-Gov-Docs-Minimas**: README/DEVELOPMENT atualizados.
-- ✅ **11.4 HU-Gov-User-Manual-001**: Manual do Usuário Integrado.
+- ✅ **11.4 HU-Gov-User-Manual-001**: Manual do Usuário Integrado (Origem: Épico 14).
 
 ## 12. Épico E-Hardening & E-Intelligence (Backend Real)
 - 📅 **12.1 HU-Gov-CI-CD**: GitHub Actions Workflow.
@@ -93,13 +94,23 @@
 - 📅 **12.4 HU-Quality-Coverage-Thresholds**: Bloqueio por cobertura.
 - 📅 **12.5 HU-Quality-E2E-Flow**: Testes E2E completos.
 - 📅 **12.6 HU-Server-Metrics-Observability**: Prometheus/Grafana.
-- ✅ **12.7 HU-Sec-API-Key-Handling-001**: Segurança de API Key (Headers).
-- ✅ **14.6 HU-Backend-Real-Agent**: Integração OpenAI SDK.
-- ✅ **14.7 HU-Backend-Dry-Run**: Modo Dry-Run para Testes.
-- ✅ **14.8 HU-Backend-CORS-Fix**: Configuração CORS para Dev.
+- ✅ **12.7 HU-Sec-API-Key-Handling-001**: Segurança de API Key (Origem: 14.1).
+- ✅ **14.6 HU-Backend-Real-Agent**: Integração OpenAI SDK (Origem: 14.6).
+- ✅ **14.7 HU-Backend-Dry-Run**: Modo Dry-Run para Testes (Origem: 14.7).
+- ✅ **14.8 HU-Backend-CORS-Fix**: Configuração CORS para Dev (Origem: 14.8).
 
 ## 13. Épico E-UI-Backend-Bridge (✅ Concluído)
 - ✅ **13.1 a 13.5**: Proxy, Status, Playground, Contract Guard, History.
+
+## 14. Épico E-Experience & Intelligence (Histórico de Fases 12/14)
+*Nota de Governança: Este épico foi consolidado. As HUs desenvolvidas nas Fases 12 e 14 foram distribuídas para seus épicos temáticos definitivos para melhor organização.*
+
+- 🔄 **14.1 HU-Sec-API-Key-Handling-001** → Mapeada como **12.7** (Épico 12).
+- 🔄 **14.2 HU-UI-QuickStart-Revamp-020** → Mapeada como **9.20** (Épico 9).
+- 🔄 **14.3 HU-UI-Explore-Tour-019** → Mapeada como **9.19** (Épico 9).
+- 🔄 **14.4 HU-Gov-User-Manual-001** → Mapeada como **11.4** (Épico 11).
+- 🔄 **14.5 HU-UI-Settings-Models-021** → Mapeada como **8.4** (Épico 8).
+- 🔄 **14.6 a 14.8 (Backend Tasks)** → Integradas ao Épico 12.
 
 ## 15. Épico E-Visualization: Interatividade e Renderização (Próxima Fase)
 - 🚧 **15.1 HU-UI-Viz-Sidebar-022**: Árvore de arquivos dinâmica na lateral.
