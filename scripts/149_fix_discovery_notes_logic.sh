@@ -1,3 +1,141 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚑 [Fix] Restaurando a lógica de Discovery Notes (Regex Local)..."
+
+UI_DIR="packages/ui/src"
+
+# ==============================================================================
+# 1. Criar Utilitário de Parsing (Regex)
+# Recupera a lógica que existia no protótipo
+# ==============================================================================
+mkdir -p $UI_DIR/utils
+echo "📝 Criando $UI_DIR/utils/discoveryParser.ts..."
+
+cat > $UI_DIR/utils/discoveryParser.ts <<EOF
+export interface DiscoveryData {
+  intent: string[];
+  reqs: string[];
+  constraints: string[];
+}
+
+export const parseDiscoveryMessage = (text: string, currentData: DiscoveryData): DiscoveryData => {
+  const newData = { ...currentData };
+  const lower = text.toLowerCase();
+
+  // Heurísticas simples (Regex)
+  
+  // 1. Intenção (Quero, Gostaria, Preciso)
+  if (lower.includes('quero') || lower.includes('gostaria') || lower.includes('crie') || lower.includes('preciso')) {
+    // Pega a frase inteira como intenção se for curta, ou o trecho relevante
+    if (!newData.intent.includes(text)) {
+      newData.intent = [...newData.intent, text];
+    }
+  }
+
+  // 2. Requisitos (Deve, Tem que, Com)
+  if (lower.includes('deve') || lower.includes('tem que') || lower.includes('com ')) {
+    // Tenta extrair o requisito específico
+    const reqParts = text.split(/,| e /);
+    reqParts.forEach(part => {
+      if (part.toLowerCase().includes('deve') || part.toLowerCase().includes('com ')) {
+        const cleanPart = part.trim();
+        if (!newData.reqs.includes(cleanPart)) newData.reqs.push(cleanPart);
+      }
+    });
+  }
+
+  // 3. Restrições (Não, Sem, Nunca)
+  if (lower.includes('não') || lower.includes('sem ') || lower.includes('exceto')) {
+    const constParts = text.split(/,| e /);
+    constParts.forEach(part => {
+      if (part.toLowerCase().includes('não') || part.toLowerCase().includes('sem ')) {
+         const cleanPart = part.trim();
+         if (!newData.constraints.includes(cleanPart)) newData.constraints.push(cleanPart);
+      }
+    });
+  }
+
+  return newData;
+};
+EOF
+
+# ==============================================================================
+# 2. Atualizar Componente DiscoveryNotes
+# Agora ele aceita props dinâmicas
+# ==============================================================================
+echo "📝 Atualizando $UI_DIR/components/DiscoveryNotes.tsx..."
+
+cat > $UI_DIR/components/DiscoveryNotes.tsx <<EOF
+import React from 'react';
+
+export interface DiscoveryNotesProps {
+  data?: {
+    intent: string[];
+    reqs: string[];
+    constraints: string[];
+  };
+}
+
+export const DiscoveryNotes: React.FC<DiscoveryNotesProps> = ({ data }) => {
+  const hasData = data && (data.intent.length > 0 || data.reqs.length > 0 || data.constraints.length > 0);
+
+  return (
+    <div className="bg-[#141b2b] border border-[#24304a] rounded-lg p-4 h-full overflow-y-auto">
+      <h3 className="font-semibold text-[#e6ecff] mb-4 flex items-center gap-2">
+        <span>🧭</span> Discovery Notes
+      </h3>
+      
+      {!hasData ? (
+        <div className="flex flex-col items-center justify-center h-40 text-[#9fb0d3] text-sm text-center opacity-60">
+          <p>Converse com o agente para<br/>coletar notas automaticamente.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {/* Intenção */}
+          {data.intent.length > 0 && (
+            <div className="bg-[#0f1420] rounded-md p-3 border border-[#24304a]">
+              <h4 className="text-xs font-bold text-[#4ba3ff] uppercase tracking-wider mb-2">Intenção</h4>
+              <ul className="list-disc list-inside text-sm text-[#e6ecff] space-y-1">
+                {data.intent.map((item, i) => <li key={i}>{item}</li>)}
+              </ul>
+            </div>
+          )}
+
+          {/* Requisitos */}
+          {data.reqs.length > 0 && (
+            <div className="bg-[#0f1420] rounded-md p-3 border border-[#24304a]">
+              <h4 className="text-xs font-bold text-[#47e6a1] uppercase tracking-wider mb-2">Requisitos</h4>
+              <ul className="list-disc list-inside text-sm text-[#e6ecff] space-y-1">
+                {data.reqs.map((item, i) => <li key={i}>{item}</li>)}
+              </ul>
+            </div>
+          )}
+
+          {/* Restrições */}
+          {data.constraints.length > 0 && (
+            <div className="bg-[#0f1420] rounded-md p-3 border border-[#24304a]">
+              <h4 className="text-xs font-bold text-[#ff5c7a] uppercase tracking-wider mb-2">Restrições</h4>
+              <ul className="list-disc list-inside text-sm text-[#e6ecff] space-y-1">
+                {data.constraints.map((item, i) => <li key={i}>{item}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+EOF
+
+# ==============================================================================
+# 3. Conectar no App.tsx
+# Integrar o parser ao fluxo de envio de mensagem
+# ==============================================================================
+echo "🔄 Atualizando App.tsx para usar o parser..."
+
+# Precisamos reescrever o App.tsx para incluir o estado de notas e a chamada do parser
+cat > $UI_DIR/App.tsx <<EOF
 import { useState, useEffect } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
@@ -30,6 +168,7 @@ const MainLayout = () => {
     { role: 'agent', text: 'Olá! Estou pronto para ajudar. Configure sua API Key em "Preferências" para começarmos.' }
   ]);
 
+  // Estado das Notas de Descoberta (Local)
   const [discoveryData, setDiscoveryData] = useState<DiscoveryData>({
     intent: [],
     reqs: [],
@@ -69,20 +208,22 @@ const MainLayout = () => {
     const userMsg = chatInput;
     setChatInput(''); 
     
+    // 1. Atualiza Chat
     setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
     
+    // 2. Atualiza Discovery Notes (Localmente)
     const updatedNotes = parseDiscoveryMessage(userMsg, discoveryData);
     setDiscoveryData(updatedNotes);
 
     setIsAnalyzing(true);
     try {
       const response = await api.analyze(userMsg);
-      const agentText = `Análise concluída! (ID: ${response.requestId}).\nResumo: ${response.summary}`;
+      const agentText = \`Análise concluída! (ID: \${response.requestId}).\nResumo: \${response.summary}\`;
       setChatHistory(prev => [...prev, { role: 'agent', text: agentText }]);
       showToast('Análise recebida do servidor!', 'success');
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : 'Erro desconhecido';
-      setChatHistory(prev => [...prev, { role: 'agent', text: `Erro: ${errMsg}` }]);
+      setChatHistory(prev => [...prev, { role: 'agent', text: \`Erro: \${errMsg}\` }]);
       showToast(errMsg, 'error');
     } finally {
       setIsAnalyzing(false);
@@ -102,10 +243,6 @@ const MainLayout = () => {
   const handleStartTour = () => {
     setIsQuickStartOpen(false);
     setTimeout(() => startOnboardingTour(), 300);
-  };
-
-  const handleAttach = () => {
-    showToast('Funcionalidade de anexo em breve!', 'info');
   };
 
   return (
@@ -158,6 +295,7 @@ const MainLayout = () => {
                     </div>
                   </div>
                 </div>
+                {/* AGORA O COMPONENTE RECEBE DADOS */}
                 <div className="h-full"><DiscoveryNotes data={discoveryData} /></div>
               </div>
             )}
@@ -189,8 +327,8 @@ const MainLayout = () => {
           </div>
           <div className="flex-1 bg-[#101727] border border-[#24304a] rounded-lg p-3 overflow-auto text-sm space-y-3">
             {chatHistory.map((msg, idx) => (
-              <div key={idx} className={`p-3 rounded-lg border ${msg.role === 'agent' ? 'bg-[#0f1420] border-[#24304a]/50' : 'bg-[#222b40] border-[#4ba3ff]/20'}`}>
-                <strong className={`block text-xs mb-1 ${msg.role === 'agent' ? 'text-[#4ba3ff]' : 'text-[#47e6a1]'}`}>
+              <div key={idx} className={\`p-3 rounded-lg border \${msg.role === 'agent' ? 'bg-[#0f1420] border-[#24304a]/50' : 'bg-[#222b40] border-[#4ba3ff]/20'}\`}>
+                <strong className={\`block text-xs mb-1 \${msg.role === 'agent' ? 'text-[#4ba3ff]' : 'text-[#47e6a1]'}\`}>
                   {msg.role === 'agent' ? 'Agente' : 'Você'}
                 </strong>
                 <div className="whitespace-pre-wrap">{msg.text}</div>
@@ -210,9 +348,7 @@ const MainLayout = () => {
           className="w-full h-[60px] bg-[#101727] border border-[#24304a] rounded-lg px-3 py-2 text-sm text-[#e6ecff] focus:outline-none focus:border-[#4ba3ff] resize-none"
           disabled={isAnalyzing}
         />
-        {/* RESTAURADO: Botão de Anexar */}
-        <div className="flex items-end gap-2">
-          <Button variant="ghost" onClick={handleAttach} title="Anexar Arquivo">📎</Button>
+        <div className="flex items-end">
           <Button variant="primary" onClick={handleSendMessage} disabled={isAnalyzing || !chatInput.trim()}>
             {isAnalyzing ? '...' : 'Enviar'}
           </Button>
@@ -241,3 +377,49 @@ function App() {
 }
 
 export default App;
+EOF
+
+# ==============================================================================
+# 4. Atualizar o Teste do Componente
+# Como mudamos as props, o teste antigo vai quebrar. Precisamos consertar.
+# ==============================================================================
+echo "🧪 Atualizando packages/ui/test/components/DiscoveryNotes.test.tsx..."
+
+cat > packages/ui/test/components/DiscoveryNotes.test.tsx <<EOF
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { DiscoveryNotes } from '../../src/components/DiscoveryNotes';
+import React from 'react';
+
+describe('DiscoveryNotes', () => {
+  it('exibe estado vazio quando não há dados', () => {
+    render(<DiscoveryNotes data={{ intent: [], reqs: [], constraints: [] }} />);
+    expect(screen.getByText(/Converse com o agente/i)).toBeDefined();
+  });
+
+  it('exibe notas quando dados são fornecidos', () => {
+    const mockData = {
+      intent: ['Criar sistema de login'],
+      reqs: ['Usar JWT'],
+      constraints: ['Sem banco de dados']
+    };
+    
+    render(<DiscoveryNotes data={mockData} />);
+    
+    expect(screen.getByText('Criar sistema de login')).toBeDefined();
+    expect(screen.getByText('Usar JWT')).toBeDefined();
+    expect(screen.getByText('Sem banco de dados')).toBeDefined();
+  });
+});
+EOF
+
+# ==============================================================================
+# 5. Validação
+# ==============================================================================
+echo "🛡️  Validando a Correção..."
+pnpm --filter @mini-ide/ui test
+
+echo "✅ Lógica de Discovery Notes restaurada!"
+EOF
+
+chmod +x scripts/149_fix_discovery_notes_logic.sh

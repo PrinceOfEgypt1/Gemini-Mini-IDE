@@ -1,3 +1,18 @@
+#!/usr/bin/env bash
+set -e
+
+echo "⚙️  [Phase 12] Expandindo lista de Modelos LLM e Provedores..."
+
+UI_DIR="packages/ui"
+
+# ==============================================================================
+# 1. Atualizar SettingsModal.tsx
+# - Adiciona botões de preset para os grandes provedores
+# - Expande o datalist com IDs reais de mercado
+# ==============================================================================
+echo "📝 Atualizando packages/ui/src/components/settings/SettingsModal.tsx..."
+
+cat > $UI_DIR/src/components/settings/SettingsModal.tsx <<EOF
 import React, { useState, useEffect } from 'react';
 import { Button } from '../Button';
 
@@ -209,3 +224,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     </div>
   );
 };
+EOF
+
+# ==============================================================================
+# 2. Validação
+# ==============================================================================
+echo "🛡️  Validando UI..."
+pnpm --filter @mini-ide/ui lint
+pnpm --filter @mini-ide/ui build
+
+echo "✅ Lista de modelos expandida com sucesso!"
+EOF
+
+chmod +x scripts/147_expand_model_options.sh

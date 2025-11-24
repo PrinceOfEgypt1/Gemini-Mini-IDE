@@ -1,3 +1,79 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚑 [Fix] Restaurando Botão Anexar e visibilidade das Discovery Notes..."
+
+UI_DIR="packages/ui/src"
+
+# ==============================================================================
+# 1. Atualizar DiscoveryNotes.tsx
+# Mudança: Exibir categorias sempre (mesmo vazias) para melhor UX
+# ==============================================================================
+echo "📝 Atualizando $UI_DIR/components/DiscoveryNotes.tsx..."
+
+cat > $UI_DIR/components/DiscoveryNotes.tsx <<EOF
+import React from 'react';
+
+export interface DiscoveryNotesProps {
+  data?: {
+    intent: string[];
+    reqs: string[];
+    constraints: string[];
+  };
+}
+
+export const DiscoveryNotes: React.FC<DiscoveryNotesProps> = ({ data }) => {
+  // Inicializa com arrays vazios se data for undefined
+  const safeData = data || { intent: [], reqs: [], constraints: [] };
+
+  const renderList = (items: string[], emptyText: string) => {
+    if (items.length === 0) {
+      return <p className="text-xs text-[#9fb0d3] italic opacity-50 py-1">{emptyText}</p>;
+    }
+    return (
+      <ul className="list-disc list-inside text-sm text-[#e6ecff] space-y-1">
+        {items.map((item, i) => <li key={i}>{item}</li>)}
+      </ul>
+    );
+  };
+
+  return (
+    <div className="bg-[#141b2b] border border-[#24304a] rounded-lg p-4 h-full overflow-y-auto">
+      <h3 className="font-semibold text-[#e6ecff] mb-4 flex items-center gap-2">
+        <span>🧭</span> Discovery Notes
+      </h3>
+      
+      <div className="space-y-4">
+        {/* Intenção */}
+        <div className="bg-[#0f1420] rounded-md p-3 border border-[#24304a]">
+          <h4 className="text-xs font-bold text-[#4ba3ff] uppercase tracking-wider mb-2">Intenção</h4>
+          {renderList(safeData.intent, "O que você quer construir?")}
+        </div>
+
+        {/* Requisitos */}
+        <div className="bg-[#0f1420] rounded-md p-3 border border-[#24304a]">
+          <h4 className="text-xs font-bold text-[#47e6a1] uppercase tracking-wider mb-2">Requisitos</h4>
+          {renderList(safeData.reqs, "O que o sistema deve ter? (Use 'deve', 'precisa')")}
+        </div>
+
+        {/* Restrições */}
+        <div className="bg-[#0f1420] rounded-md p-3 border border-[#24304a]">
+          <h4 className="text-xs font-bold text-[#ff5c7a] uppercase tracking-wider mb-2">Restrições</h4>
+          {renderList(safeData.constraints, "O que é proibido? (Use 'não pode', 'sem')")}
+        </div>
+      </div>
+    </div>
+  );
+};
+EOF
+
+# ==============================================================================
+# 2. Atualizar App.tsx
+# Mudança: Reintroduzir o botão "Anexar" no footer
+# ==============================================================================
+echo "🔄 Atualizando App.tsx com botão Anexar..."
+
+cat > $UI_DIR/App.tsx <<EOF
 import { useState, useEffect } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
@@ -77,12 +153,12 @@ const MainLayout = () => {
     setIsAnalyzing(true);
     try {
       const response = await api.analyze(userMsg);
-      const agentText = `Análise concluída! (ID: ${response.requestId}).\nResumo: ${response.summary}`;
+      const agentText = \`Análise concluída! (ID: \${response.requestId}).\nResumo: \${response.summary}\`;
       setChatHistory(prev => [...prev, { role: 'agent', text: agentText }]);
       showToast('Análise recebida do servidor!', 'success');
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : 'Erro desconhecido';
-      setChatHistory(prev => [...prev, { role: 'agent', text: `Erro: ${errMsg}` }]);
+      setChatHistory(prev => [...prev, { role: 'agent', text: \`Erro: \${errMsg}\` }]);
       showToast(errMsg, 'error');
     } finally {
       setIsAnalyzing(false);
@@ -189,8 +265,8 @@ const MainLayout = () => {
           </div>
           <div className="flex-1 bg-[#101727] border border-[#24304a] rounded-lg p-3 overflow-auto text-sm space-y-3">
             {chatHistory.map((msg, idx) => (
-              <div key={idx} className={`p-3 rounded-lg border ${msg.role === 'agent' ? 'bg-[#0f1420] border-[#24304a]/50' : 'bg-[#222b40] border-[#4ba3ff]/20'}`}>
-                <strong className={`block text-xs mb-1 ${msg.role === 'agent' ? 'text-[#4ba3ff]' : 'text-[#47e6a1]'}`}>
+              <div key={idx} className={\`p-3 rounded-lg border \${msg.role === 'agent' ? 'bg-[#0f1420] border-[#24304a]/50' : 'bg-[#222b40] border-[#4ba3ff]/20'}\`}>
+                <strong className={\`block text-xs mb-1 \${msg.role === 'agent' ? 'text-[#4ba3ff]' : 'text-[#47e6a1]'}\`}>
                   {msg.role === 'agent' ? 'Agente' : 'Você'}
                 </strong>
                 <div className="whitespace-pre-wrap">{msg.text}</div>
@@ -241,3 +317,15 @@ function App() {
 }
 
 export default App;
+EOF
+
+# ==============================================================================
+# 3. Validação
+# ==============================================================================
+echo "🛡️  Validando Build..."
+pnpm --filter @mini-ide/ui build
+
+echo "✅ UI Restaurada: Discovery Notes persistentes e Botão Anexar presente."
+EOF
+
+chmod +x scripts/150_fix_ui_regressions.sh

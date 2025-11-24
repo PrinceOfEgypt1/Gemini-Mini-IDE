@@ -87,6 +87,7 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
     - `ui/.../help/HelpModal.tsx` (Manual Markdown).
     - `ui/.../wizard/QuickStartGallery.tsx` (Templates).
     - `scripts/140_implement_secure_apikey_flow.sh` (Security Middleware).
+    - `ui/.../utils/discoveryParser.ts` (Lógica Regex Local).
 - **HUs Entregues:** 14.1, 14.2, 14.3, 14.4, 14.5.
 - **Status:** Onboarding completo, API Key segura, Múltiplos Modelos.
 ## 2. Roadmap Futuro (Backlog Pendente)

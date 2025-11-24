@@ -45,3 +45,4 @@ node packages/cli/dist/index.js analyze "Criar um CRUD"
 - **Manual Integrado:** Documentação completa de uso sem sair da aplicação.
 - **Segurança de Verdade:** Sua API Key agora trafega via Headers HTTP seguros e nunca é logada.
 - **Multi-Modelos:** Suporte nativo para OpenAI, Anthropic, Google Gemini, DeepSeek e **Ollama (Local)**.
+- **Inteligência Local:** O sistema entende intenções, requisitos e restrições em tempo real enquanto você digita.
