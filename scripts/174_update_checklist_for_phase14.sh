@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -e
 
+echo "🚑 [Phase 14] Atualizando Checklist de Pipeline para suportar modo Dry-Run..."
+
+# ==============================================================================
+# Reescrever 42_pipeline_checklist.sh (Versão Definitiva Fase 14)
+# ==============================================================================
+cat > 42_pipeline_checklist.sh << 'EOF'
+#!/usr/bin/env bash
+set -e
+
 # Cores
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -128,3 +137,7 @@ echo ""
 echo "════════════════════════════════════════════════════════════════"
 log_ok "Pipeline completa - TODAS as etapas passaram ✓"
 echo "════════════════════════════════════════════════════════════════"
+EOF
+
+chmod +x 42_pipeline_checklist.sh
+echo "✅ Script de Pipeline atualizado com sucesso!"

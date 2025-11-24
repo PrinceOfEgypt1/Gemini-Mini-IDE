@@ -1,6 +1,6 @@
 # Backlog de Histórias de Usuário — Mini-IDE
 
-**Status Geral:** 84 HUs (Fase 12 Concluída) Totais.
+**Status Geral:** Fases 1-14 Concluídas (Backend Inteligente Status Geral:** 84 HUs (Fase 12 Concluída) Totais. Seguro)
 
 ## Legenda
 - ✅ **Concluído**: Implementado e testado.
@@ -63,9 +63,9 @@
 - ✅ **9.5 HU-UI-Export-005**: Botão Exportar (.zip).
 - ✅ **9.6 HU-UI-Project-Creation-006**: Wizard de criação.
 - 📅 **9.7 HU-UI-RealTime-Preview-007**: Preview de código.
-- 📅 **9.8 HU-UI-Theme-System-008**: Temas.
+- ✅ **9.8 HU-UI-Theme-System-008**: Temas.
 - ✅ **9.9 a 9.13**: Ações, Fluxo Chat, Placeholders, Interações, Empty States.
-- 📅 **9.14 HU-UI-Explore-Keyboard-Nav-014**: Acessibilidade Teclado.
+- ✅ **9.14 HU-UI-Explore-Keyboard-Nav-014**: Acessibilidade Teclado.
 - 📅 **9.15 HU-UI-Explore-Accessibility-015**: Acessibilidade Screen Reader.
 - ✅ **9.16 HU-UI-Explore-Error-Handling-016**: Toasts de erro.
 - ✅ **9.17 HU-UI-Explore-Loading-States-017**: Spinners.
@@ -93,9 +93,21 @@
 ## 13. Épico E-UI-Backend-Bridge
 - ✅ **13.1 a 13.5**: Proxy, Status, Playground, Contract Guard, History.
 
+## 14-B. Épico E-Intelligence: Integração Real (Fase 14)
+- ✅ **14.6 HU-Backend-Real-Agent**: Integração com OpenAI SDK.
+- ✅ **14.7 HU-Backend-Dry-Run**: Modo de teste para CI/CD.
+- ✅ **14.8 HU-Backend-CORS-Fix**: Configuração robusta de CORS.
+
 ## 14. Épico E-Experience: Usabilidade & Segurança
 - ✅ **14.1 HU-Sec-API-Key-Handling-001**: Segurança no Tráfego da API Key.
 - ✅ **14.2 HU-UI-QuickStart-Revamp-020**: Refatoração do Quick Start.
 - ✅ **14.3 HU-UI-Explore-Tour-019**: Tour Guiado (Onboarding).
 - ✅ **14.4 HU-Gov-User-Manual-001**: Manual do Usuário Didático.
 - ✅ **14.5 HU-UI-Settings-Models-021**: Expansão de Modelos LLM.
+
+## 15. Épico E-Visualization: Interatividade e Renderização (Fase 15)
+**Objetivo:** Substituir placeholders da UI por dados reais gerados pela IA.
+- 📅 **15.1 HU-UI-Viz-Sidebar-022**: Árvore de arquivos dinâmica na lateral.
+- 📅 **15.2 HU-UI-Viz-HUs-023**: Renderização visual das Histórias de Usuário e Critérios.
+- 📅 **15.3 HU-UI-Viz-Docs-024**: Visualizador Markdown para abas Docs e README.
+- 📅 **15.4 HU-UI-Interaction-Refine-025**: Fluxo de refinamento (pedir alterações ao agente).

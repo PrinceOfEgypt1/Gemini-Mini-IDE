@@ -12,12 +12,12 @@ export const Button: React.FC<ButtonProps> = ({
   className = '', 
   ...props 
 }) => {
-  const baseStyles = "inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4ba3ff] disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseStyles = "inline-flex items-center justify-center rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--brand-primary)] disabled:opacity-50 disabled:cursor-not-allowed";
   
   const variants = {
-    primary: "bg-[#4ba3ff] text-white hover:bg-[#3b82f6]",
-    secondary: "bg-[#222b40] text-[#e6ecff] border border-[#24304a] hover:bg-[#2d3748]",
-    ghost: "bg-transparent text-[#9fb0d3] hover:text-white hover:bg-[#222b40]"
+    primary: "bg-[var(--brand-primary)] text-white hover:bg-[var(--brand-hover)] shadow-sm",
+    secondary: "bg-[var(--bg-panel-hover)] text-[var(--text-primary)] border border-[var(--border-main)] hover:bg-[var(--bg-app)]",
+    ghost: "bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-panel-hover)]"
   };
 
   const sizes = {

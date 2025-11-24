@@ -1,3 +1,17 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🧠 [Phase 14] Conectando resposta da IA ao botão de Exportação..."
+
+UI_DIR="packages/ui/src"
+
+# ==============================================================================
+# Atualizar App.tsx
+# Lógica: Salvar 'response' no estado 'projectData'
+# ==============================================================================
+echo "📝 Atualizando $UI_DIR/App.tsx..."
+
+cat > $UI_DIR/App.tsx <<EOF
 import { useState, useEffect } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
@@ -82,7 +96,7 @@ const MainLayout = () => {
       // CAPTURA CRÍTICA: Salva o JSON completo da IA
       setGeneratedProject(response);
       
-      const agentText = `Análise concluída! (ID: ${response.requestId}).\nResumo: ${response.summary}`;
+      const agentText = \`Análise concluída! (ID: \${response.requestId}).\nResumo: \${response.summary}\`;
       setChatHistory(prev => [...prev, { role: 'agent', text: agentText }]);
       showToast('Análise recebida! Código pronto para exportação.', 'success');
       
@@ -91,7 +105,7 @@ const MainLayout = () => {
 
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : 'Erro desconhecido';
-      setChatHistory(prev => [...prev, { role: 'agent', text: `Erro: ${errMsg}` }]);
+      setChatHistory(prev => [...prev, { role: 'agent', text: \`Erro: \${errMsg}\` }]);
       showToast(errMsg, 'error');
     } finally {
       setIsAnalyzing(false);
@@ -191,12 +205,12 @@ const MainLayout = () => {
           </div>
           <div className="flex-1 bg-[var(--bg-app)] border border-[var(--border-main)] rounded-lg p-3 overflow-auto text-sm space-y-3">
             {chatHistory.map((msg, idx) => (
-              <div key={idx} className={`p-3 rounded-lg border ${
+              <div key={idx} className={\`p-3 rounded-lg border \${
                 msg.role === 'agent' 
                   ? 'bg-[var(--bg-panel)] border-[var(--border-main)]' 
                   : 'bg-[var(--bg-panel-hover)] border-[var(--brand-primary)]/30'
-              }`}>
-                <strong className={`block text-xs mb-1 ${msg.role === 'agent' ? 'text-[var(--brand-primary)]' : 'text-[var(--success)]'}`}>
+              }\`}>
+                <strong className={\`block text-xs mb-1 \${msg.role === 'agent' ? 'text-[var(--brand-primary)]' : 'text-[var(--success)]'}\`}>
                   {msg.role === 'agent' ? 'Agente' : 'Você'}
                 </strong>
                 <div className="whitespace-pre-wrap text-[var(--text-primary)]">{msg.text}</div>
@@ -243,3 +257,12 @@ function App() {
 }
 
 export default App;
+EOF
+
+# ==============================================================================
+# 2. Validar Lint (Sempre)
+# ==============================================================================
+echo "🛡️  Validando Lint da UI..."
+pnpm --filter @mini-ide/ui lint
+
+echo "✅ Frontend atualizado: Estado 'generatedProject' implementado."

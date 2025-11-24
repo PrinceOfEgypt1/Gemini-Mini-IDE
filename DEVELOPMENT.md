@@ -1,8 +1,8 @@
 # Mini-IDE — Manual de Engenharia
 
 > **Versão do Documento:** 8.0 (Phase 12 Cleaned)
-> **Versão do Software:** v0.12.1 (UX Polish)
-> **Data:** 2025-11-23
+> **Versão do Software:** v0.15.0 (AI Powered)
+> **Data:** 2025-11-24
 > **Pipeline:** 🟢 Verde (Lint, Types, Tests, Build, Smoke)
 
 ---
@@ -76,6 +76,15 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 - **HUs Entregues:** 4.1, 4.2, 4.3, 4.6, 8.3, 9.5.
 
 ### ✅ Fase 12: Experiência do Usuário & Segurança (Produto)
+
+### ✅ Fase 13 & 14: Polimento Visual e Inteligência Real
+**Objetivo:** Temas, Segurança de API Key e Conexão com GPT-4.
+- **Artefatos:**
+    - `ui/.../contexts/ThemeContext.tsx` (Dark/Light Mode).
+    - `analysis-agent/src/agent.ts` (Integração OpenAI/DeepSeek).
+    - `server/src/index.ts` (Servidor Fastify Seguro).
+- **Status:** O sistema gera código real, exporta ZIP e passa em todos os testes.
+ 
 **Objetivo:** Transformar a ferramenta técnica em um produto amigável e seguro.
 - **Artefatos:**
     - `ui/.../services/tour.ts` (Driver.js integration).
@@ -90,21 +99,17 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 
 ## 2. Roadmap Futuro (Backlog Pendente)
 
-### 📅 Fase 13: Acessibilidade e Polimento Visual (Próxima)
-**Objetivo:** WCAG Compliance, Micro-interações e suporte total a temas.
-- [ ] **9.8** HU-UI-Theme-System-008
-- [ ] **9.14** HU-UI-Explore-Keyboard-Nav-014
-- [ ] **9.15** HU-UI-Explore-Accessibility-015
-- [ ] **9.18** HU-UI-Explore-Micro-Interactions-018
+### 🚧 Fase 15: Visualização Interativa (Próxima)
+**Objetivo:** "Limpar a sujeira" da UI. Mostrar os dados reais nas abas e sidebar.
+- [ ] **15.1** Árvore de Arquivos (Sidebar).
+- [ ] **15.2** Renderização de HUs (Abas).
+- [ ] **15.3** Visualizador de Docs/Markdown.
+- [ ] **15.4** Refinamento via Chat.
 
-### 📅 Fase 14: Hardening e Produção
-**Objetivo:** CI/CD e Release.
-- [ ] **5.1** HU-Quality-Unit-Tests (Enforcement)
-- [ ] **5.2** HU-Quality-Schema-Validation
-- [ ] **5.3** HU-Quality-Smoke-Bats
-- [ ] **11.1** HU-Gov-Release-Checklist
-- [ ] **11.2** HU-Gov-Announcements
-- [ ] **12.1** HU-Gov-CI-CD
-- [ ] **12.4** HU-Quality-Coverage-Thresholds
-- [ ] **12.5** HU-Quality-E2E-Flow
-- [ ] **12.6** HU-Server-Metrics-Observability
+### 📅 Fase 16: Persistência Real (Database)
+**Objetivo:** Salvar histórico entre sessões (SQLite/Postgres).
+- [ ] Persistência de Chat.
+- [ ] Persistência de Projetos.
+
+### 📅 Fase 17: Deploy & DevOps
+**Objetivo:** Dockerização e CI/CD em nuvem.

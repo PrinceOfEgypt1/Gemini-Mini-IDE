@@ -1,3 +1,17 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🎨 [Phase 13] Refinando UX do Modal de Preferências..."
+
+UI_DIR="packages/ui/src/components/settings"
+
+# ==============================================================================
+# 1. Reescrever SettingsModal.tsx
+# Organização: Cabeçalho "Preferências" -> Seção Geral -> Seção IA
+# ==============================================================================
+echo "📝 Atualizando $UI_DIR/SettingsModal.tsx..."
+
+cat > $UI_DIR/SettingsModal.tsx <<EOF
 import React, { useState, useEffect } from 'react';
 import { Button } from '../Button';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -77,13 +91,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               <div className="flex gap-1 bg-[var(--bg-panel)] p-1 rounded-lg border border-[var(--border-main)]">
                 <button 
                   onClick={() => setTheme('light')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${theme === 'light' ? 'bg-[#fbbf24] text-black shadow-sm' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-panel-hover)]'}`}
+                  className={\`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 \${theme === 'light' ? 'bg-[#fbbf24] text-black shadow-sm' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-panel-hover)]'}\`}
                 >
                   ☀️ Claro
                 </button>
                 <button 
                   onClick={() => setTheme('dark')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${theme === 'dark' ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-panel-hover)]'}`}
+                  className={\`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 \${theme === 'dark' ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-panel-hover)]'}\`}
                 >
                   🌙 Escuro
                 </button>
@@ -179,3 +193,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     </div>
   );
 };
+EOF
+
+# ==============================================================================
+# 2. Validação
+# ==============================================================================
+echo "🛡️  Validando UI..."
+pnpm --filter @mini-ide/ui lint
+pnpm --filter @mini-ide/ui build
+
+echo "✅ UX do Modal de Preferências ajustada!"

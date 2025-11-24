@@ -2,130 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Estilos globais básicos para reset e scrollbar */
-html, body {
-  height: 100%;
-  margin: 0;
-  background-color: #0f1420; /* bg-dark */
-  color: #e6ecff;
+/* === DESIGN TOKENS === */
+
+/* TEMA CLARO (Light Mode - Padrão) */
+:root {
+  --bg-app: #f1f5f9;         /* Cinza muito claro (Slate-100) */
+  --bg-panel: #ffffff;       /* Branco Puro */
+  --bg-panel-hover: #e2e8f0; /* Cinza claro (Slate-200) */
+  
+  --border-main: #cbd5e1;    /* Borda visível (Slate-300) */
+  
+  --text-primary: #0f172a;   /* Preto azulado (Slate-900) */
+  --text-secondary: #475569; /* Cinza escuro (Slate-600) */
+  --text-muted: #94a3b8;     /* Cinza médio (Slate-400) */
+  
+  --brand-primary: #2563eb;  /* Azul forte (Blue-600) */
+  --brand-hover: #1d4ed8;    /* Azul escuro (Blue-700) */
+  
+  --success: #16a34a;
+  --danger: #dc2626;
+  
+  /* Driver.js Light */
+  --driver-bg: #ffffff;
+  --driver-text: #0f172a;
+  --driver-border: #2563eb;
 }
 
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* TEMA ESCURO (Dark Mode - Ativado via classe .dark) */
+.dark {
+  --bg-app: #0f1420;         /* Azul muito escuro (quase preto) */
+  --bg-panel: #141b2b;       /* Azul escuro painel */
+  --bg-panel-hover: #1e293b; /* Azul um pouco mais claro */
+  
+  --border-main: #24304a;    /* Borda azulada sutil */
+  
+  --text-primary: #e6ecff;   /* Branco gelo */
+  --text-secondary: #9fb0d3; /* Azul acinzentado */
+  --text-muted: #475569;     /* Cinza escuro */
+  
+  --brand-primary: #4ba3ff;  /* Azul neon */
+  --brand-hover: #60a5fa;    /* Azul claro */
+  
+  --success: #47e6a1;
+  --danger: #ff5c7a;
+  
+  /* Driver.js Dark */
+  --driver-bg: #141b2b;
+  --driver-text: #e6ecff;
+  --driver-border: #ec4899;
 }
 
-::-webkit-scrollbar-track {
-  background: #141b2b; 
+/* Aplicação global suave */
+body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #24304a; 
-  border-radius: 4px;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-app); }
+::-webkit-scrollbar-thumb { background: var(--border-main); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--brand-primary); }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #4ba3ff; 
-}
-
-/* === Customização do Driver.js (Tour) === */
-
-/* Container principal do Popover */
+/* Driver.js Overrides */
 .driver-popover {
-  background-color: #141b2b !important; /* Fundo escuro igual aos painéis */
-  border: 2px solid #ec4899 !important;  /* Borda ROSA (Pink-500) */
-  border-radius: 12px !important;
-  box-shadow: 0 0 20px rgba(236, 72, 153, 0.3) !important; /* Glow rosa suave */
-  color: #e6ecff !important;
-  padding: 16px !important;
-  font-family: 'Inter', sans-serif !important;
-}
-
-/* Título */
-.driver-popover-title {
-  font-size: 18px !important;
-  font-weight: 700 !important;
-  color: #ffffff !important;
-  margin-bottom: 8px !important;
-}
-
-/* Descrição */
-.driver-popover-description {
-  font-size: 14px !important;
-  line-height: 1.5 !important;
-  color: #9fb0d3 !important; /* Cor muted do nosso tema */
-  margin-bottom: 16px !important;
-}
-
-/* Texto de Progresso (3 de 5) */
-.driver-popover-progress-text {
-  color: #64748b !important;
-  font-size: 12px !important;
-}
-
-/* Botões de Navegação */
-.driver-popover-footer button {
-  background-color: #222b40 !important;
-  color: #e6ecff !important;
-  border: 1px solid #24304a !important;
-  border-radius: 6px !important;
-  padding: 6px 12px !important;
-  font-size: 12px !important;
-  text-shadow: none !important;
-  transition: all 0.2s !important;
-}
-
-.driver-popover-footer button:hover {
-  background-color: #ec4899 !important; /* Hover rosa */
-  color: white !important;
-  border-color: #ec4899 !important;
-}
-
-/* Seta do Popover (triângulo) */
-.driver-popover-arrow {
-  border-color: #141b2b !important; /* Combina com o fundo */
-}
-/* Borda da seta (hack para simular border rosa na seta seria complexo, 
-   então deixamos neutro ou removemos a seta visualmente se preferir) */
-.driver-popover-arrow-side-left.driver-popover-arrow {
-  border-left-color: #ec4899 !important;
-}
-.driver-popover-arrow-side-right.driver-popover-arrow {
-  border-right-color: #ec4899 !important;
-}
-.driver-popover-arrow-side-top.driver-popover-arrow {
-  border-top-color: #ec4899 !important;
-}
-.driver-popover-arrow-side-bottom.driver-popover-arrow {
-  border-bottom-color: #ec4899 !important;
-}
-
-/* === Estilos do Manual (Markdown) === */
-.markdown-body h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #24304a;
-  padding-bottom: 0.5rem;
-}
-.markdown-body h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #4ba3ff;
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
-}
-.markdown-body p {
-  margin-bottom: 1rem;
-  color: #e6ecff;
-}
-.markdown-body ul, .markdown-body ol {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-  margin-bottom: 1rem;
-  color: #9fb0d3;
-}
-.markdown-body strong {
-  color: #47e6a1; /* Destaque verde */
+  background-color: var(--driver-bg) !important;
+  color: var(--driver-text) !important;
+  border: 2px solid var(--driver-border) !important;
 }

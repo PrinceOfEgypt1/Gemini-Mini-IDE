@@ -1,3 +1,18 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🚑 [Fix] Reaplicando Headers CORS no ExportController..."
+
+CONTROLLER_FILE="packages/server/src/controllers/export.controller.ts"
+
+# ==============================================================================
+# Reescrever ExportController
+# - Mantém tipagem estrita (Zod)
+# - Reintroduz headers CORS manuais no reply.raw
+# ==============================================================================
+echo "📝 Atualizando $CONTROLLER_FILE..."
+
+cat > "$CONTROLLER_FILE" <<EOF
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { ConsolidatorService } from '@mini-ide/analysis-agent';
 import archiver from 'archiver';
@@ -37,20 +52,20 @@ export class ExportController {
     const projectName = safeProjectData.name || 'mini-ide-project';
 
     const runId = Date.now().toString();
-    const tempDir = path.join(os.tmpdir(), `mini-ide-export-${runId}`);
+    const tempDir = path.join(os.tmpdir(), \`mini-ide-export-\${runId}\`);
     
     try {
       const consolidator = new ConsolidatorService(tempDir);
       await consolidator.saveArtifacts(safeProjectData);
 
       reply.header('Content-Type', 'application/zip');
-      reply.header('Content-Disposition', `attachment; filename="${projectName}.zip"`);
+      reply.header('Content-Disposition', \`attachment; filename="\${projectName}.zip"\`);
 
       const archive = archiver('zip', { zlib: { level: 9 } });
       archive.pipe(reply.raw);
       
       archive.append(
-        `# ${projectName}\n\nExportado em ${new Date().toISOString()}`,
+        \`# \${projectName}\n\nExportado em \${new Date().toISOString()}\`,
         { name: 'EXPORT_INFO.md' }
       );
 
@@ -70,3 +85,12 @@ export class ExportController {
     }
   }
 }
+EOF
+
+# ==============================================================================
+# Rebuild e Reinício
+# ==============================================================================
+echo "🏗️  Reconstruindo servidor..."
+pnpm --filter @mini-ide/server build
+
+echo "✅ Fix de CORS aplicado. Reinicie o servidor!"

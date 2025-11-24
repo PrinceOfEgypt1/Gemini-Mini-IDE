@@ -46,3 +46,9 @@ node packages/cli/dist/index.js analyze "Criar um CRUD"
 - **Segurança de Verdade:** Sua API Key agora trafega via Headers HTTP seguros e nunca é logada.
 - **Multi-Modelos:** Suporte nativo para OpenAI, Anthropic, Google Gemini, DeepSeek e **Ollama (Local)**.
 - **Inteligência Local:** O sistema entende intenções, requisitos e restrições em tempo real enquanto você digita.
+
+### 🚀 Versão v0.15.0 (AI Powered)
+- **Inteligência Real:** O sistema agora se conecta a LLMs reais (GPT-4, DeepSeek) para gerar código.
+- **Exportação Funcional:** Gere e baixe projetos completos em ZIP.
+- **Segurança:** Gestão de chaves via Headers HTTP seguros.
+- **Temas:** Suporte nativo a Dark e Light mode.

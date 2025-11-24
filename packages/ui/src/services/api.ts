@@ -1,24 +1,22 @@
 const API_BASE_URL = import.meta.env.VITE_MINI_IDE_SERVER_URL || 'http://localhost:3200';
 
-// Helper para pegar headers com autenticação
 const getAuthHeaders = () => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
   
   const apiKey = localStorage.getItem('mini-ide-api-key');
-  if (apiKey) {
-    headers['Authorization'] = `Bearer ${apiKey}`;
-  }
+  const model = localStorage.getItem('mini-ide-model');
+  const baseUrl = localStorage.getItem('mini-ide-base-url');
+
+  if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+  if (model) headers['X-LLM-Model'] = model;
+  if (baseUrl) headers['X-LLM-Base-Url'] = baseUrl;
   
   return headers;
 };
 
 export const api = {
-  /**
-   * Solicita a exportação do projeto como ZIP
-   * @param projectData Dados do projeto (HUs, código, etc)
-   */
   exportProjectZip: async (projectData: unknown) => {
     try {
       const response = await fetch(`${API_BASE_URL}/export`, {
@@ -28,9 +26,7 @@ export const api = {
       });
 
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Não autorizado: Verifique sua API Key em Preferências.');
-        }
+        if (response.status === 401) throw new Error('Não autorizado: Verifique sua API Key.');
         throw new Error(`Erro na exportação: ${response.statusText}`);
       }
 
@@ -43,7 +39,6 @@ export const api = {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
       return true;
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -52,10 +47,6 @@ export const api = {
     }
   },
 
-  /**
-   * Envia texto para análise (LLM)
-   * @param text Texto do usuário
-   */
   analyze: async (text: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/analyze`, {
@@ -65,10 +56,9 @@ export const api = {
       });
 
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('API Key ausente ou inválida. Configure em Preferências.');
-        }
-        throw new Error('Falha na análise.');
+        const errData = await response.json().catch(() => ({}));
+        if (response.status === 401) throw new Error('API Key inválida ou ausente.');
+        throw new Error(errData.error || `Erro no servidor: ${response.statusText}`);
       }
 
       return await response.json();
