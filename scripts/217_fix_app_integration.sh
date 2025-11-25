@@ -1,3 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ------------------------------------------------------------------------------
+# Script: scripts/217_fix_app_integration.sh
+# Objetivo: Reescrever App.tsx para corrigir erros de Lint e garantir integração
+# Autor: Mini-IDE Agent
+# Data: 2025-11-24
+# ------------------------------------------------------------------------------
+
+echo "🔧 Reparando integração no App.tsx..."
+
+cat << 'EOF' > packages/ui/src/App.tsx
 import React, { useState, useEffect } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
@@ -285,3 +298,7 @@ function App() {
 }
 
 export default App;
+EOF
+
+echo "✅ App.tsx reparado com sucesso."
+EOF

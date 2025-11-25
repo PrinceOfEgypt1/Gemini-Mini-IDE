@@ -1,3 +1,108 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ------------------------------------------------------------------------------
+# Script: scripts/216_impl_code_viewer.sh
+# Objetivo: Implementar visualizador de código e integrar com clique na Sidebar
+# Autor: Mini-IDE Agent
+# Data: 2025-11-24
+# ------------------------------------------------------------------------------
+
+echo "💻 Implementando Visualizador de Código (File Viewer)..."
+
+# 1. Criar componente FileViewer com estilo de IDE
+# ------------------------------------------------------------------------------
+mkdir -p packages/ui/src/components/code
+
+cat << 'EOF' > packages/ui/src/components/code/FileViewer.tsx
+import React from 'react';
+
+interface FileViewerProps {
+  filename: string;
+  content: string;
+}
+
+export const FileViewer: React.FC<FileViewerProps> = ({ filename, content }) => {
+  // Separa o conteúdo em linhas para gerar numeração
+  const lines = content.split('\n');
+
+  return (
+    <div className="flex flex-col h-full bg-[#1e1e1e] text-[#d4d4d4] font-mono text-sm rounded-lg overflow-hidden border border-[var(--border-main)]">
+      {/* Header do Arquivo */}
+      <div className="flex items-center px-4 py-2 bg-[#252526] border-b border-[#3e3e42]">
+        <span className="text-[#858585] mr-2">📄</span>
+        <span className="font-medium text-xs">{filename}</span>
+      </div>
+
+      {/* Corpo do Código com Numeração */}
+      <div className="flex-1 overflow-auto flex">
+        {/* Coluna de Números */}
+        <div className="bg-[#1e1e1e] text-[#858585] text-right pr-3 pl-2 select-none border-r border-[#3e3e42] py-4 min-h-full leading-6">
+          {lines.map((_, i) => (
+            <div key={i} className="h-6">{i + 1}</div>
+          ))}
+        </div>
+
+        {/* Conteúdo do Código */}
+        <div className="flex-1 p-4 leading-6 whitespace-pre tab-4">
+          {content}
+        </div>
+      </div>
+    </div>
+  );
+};
+EOF
+
+# 2. Adicionar aba "Código" ao WorkspaceTabs
+# ------------------------------------------------------------------------------
+echo "📑 Atualizando WorkspaceTabs para incluir aba Código..."
+
+cat << 'EOF' > packages/ui/src/components/WorkspaceTabs.tsx
+import React from 'react';
+
+interface WorkspaceTabsProps {
+  activeTab: string;
+  onTabChange: (tabId: string) => void;
+}
+
+export const WorkspaceTabs: React.FC<WorkspaceTabsProps> = ({ activeTab, onTabChange }) => {
+  const tabs = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'code', label: 'Código' }, // Nova aba
+    { id: 'hus', label: 'HUs' },
+    { id: 'docs', label: 'Docs' },
+    { id: 'tests', label: 'Tests' },
+    { id: 'timeline', label: 'Timeline' },
+    { id: 'outputs', label: 'Outputs' },
+  ];
+
+  return (
+    <div className="flex items-center gap-1 border-b border-[var(--border-main)] overflow-x-auto no-scrollbar">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() => onTabChange(tab.id)}
+          className={`
+            px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap
+            ${activeTab === tab.id 
+              ? 'text-[var(--brand-primary)] border-b-2 border-[var(--brand-primary)]' 
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-panel-hover)]'
+            }
+          `}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+EOF
+
+# 3. Integrar tudo no App.tsx
+# ------------------------------------------------------------------------------
+echo "🔗 Conectando Sidebar ao FileViewer no App.tsx..."
+
+cat << 'EOF' > packages/ui/src/App.tsx
 import React, { useState, useEffect } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
@@ -5,7 +110,7 @@ import { WorkspaceTabs } from './components/WorkspaceTabs';
 import { Sidebar } from './components/Sidebar';
 import { HUsPanel } from './components/hus/HUsPanel';
 import { DocsPanel } from './components/docs/DocsPanel';
-import { FileViewer } from './components/code/FileViewer';
+import { FileViewer } from './components/code/FileViewer'; // Nova Importação
 import { UserStory } from './components/hus/UserStoryCard';
 import { Button } from './components/Button';
 import { ProjectWizard } from './components/wizard/ProjectWizard';
@@ -249,23 +354,6 @@ const MainLayout = () => {
         </aside>
       </main>
 
-      <footer className="px-4 py-3 bg-[var(--bg-panel)] border-t border-[var(--border-main)] grid grid-cols-[1fr_auto] gap-3 transition-colors duration-300">
-        <textarea
-          value={chatInput}
-          onChange={(e) => setChatInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Digite em linguagem natural... (Ctrl+Enter para enviar)"
-          className="w-full h-[60px] bg-[var(--bg-app)] border border-[var(--border-main)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--brand-primary)] resize-none transition-colors"
-          disabled={isAnalyzing}
-        />
-        <div className="flex items-end gap-2">
-          <Button variant="ghost" onClick={handleAttach} title="Anexar Arquivo">📎</Button>
-          <Button variant="primary" onClick={handleSendMessage} disabled={isAnalyzing || !chatInput.trim()}>
-            {isAnalyzing ? '...' : 'Enviar'}
-          </Button>
-        </div>
-      </footer>
-
       <ProjectWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} />
       <QuickStartGallery isOpen={isQuickStartOpen} onClose={() => setIsQuickStartOpen(false)} onSelectTemplate={handleTemplateSelect} onStartTour={handleStartTour} />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
@@ -285,3 +373,7 @@ function App() {
 }
 
 export default App;
+EOF
+
+echo "✅ Visualizador de código (FileViewer) implementado e integrado."
+EOF

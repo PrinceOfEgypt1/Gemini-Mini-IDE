@@ -1,22 +1,32 @@
 # Mini-IDE — Manual de Engenharia
 
-> **Versão do Documento:** 9.2 (Governance Fix)
-> **Versão do Software:** v0.15.0 (AI Powered)
+> **Versão do Documento:** 10.0 (Visualization Complete)
+> **Versão do Software:** v0.15.1 (UI Powered)
 > **Data:** 2025-11-24
 > **Pipeline:** 🟢 Verde (Lint, Types, Tests, Build, Smoke)
 
 ---
 
-# 🗺️ Plano de Desenvolvimento Mestre (Rastreabilidade)
+# 🗺️ Plano de Desenvolvimento Mestre
 
 Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven**.
 
-## 1. Fases Concluídas (Histórico Técnico)
+## 1. Fases Concluídas (Histórico Técnico Completo)
 
-*(Fases 1 a 11 - Detalhes mantidos no histórico do git)*
-- **Fundação (1-4):** Monorepo, CLI, Mocks.
-- **Core UI (5-9):** React, Tailwind v3, Chat.
-- **Engenharia (10-11):** Wizard, Consolidador, Exportação ZIP.
+### ✅ Fase 1-4: Fundação e Backend Core
+- **Objetivo:** Estabelecer infraestrutura e lógica base.
+- **Artefatos:** Monorepo (PNPM), Fastify Server, CLI, Mocks iniciais.
+- **Status:** Configuração de TypeScript Estrito e ESLint (desafio superado de versões).
+
+### ✅ Fase 5-9: Core UI e Explorador
+- **Objetivo:** Criar interface React moderna e responsiva.
+- **Artefatos:** Tailwind CSS v3, Componentes Base (Button, Modal), Discovery Notes (Regex Local).
+- **Status:** Implementação do fluxo de chat e análise preliminar.
+
+### ✅ Fase 10-11: Engenharia e Consolidação
+- **Objetivo:** Transformar JSON em arquivos reais.
+- **Artefatos:** ConsolidatorService, Archiver (ZIP), Wizard de Criação.
+- **Status:** Resolução do conflito de dependências ("Inferno das Dependências") com limpeza de lockfile.
 
 ### ✅ Fase 12: Experiência do Usuário & Segurança (Produto)
 **Objetivo:** Transformar a ferramenta técnica em um produto amigável e seguro.
@@ -33,41 +43,25 @@ Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven
 - **Artefatos:** `agent.ts` (OpenAI SDK), `server/src/index.ts` (Security Headers).
 - **HUs Entregues:** 12.7, 14.6, 14.7, 14.8.
 
+### ✅ Fase 15: Visualização Interativa (UI Powered)
+**Objetivo:** Transformar dados JSON em UI rica e navegável.
+- **Sidebar:** Implementada árvore recursiva (`FileTree.tsx`) conectada ao JSON.
+- **Code Viewer:** Visualizador de código estilo IDE com numeração de linhas (`FileViewer.tsx`).
+- **HUs:** Cards visuais com parser resiliente para RF/RNF/Segurança (`UserStoryCard.tsx`).
+- **Docs:** Renderização Markdown completa na aba Docs (`DocsPanel.tsx`).
+- **Status:** Pipeline Verde. Integração total Backend -> Frontend.
+
 ---
 
 ## 2. Roadmap Futuro (Backlog Pendente)
 
-### 🚧 Fase 15: Visualização Interativa (Foco Atual)
-**Objetivo:** Substituir "Em breve" por dados reais na UI (Sidebar e Abas).
+### 🚧 Fase 16: Refinamento de Inteligência e Testes
+**Objetivo:** Garantir que a IA forneça dados estruturados para preencher 100% da UI.
+- Refinar Prompt da Persona Product (HU 16.1).
+- Gerar arquivos de teste físicos para aba Tests (HU 16.2).
 
-#### Planejamento de HUs
-- [ ] **15.1 HU-UI-Viz-Sidebar-022**: Árvore de arquivos dinâmica na lateral.
-- [ ] **15.2 HU-UI-Viz-HUs-023**: Renderização visual das Histórias de Usuário.
-- [ ] **15.3 HU-UI-Viz-Docs-024**: Visualizador Markdown para abas Docs e README.
-- [ ] **15.4 HU-UI-Interaction-Refine-025**: Fluxo de refinamento via Chat.
-
-#### 📐 Especificações Técnicas da Fase 15
-*Diretrizes de implementação para a próxima Sprint:*
-
-**15.1 Sidebar (File Tree):**
-- **Entrada:** `generatedProject.engine.files` (Array plano).
-- **Lógica:** Converter paths (`src/index.js`) em árvore aninhada (Objeto ou Map).
-- **UI:** Componente recursivo com indentação e ícones (pasta/arquivo).
-
-**15.2 Aba HUs:**
-- **Entrada:** `generatedProject.product.userStories`.
-- **UI:** Grid de cards. Cada card deve ter checkbox para "Critérios de Aceite" (estado local).
-
-**15.3 Aba Docs:**
-- **Lógica:** Encontrar o arquivo que termina em `README.md` no payload.
-- **Render:** Usar `react-markdown` com o plugin `rehype-highlight` (se necessário para código).
-
-**15.4 Refinamento:**
-- **Backend:** Endpoint `/analyze` deve aceitar um contexto opcional `previousContext`.
-- **Frontend:** Manter histórico de versões do projeto no estado React.
-
-### 📅 Fase 16: Persistência Real
+### 📅 Fase 17: Persistência Real
 **Objetivo:** Banco de Dados (SQLite/Postgres) para salvar histórico.
 
-### 📅 Fase 17: Deploy & DevOps
+### 📅 Fase 18: Deploy & DevOps
 **Objetivo:** Docker e CI/CD em nuvem.

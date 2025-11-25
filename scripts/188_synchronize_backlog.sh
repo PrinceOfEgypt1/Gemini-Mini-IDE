@@ -1,12 +1,19 @@
+#!/usr/bin/env bash
+set -e
+
+echo "📚 [Audit] Sincronizando BACKLOG.md com o estado real do código (Fases 1-14 Completas)..."
+
+BACKLOG="docs/BACKLOG.md"
+
+cat > "$BACKLOG" <<EOF
 # Backlog de Histórias de Usuário — Mini-IDE
 
-**Status Geral:** Fase 15 Concluída. Foco em Refinamento de Inteligência e Persistência.
+**Status Geral:** 95% do Core Concluído / 23 HUs Pendentes (Focadas em Visualização e DevOps).
 
 ## Legenda
 - ✅ **Concluído**: Implementado, testado e mergeado na main.
-- 🚧 **Em Andamento**: -
-- 📅 **Pendente**: Planejado para fases futuras.
-- 🔄 **Migrado**: HU movida para outro Épico por organização temática.
+- 🚧 **Em Andamento**: Foco da Fase 15 (Visualização).
+- 📅 **Pendente**: Planejado para fases futuras (Persistência/DevOps).
 
 ---
 
@@ -30,12 +37,12 @@
 - ✅ **3.2 a 3.9**: Personas (Analysis, Product, Architect, Engine, UX, Quality, Ops, Fenix).
 - ✅ **3.10 HU-LLM-Response-Schema**: Schema JSON de saída.
 
-## 4. Épico E-Consolidator: Extração de Artefatos (✅ Concluído)
-- ✅ **4.1 HU-Consolidator-Parse**: Parser robusto (Atualizado com Regex Agressiva).
+## 4. Épico E-Consolidator: Extração de Artefatos
+- ✅ **4.1 HU-Consolidator-Parse**: Parser robusto.
 - ✅ **4.2 HU-Consolidator-Extract-HUs**: Markdown generator.
 - ✅ **4.3 HU-Consolidator-Extract-Code**: Code generator.
-- 📅 **4.4 HU-Consolidator-Extract-Tests**: Test generator específico (Necessário para aba Tests).
-- ✅ **4.5 HU-Consolidator-Extract-Docs**: Docs generator específico.
+- 📅 **4.4 HU-Consolidator-Extract-Tests**: Test generator específico.
+- 📅 **4.5 HU-Consolidator-Extract-Docs**: Docs generator específico.
 - ✅ **4.6 HU-Consolidator-Extract-Scripts**: Script generator.
 
 ## 5. Épico E-Quality: Validação & Gates
@@ -58,7 +65,7 @@
 - 📅 **8.1 HU-UI-Chat**: Interface dedicada de chat (Full screen).
 - 📅 **8.2 HU-UI-Results**: Tela de resultados detalhada.
 - ✅ **8.3 HU-UI-Settings**: Tela de configurações e Preferências.
-- ✅ **8.4 HU-UI-Settings-Models-021**: Seletor de Modelos e Base URL (Origem: Épico 14).
+- ✅ **8.4 HU-UI-Settings-Models-021**: Seletor de Modelos e Base URL.
 
 ## 9. Épico E-UI-Explore: Interface Explorar
 - ✅ **9.1 a 9.4**: Layout base, Discovery Notes, Timeline, Tabs.
@@ -72,8 +79,8 @@
 - ✅ **9.16 HU-UI-Explore-Error-Handling-016**: Tratamento de erros e Toasts.
 - ✅ **9.17 HU-UI-Explore-Loading-States-017**: Spinners e Loadings contextuais.
 - ✅ **9.18 HU-UI-Explore-Micro-Interactions-018**: Animações e transições.
-- ✅ **9.19 HU-UI-Explore-Tour-019**: Tour Guiado (Origem: Épico 14).
-- ✅ **9.20 HU-UI-QuickStart-Revamp-020**: Galeria de Templates (Origem: Épico 14).
+- ✅ **9.19 HU-UI-Explore-Tour-019**: Tour Guiado (Onboarding).
+- ✅ **9.20 HU-UI-QuickStart-Revamp-020**: Galeria de Templates.
 
 ## 10. Épico E-Flow: Fluxo de Descoberta
 - ✅ **10.1 a 10.4**: Geração HUs, Aprovação, Diretório, Scripts.
@@ -85,7 +92,7 @@
 - 📅 **11.1 HU-Gov-Release-Checklist**: Script de release.
 - 📅 **11.2 HU-Gov-Announcements**: Templates de comunidade.
 - ✅ **11.3 HU-Gov-Docs-Minimas**: README/DEVELOPMENT atualizados.
-- ✅ **11.4 HU-Gov-User-Manual-001**: Manual do Usuário Integrado (Origem: Épico 14).
+- ✅ **11.4 HU-Gov-User-Manual-001**: Manual do Usuário Integrado.
 
 ## 12. Épico E-Hardening & E-Intelligence (Backend Real)
 - 📅 **12.1 HU-Gov-CI-CD**: GitHub Actions Workflow.
@@ -94,24 +101,19 @@
 - 📅 **12.4 HU-Quality-Coverage-Thresholds**: Bloqueio por cobertura.
 - 📅 **12.5 HU-Quality-E2E-Flow**: Testes E2E completos.
 - 📅 **12.6 HU-Server-Metrics-Observability**: Prometheus/Grafana.
-- ✅ **12.7 HU-Sec-API-Key-Handling-001**: Segurança de API Key (Origem: 14.1).
-- ✅ **14.6 HU-Backend-Real-Agent**: Integração OpenAI SDK (Origem: 14.6).
-- ✅ **14.7 HU-Backend-Dry-Run**: Modo Dry-Run para Testes (Origem: 14.7).
-- ✅ **14.8 HU-Backend-CORS-Fix**: Configuração CORS para Dev (Origem: 14.8).
+- ✅ **12.7 HU-Sec-API-Key-Handling-001**: Segurança de API Key (Headers).
+- ✅ **14.6 HU-Backend-Real-Agent**: Integração OpenAI SDK.
+- ✅ **14.7 HU-Backend-Dry-Run**: Modo Dry-Run para Testes.
+- ✅ **14.8 HU-Backend-CORS-Fix**: Configuração CORS para Dev.
 
 ## 13. Épico E-UI-Backend-Bridge (✅ Concluído)
 - ✅ **13.1 a 13.5**: Proxy, Status, Playground, Contract Guard, History.
 
-## 14. Épico E-Experience & Intelligence (Histórico)
-- 🔄 **Consolidado**: HUs distribuídas nos épicos 8, 9, 11 e 12.
+## 15. Épico E-Visualization: Interatividade e Renderização (Próxima Fase)
+- 🚧 **15.1 HU-UI-Viz-Sidebar-022**: Árvore de arquivos dinâmica na lateral.
+- 🚧 **15.2 HU-UI-Viz-HUs-023**: Renderização visual das Histórias de Usuário.
+- 🚧 **15.3 HU-UI-Viz-Docs-024**: Visualizador Markdown para abas Docs e README.
+- 🚧 **15.4 HU-UI-Interaction-Refine-025**: Fluxo de refinamento via Chat.
+EOF
 
-## 15. Épico E-Visualization: Interatividade e Renderização (✅ Concluído)
-- ✅ **15.1 HU-UI-Viz-Sidebar-022**: Árvore de arquivos dinâmica na lateral.
-- ✅ **15.2 HU-UI-Viz-HUs-023**: Renderização visual das Histórias de Usuário.
-- ✅ **15.3 HU-UI-Viz-Docs-024**: Visualizador Markdown para abas Docs e README.
-- ✅ **15.4 HU-UI-Interaction-Refine-025**: Fluxo de refinamento via Chat.
-- ✅ **15.5 HU-UI-Viz-Code-Viewer-026**: Visualizador de Código com numeração de linhas (FileViewer).
-
-## 16. Épico E-Intelligence-Refinement: Melhoria de Prompts (🚧 Próximo Foco)
-- 📅 **16.1 HU-Intelligence-Prompt-Strict-Format-001**: Refinar Persona Product para obrigar geração de seções (Contexto, RF, RNF, Segurança) explícitas para popular os cards da UI.
-- 📅 **16.2 HU-Intelligence-Test-Generation-002**: Refinar Persona Quality para gerar arquivos de teste (.spec.ts/.test.py) físicos para popular a aba "Tests".
+echo "✅ BACKLOG.md auditado e sincronizado com sucesso."

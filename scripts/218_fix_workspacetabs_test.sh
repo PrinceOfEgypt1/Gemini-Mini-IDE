@@ -1,3 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ------------------------------------------------------------------------------
+# Script: scripts/218_fix_workspacetabs_test.sh
+# Objetivo: Atualizar teste do WorkspaceTabs para o novo estilo visual (border-bottom)
+# Autor: Mini-IDE Agent
+# Data: 2025-11-24
+# ------------------------------------------------------------------------------
+
+echo "🔧 Corrigindo teste de regressão visual no WorkspaceTabs..."
+
+cat << 'EOF' > packages/ui/test/components/WorkspaceTabs.test.tsx
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
@@ -35,3 +48,7 @@ describe('WorkspaceTabs', () => {
     expect(tabHu.className).toContain('text-[var(--brand-primary)]');
   });
 });
+EOF
+
+echo "✅ Teste WorkspaceTabs atualizado com sucesso."
+EOF

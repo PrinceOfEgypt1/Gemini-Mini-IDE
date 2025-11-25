@@ -1,11 +1,119 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ------------------------------------------------------------------------------
+# Script: scripts/208_impl_docs_tab.sh
+# Objetivo: Implementar visualização de Documentação (HU-UI-Viz-Docs-024)
+# Autor: Mini-IDE Agent
+# Data: 2025-11-24
+# ------------------------------------------------------------------------------
+
+echo "🚀 Iniciando implementação da HU-UI-Viz-Docs-024..."
+
+# 1. Criar componente DocsPanel
+# ------------------------------------------------------------------------------
+echo "📝 Criando componente DocsPanel..."
+mkdir -p packages/ui/src/components/docs
+
+cat << 'EOF' > packages/ui/src/components/docs/DocsPanel.tsx
+import React, { useMemo } from 'react';
+import ReactMarkdown from 'react-markdown';
+
+interface GeneratedFile {
+  path: string;
+  content: string;
+}
+
+interface DocsPanelProps {
+  files?: GeneratedFile[];
+}
+
+export const DocsPanel: React.FC<DocsPanelProps> = ({ files = [] }) => {
+  // Lógica para encontrar o melhor arquivo de documentação
+  const docFile = useMemo(() => {
+    // Prioridade 1: README.md na raiz
+    const readme = files.find(f => f.path === 'README.md' || f.path === './README.md');
+    if (readme) return readme;
+
+    // Prioridade 2: Qualquer markdown na raiz
+    const anyMd = files.find(f => f.path.endsWith('.md') && !f.path.includes('/'));
+    if (anyMd) return anyMd;
+
+    // Prioridade 3: Qualquer markdown
+    return files.find(f => f.path.endsWith('.md'));
+  }, [files]);
+
+  if (!docFile) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-[var(--text-muted)]">
+        <svg className="w-12 h-12 mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        <p>Nenhuma documentação encontrada.</p>
+        <p className="text-xs mt-2">Gere um projeto para ver o README.md aqui.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col">
+      <div className="mb-4 pb-2 border-b border-[var(--border-main)] flex justify-between items-center">
+        <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
+          <span className="text-[var(--brand-primary)]">📄</span>
+          {docFile.path}
+        </h3>
+      </div>
+      
+      <div className="flex-1 overflow-y-auto pr-2 markdown-content">
+        {/* 
+           Usamos classes utilitárias para estilizar o Markdown cru.
+           Em um cenário ideal, usaríamos o plugin @tailwindcss/typography (classe 'prose'),
+           mas para evitar adicionar deps agora, faremos estilos inline via CSS global ou classes manuais.
+        */}
+        <article className="prose prose-invert max-w-none text-sm text-[var(--text-secondary)]">
+          <ReactMarkdown
+            components={{
+              h1: ({node, ...props}) => <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-4 mt-2 pb-2 border-b border-[var(--border-main)]" {...props} />,
+              h2: ({node, ...props}) => <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-3 mt-6" {...props} />,
+              h3: ({node, ...props}) => <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2 mt-4" {...props} />,
+              p: ({node, ...props}) => <p className="mb-4 leading-relaxed" {...props} />,
+              ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-4 space-y-1" {...props} />,
+              ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-4 space-y-1" {...props} />,
+              li: ({node, ...props}) => <li className="" {...props} />,
+              code: ({node, inline, className, children, ...props}: any) => {
+                 return inline ? (
+                    <code className="bg-[var(--bg-panel-hover)] px-1 py-0.5 rounded text-[var(--brand-primary)] font-mono text-xs" {...props}>{children}</code>
+                 ) : (
+                    <pre className="bg-[var(--bg-panel)] border border-[var(--border-main)] p-3 rounded-lg overflow-x-auto mb-4 font-mono text-xs text-[var(--text-secondary)]">
+                      <code {...props}>{children}</code>
+                    </pre>
+                 )
+              },
+              blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-[var(--brand-primary)] pl-4 italic text-[var(--text-muted)] mb-4" {...props} />,
+              a: ({node, ...props}) => <a className="text-[var(--brand-primary)] hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+            }}
+          >
+            {docFile.content}
+          </ReactMarkdown>
+        </article>
+      </div>
+    </div>
+  );
+};
+EOF
+
+# 2. Integrar DocsPanel ao App.tsx
+# ------------------------------------------------------------------------------
+echo "🔗 Integrando DocsPanel ao App.tsx..."
+
+cat << 'EOF' > packages/ui/src/App.tsx
 import React, { useState, useEffect } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
 import { WorkspaceTabs } from './components/WorkspaceTabs';
 import { Sidebar } from './components/Sidebar';
 import { HUsPanel } from './components/hus/HUsPanel';
-import { DocsPanel } from './components/docs/DocsPanel';
-import { FileViewer } from './components/code/FileViewer';
+import { DocsPanel } from './components/docs/DocsPanel'; // Nova Integração
 import { UserStory } from './components/hus/UserStoryCard';
 import { Button } from './components/Button';
 import { ProjectWizard } from './components/wizard/ProjectWizard';
@@ -52,11 +160,8 @@ const MainLayout = () => {
     intent: [], reqs: [], constraints: []
   });
 
-  // ESTADO DO PROJETO
+  // ESTADO: Armazena o projeto gerado pela IA
   const [generatedProject, setGeneratedProject] = useState<GeneratedProject | null>(null);
-  
-  // ESTADO DO ARQUIVO SELECIONADO
-  const [selectedFile, setSelectedFile] = useState<{path: string, content: string} | null>(null);
 
   const [mode] = useState<'Explorando' | 'Executando'>('Explorando');
 
@@ -69,9 +174,10 @@ const MainLayout = () => {
 
   const handleExportZip = async () => {
     if (!generatedProject) {
-      showToast('Nenhum projeto gerado ainda.', 'warning');
+      showToast('Nenhum projeto gerado ainda. Peça algo no chat primeiro!', 'warning');
       return;
     }
+
     setIsExporting(true);
     showToast('Iniciando exportação...', 'info');
     try {
@@ -100,7 +206,7 @@ const MainLayout = () => {
 
       const agentText = `Análise concluída! (ID: ${response.requestId}).\nResumo: ${response.summary}`;
       setChatHistory(prev => [...prev, { role: 'agent', text: agentText }]);
-      showToast('Projeto gerado! Veja os arquivos no Explorer.', 'success');
+      showToast('Análise recebida! Abas atualizadas.', 'success');
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : 'Erro desconhecido';
       setChatHistory(prev => [...prev, { role: 'agent', text: `Erro: ${errMsg}` }]);
@@ -133,17 +239,6 @@ const MainLayout = () => {
   const projectFiles = generatedProject?.engine?.files || [];
   const projectHUs = generatedProject?.product?.userStories || [];
 
-  // AÇÃO AO CLICAR NO ARQUIVO (Sidebar)
-  const handleFileSelect = (path: string) => {
-    const file = projectFiles.find(f => f.path === path);
-    if (file) {
-      setSelectedFile(file);
-      setActiveTab('code'); // Muda para a aba Código automaticamente
-    } else {
-      showToast('Arquivo não encontrado no bundle.', 'error');
-    }
-  };
-
   return (
     <div className="h-screen grid grid-rows-[56px_1fr_auto] bg-[var(--bg-app)] text-[var(--text-primary)] font-sans overflow-hidden transition-colors duration-300">
       <header className="flex items-center gap-3 px-4 bg-[var(--bg-panel)]/90 border-b border-[var(--border-main)] shadow-sm z-10 backdrop-blur-sm transition-colors duration-300">
@@ -168,7 +263,7 @@ const MainLayout = () => {
         <div className="border-r border-[var(--border-main)] h-full overflow-hidden">
           <Sidebar 
             files={projectFiles} 
-            onSelectFile={handleFileSelect} 
+            onSelectFile={(path) => showToast(`Selecionado: ${path}`, 'info')} 
           />
         </div>
 
@@ -193,19 +288,10 @@ const MainLayout = () => {
               </div>
             )}
             
-            {/* Aba de Código (IDE Viewer) */}
-            {activeTab === 'code' && (
-              selectedFile ? (
-                <FileViewer filename={selectedFile.path} content={selectedFile.content} />
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-[var(--text-muted)]">
-                  <p>Selecione um arquivo no Explorer para visualizar o código.</p>
-                </div>
-              )
-            )}
-
+            {/* Abas Dinâmicas */}
             {activeTab === 'hus' && <HUsPanel stories={projectHUs} />}
             
+            {/* Renderização do README/Docs */}
             {activeTab === 'docs' && <DocsPanel files={projectFiles} />}
 
             {activeTab === 'timeline' && <ExploreTimeline />}
@@ -285,3 +371,7 @@ function App() {
 }
 
 export default App;
+EOF
+
+echo "✅ DocsPanel (Visualizador Markdown) integrado."
+EOF

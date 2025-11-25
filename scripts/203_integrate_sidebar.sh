@@ -1,12 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ------------------------------------------------------------------------------
+# Script: scripts/203_integrate_sidebar.sh
+# Objetivo: Conectar Sidebar dinâmica ao App.tsx
+# Autor: Mini-IDE Agent
+# Data: 2025-11-24
+# ------------------------------------------------------------------------------
+
+echo "🔌 Iniciando integração da Sidebar no App.tsx..."
+
+# Sobrescreve App.tsx com a versão integrada
+cat << 'EOF' > packages/ui/src/App.tsx
 import React, { useState, useEffect } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
 import { WorkspaceTabs } from './components/WorkspaceTabs';
-import { Sidebar } from './components/Sidebar';
-import { HUsPanel } from './components/hus/HUsPanel';
-import { DocsPanel } from './components/docs/DocsPanel';
-import { FileViewer } from './components/code/FileViewer';
-import { UserStory } from './components/hus/UserStoryCard';
+import { Sidebar } from './components/Sidebar'; // Novo componente
 import { Button } from './components/Button';
 import { ProjectWizard } from './components/wizard/ProjectWizard';
 import { QuickStartGallery } from './components/wizard/QuickStartGallery';
@@ -18,13 +28,10 @@ import { api } from './services/api';
 import { startOnboardingTour } from './services/tour';
 import { parseDiscoveryMessage, DiscoveryData } from './utils/discoveryParser';
 
-// Interface para tipagem do projeto gerado
+// Interface auxiliar para tipar o projeto gerado
 interface GeneratedProject {
   engine?: {
     files?: Array<{ path: string; content: string }>;
-  };
-  product?: {
-    userStories?: UserStory[];
   };
   summary?: string;
   requestId?: string;
@@ -52,11 +59,8 @@ const MainLayout = () => {
     intent: [], reqs: [], constraints: []
   });
 
-  // ESTADO DO PROJETO
+  // ESTADO: Armazena o projeto gerado pela IA
   const [generatedProject, setGeneratedProject] = useState<GeneratedProject | null>(null);
-  
-  // ESTADO DO ARQUIVO SELECIONADO
-  const [selectedFile, setSelectedFile] = useState<{path: string, content: string} | null>(null);
 
   const [mode] = useState<'Explorando' | 'Executando'>('Explorando');
 
@@ -69,12 +73,14 @@ const MainLayout = () => {
 
   const handleExportZip = async () => {
     if (!generatedProject) {
-      showToast('Nenhum projeto gerado ainda.', 'warning');
+      showToast('Nenhum projeto gerado ainda. Peça algo no chat primeiro!', 'warning');
       return;
     }
+
     setIsExporting(true);
     showToast('Iniciando exportação...', 'info');
     try {
+      // Envia o projeto REAL gerado pela IA
       await api.exportProjectZip(generatedProject);
       showToast('Projeto exportado com sucesso!', 'success');
     } catch {
@@ -96,11 +102,15 @@ const MainLayout = () => {
     setIsAnalyzing(true);
     try {
       const response = await api.analyze(userMsg);
+
+      // CAPTURA CRÍTICA: Salva o JSON completo da IA
       setGeneratedProject(response as GeneratedProject);
 
       const agentText = `Análise concluída! (ID: ${response.requestId}).\nResumo: ${response.summary}`;
       setChatHistory(prev => [...prev, { role: 'agent', text: agentText }]);
-      showToast('Projeto gerado! Veja os arquivos no Explorer.', 'success');
+      showToast('Análise recebida! Código pronto para exportação.', 'success');
+
+      // Feedback visual na Timeline (futuro)
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : 'Erro desconhecido';
       setChatHistory(prev => [...prev, { role: 'agent', text: `Erro: ${errMsg}` }]);
@@ -129,20 +139,8 @@ const MainLayout = () => {
     showToast('Funcionalidade de anexo em breve!', 'info');
   };
 
-  // Extração segura de dados
+  // Extração segura de arquivos para a Sidebar
   const projectFiles = generatedProject?.engine?.files || [];
-  const projectHUs = generatedProject?.product?.userStories || [];
-
-  // AÇÃO AO CLICAR NO ARQUIVO (Sidebar)
-  const handleFileSelect = (path: string) => {
-    const file = projectFiles.find(f => f.path === path);
-    if (file) {
-      setSelectedFile(file);
-      setActiveTab('code'); // Muda para a aba Código automaticamente
-    } else {
-      showToast('Arquivo não encontrado no bundle.', 'error');
-    }
-  };
 
   return (
     <div className="h-screen grid grid-rows-[56px_1fr_auto] bg-[var(--bg-app)] text-[var(--text-primary)] font-sans overflow-hidden transition-colors duration-300">
@@ -162,13 +160,14 @@ const MainLayout = () => {
         </div>
       </header>
 
+      {/* Ajuste de grid: auto para acomodar a largura da Sidebar */}
       <main className="grid grid-cols-[auto_1fr_360px] gap-0 overflow-hidden">
         
         {/* Sidebar Integrada */}
         <div className="border-r border-[var(--border-main)] h-full overflow-hidden">
           <Sidebar 
             files={projectFiles} 
-            onSelectFile={handleFileSelect} 
+            onSelectFile={(path) => showToast(`Selecionado: ${path}`, 'info')} 
           />
         </div>
 
@@ -192,24 +191,7 @@ const MainLayout = () => {
                 <div className="h-full"><DiscoveryNotes data={discoveryData} /></div>
               </div>
             )}
-            
-            {/* Aba de Código (IDE Viewer) */}
-            {activeTab === 'code' && (
-              selectedFile ? (
-                <FileViewer filename={selectedFile.path} content={selectedFile.content} />
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-[var(--text-muted)]">
-                  <p>Selecione um arquivo no Explorer para visualizar o código.</p>
-                </div>
-              )
-            )}
-
-            {activeTab === 'hus' && <HUsPanel stories={projectHUs} />}
-            
-            {activeTab === 'docs' && <DocsPanel files={projectFiles} />}
-
             {activeTab === 'timeline' && <ExploreTimeline />}
-            
             {activeTab === 'outputs' && (
               <div className="flex flex-col items-center justify-center h-full gap-4">
                 <div className="text-[var(--text-muted)]">Artefatos prontos para download.</div>
@@ -219,7 +201,7 @@ const MainLayout = () => {
                 {!generatedProject && <p className="text-xs text-[var(--danger)]">Gere um projeto no chat primeiro!</p>}
               </div>
             )}
-            {['tests'].includes(activeTab) && <div className="text-[var(--text-muted)] text-center mt-10">Em breve.</div>}
+            {['hus', 'docs', 'tests'].includes(activeTab) && <div className="text-[var(--text-muted)] text-center mt-10">Em breve.</div>}
           </div>
         </section>
 
@@ -285,3 +267,6 @@ function App() {
 }
 
 export default App;
+EOF
+
+echo "✅ App.tsx atualizado com Sidebar dinâmica."
