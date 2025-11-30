@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-describe('analysis-agent sanity check', () => {
-it('should be true', () => {
-expect(true).toBe(true);
-});
+
+describe('@mini-ide/analysis-agent exports', () => {
+  it('deve exportar AnalysisAgent', async () => {
+    const module = await import('./index');
+    expect(module.AnalysisAgent).toBeDefined();
+  });
 });

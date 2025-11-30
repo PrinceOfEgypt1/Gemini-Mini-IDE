@@ -4,7 +4,7 @@ export interface UserStory {
   title: string;
   description: string;
   acceptanceCriteria: string[];
-  priority: 'P0' | 'P1' | 'P2';
+  priority: 'P0' | 'P1' | 'P2' | 'P3';
 }
 
 /** Configuração do projeto definida pelo usuário. */

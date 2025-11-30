@@ -1,72 +1,91 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import { ConsolidatorService } from '@mini-ide/analysis-agent';
-import archiver from 'archiver';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
-import { z } from 'zod';
+import { FastifyRequest, FastifyReply } from "fastify";
+import archiver from "archiver";
+import { PassThrough } from "stream";
 
-const ExportRequestSchema = z.object({
-  projectData: z.object({
-    product: z.any().optional(),
-    engine: z.any().optional(),
-    name: z.string().optional()
-  }).optional()
-});
+// Interfaces para tipagem estrita
+interface FileEntry {
+  path: string;
+  content: string;
+}
 
-type ExportRequestBody = z.infer<typeof ExportRequestSchema>;
+interface ExportBody {
+  format?: string;
+  project?: {
+    engine?: {
+      files?: FileEntry[];
+    };
+  };
+}
 
-export class ExportController {
-  static async downloadZip(req: FastifyRequest<{ Body: ExportRequestBody }>, reply: FastifyReply) {
-    
-    // --- FIX DE CORS (BRUTE FORCE) ---
-    // Necessário porque streaming direto (reply.raw) pode pular o middleware padrão
-    reply.raw.setHeader('Access-Control-Allow-Origin', '*');
-    reply.raw.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    reply.raw.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-LLM-Model, X-LLM-Base-Url');
-    // ---------------------------------
+export const exportController = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<FastifyReply> => {
+  try {
+    const body = request.body as ExportBody;
+    const project = body.project;
 
-    const parseResult = ExportRequestSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return reply.status(400).send({ error: 'Invalid project data', details: parseResult.error });
+    if (!project?.engine?.files || !Array.isArray(project.engine.files)) {
+      request.log.warn(
+        { availableKeys: Object.keys(project ?? {}) },
+        "Estrutura de projeto inválida para exportação"
+      );
+      return reply.status(400).send({
+        error: "Estrutura de projeto inválida. Esperado engine.files[]"
+      });
     }
 
-    const { projectData } = parseResult.data;
-    
-    const safeProjectData = projectData || {};
-    const projectName = safeProjectData.name || 'mini-ide-project';
+    const files = project.engine.files;
+    const format = body.format ?? "zip";
 
-    const runId = Date.now().toString();
-    const tempDir = path.join(os.tmpdir(), `mini-ide-export-${runId}`);
-    
-    try {
-      const consolidator = new ConsolidatorService(tempDir);
-      await consolidator.saveArtifacts(safeProjectData);
+    if (format === "zip") {
+      const stream = new PassThrough();
+      const archive = archiver("zip", { zlib: { level: 9 } });
 
-      reply.header('Content-Type', 'application/zip');
-      reply.header('Content-Disposition', `attachment; filename="${projectName}.zip"`);
+      archive.on("error", (err) => {
+        request.log.error(err, "Erro ao criar arquivo ZIP");
+        if (!reply.raw.headersSent) {
+          reply.status(500).send({ error: "Erro ao criar ZIP" });
+        }
+      });
 
-      const archive = archiver('zip', { zlib: { level: 9 } });
-      archive.pipe(reply.raw);
-      
-      archive.append(
-        `# ${projectName}\n\nExportado em ${new Date().toISOString()}`,
-        { name: 'EXPORT_INFO.md' }
+      archive.pipe(stream);
+
+      for (const file of files) {
+        if (file.path && file.content) {
+          // Remove barras iniciais do path
+          const safePath = file.path.replace(/^[/\\]/, "");
+          archive.append(file.content, { name: safePath });
+        }
+      }
+
+      // Adiciona README se não existir
+      const hasReadme = files.some(
+        (f) => f.path?.toLowerCase().includes("readme.md")
       );
+      if (!hasReadme) {
+        archive.append("# Projeto Gerado\n\nVerifique os arquivos.", {
+          name: "README.md"
+        });
+      }
 
-      archive.directory(tempDir, false);
       await archive.finalize();
 
-    } catch (error) {
-      req.log.error(error, 'Erro na exportação');
-      // Só envia erro se headers ainda não foram enviados
-      if (!reply.raw.headersSent) {
-        return reply.status(500).send({ error: 'Failed to generate export' });
-      }
-    } finally {
-      setTimeout(() => {
-        fs.rm(tempDir, { recursive: true, force: true }, () => {});
-      }, 5000); 
+      reply.header("Content-Type", "application/zip");
+      reply.header(
+        "Content-Disposition",
+        'attachment; filename="mini-ide-project.zip"'
+      );
+      return reply.send(stream);
     }
+
+    return reply.status(501).send({ error: "Formato não suportado" });
+  } catch (error: unknown) {
+    request.log.error(error, "Erro no controller de exportação");
+    const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+    return reply.status(500).send({
+      error: "Falha interna",
+      details: errorMessage
+    });
   }
-}
+};

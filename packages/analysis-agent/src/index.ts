@@ -1,8 +1,20 @@
-// Exporta o Agente Real (Inteligência)
-export { AnalysisAgent, type AgentConfig } from './agent';
-
-// Exporta o Serviço de Consolidação (Arquivos)
-export { ConsolidatorService } from './services/consolidator-service';
-
-// Re-exporta tipos do shared se necessário (opcional, mas boa prática)
-// export * from '@mini-ide/shared';
+// Exports principais
+export { AnalysisAgent } from "./agent.js";
+export type {
+  Analysis,
+  Architecture,
+  Epic,
+  ProductPlan,
+  ManifestItem,
+  FileContent,
+  GeneratedFile,
+  UserStory,
+  UserStoriesResult,
+  MappedUserStory,
+  IntentResult,
+  BudgetContext,
+  AgentResult,
+  Complexity,
+  Priority,
+  Criticality
+} from "./agent.js";

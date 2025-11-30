@@ -1,98 +1,156 @@
-import Fastify from 'fastify';
-import cors from '@fastify/cors';
-import swagger from '@fastify/swagger';
-import swaggerUi from '@fastify/swagger-ui';
-import path from 'path';
-import os from 'os';
-import fs from 'fs';
-import { randomUUID } from 'node:crypto';
-import { ExportController } from './controllers/export.controller';
-import { AnalysisAgent } from '@mini-ide/analysis-agent';
+import Fastify, { FastifyInstance } from "fastify";
+import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
+import dotenv from "dotenv";
+import { z } from "zod";
+import { AnalysisAgent } from "@mini-ide/analysis-agent";
+import { exportController } from "./controllers/export.controller.js";
 
-const server = Fastify({
-  logger: {
-    transport: {
-      target: 'pino-pretty',
-      options: { translateTime: 'HH:MM:ss Z', ignore: 'pid,hostname' },
-    },
-    redact: ['req.headers.authorization'],
-  },
-});
+dotenv.config({ path: "../../.env" });
 
-async function bootstrap() {
-  await server.register(cors, { 
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'X-LLM-Model', 'X-LLM-Base-Url', 'X-Dry-Run'],
-    credentials: false
-  });
-  
-  await server.register(swagger, {
-    swagger: { info: { title: 'Mini-IDE Server', version: '0.12.0' } }
-  });
-  await server.register(swaggerUi, { routePrefix: '/docs' });
+const PORT = process.env["PORT"] ? parseInt(process.env["PORT"]) : 3200;
+const DEFAULT_API_KEY = process.env["OPENAI_API_KEY"] ?? "";
 
-  server.get('/healthz', async () => {
-    return { status: 'ok', timestamp: new Date().toISOString() };
-  });
-
-  server.post<{ Body: { text: string } }>('/analyze', async (req, reply) => {
-    // --- MODO DRY RUN (Para CI/CD e Testes de Fumaça) ---
-    if (req.headers['x-dry-run'] === 'true') {
-        req.log.info('Executando em modo DRY RUN (Mock Response)');
-        return {
-            summary: "Análise simulada (Dry Run para Pipeline).",
-            inputLength: 100,
-            outputLength: 200,
-            requestId: randomUUID(),
-            timestamp: new Date().toISOString(),
-            budgetUsed: 0.00,
-            budgetRemaining: 10.00,
-            status: "success" 
-        };
-    }
-
-    // --- MODO REAL ---
-    const apiKey = req.headers.authorization?.replace('Bearer ', '');
-    const model = (req.headers['x-llm-model'] as string) || 'gpt-4o';
-    const baseUrl = req.headers['x-llm-base-url'] as string;
-
-    if (!apiKey) {
-      return reply.status(401).send({ error: 'API Key não fornecida.' });
-    }
-
-    const runId = Date.now().toString();
-    const tempDir = path.join(os.tmpdir(), `mini-ide-run-${runId}`);
-
-    try {
-      const agent = new AnalysisAgent({ apiKey, model, baseUrl }, tempDir);
-      
-      req.log.info({ model }, 'Iniciando análise com IA...');
-      const result = await agent.execute(req.body.text);
-      
-      return result;
-
-    } catch (error: any) {
-      req.log.error(error, 'Falha na IA');
-      return reply.status(500).send({ 
-        error: 'Falha no processamento da IA', 
-        details: error.message 
-      });
-    } finally {
-      fs.rm(tempDir, { recursive: true, force: true }, () => {});
-    }
-  });
-
-  server.post('/export', ExportController.downloadZip);
-
-  const port = process.env.PORT ? parseInt(process.env.PORT) : 3200;
-  try {
-    await server.listen({ port, host: '0.0.0.0' });
-    console.log(`🚀 Server running on http://localhost:${port}`);
-  } catch (err) {
-    server.log.error(err);
-    process.exit(1);
-  }
+// HU-MINI-IDE-PERF-001: Instância Global para Singleton
+// Evita recriar conexão TCP/TLS se a chave for a mesma
+let defaultAgentInstance: AnalysisAgent | null = null;
+if (DEFAULT_API_KEY) {
+  defaultAgentInstance = new AnalysisAgent(DEFAULT_API_KEY);
 }
 
-bootstrap();
+// Schema de Requisição
+const AnalyzeRequestSchema = z.object({
+  text: z.string().min(1),
+  maxLen: z.number().optional(),
+  currentContext: z.object({
+    files: z.array(z.object({ path: z.string(), purpose: z.string().optional() })),
+    summary: z.string().optional()
+  }).optional()
+});
+
+const app: FastifyInstance = Fastify({
+  logger: {
+    level: process.env["LOG_LEVEL"] ?? "info",
+    transport: {
+      target: "pino-pretty",
+      options: { colorize: true }
+    }
+  }
+});
+
+// Error handler global
+app.setErrorHandler((error, _request, reply) => {
+  app.log.error(error);
+  reply.status(500).send({
+    error: "Internal Server Error",
+    details: error.message
+  });
+});
+
+const start = async (): Promise<void> => {
+  // Registra plugins
+  await app.register(cors, {
+    origin: true,
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-LLM-Base-URL", "X-Dry-Run"]
+  });
+
+  // Rate limiting: 100 requests por minuto por IP
+  await app.register(rateLimit, {
+    max: 100,
+    timeWindow: "1 minute",
+    errorResponseBuilder: () => ({
+      statusCode: 429,
+      error: "Too Many Requests",
+      message: "Limite de requisições excedido. Tente novamente em 1 minuto."
+    })
+  });
+
+  // Health check
+  app.get("/healthz", async () => ({ status: "ok", timestamp: new Date().toISOString() }));
+
+  // Endpoint principal de análise
+  app.post("/analyze", async (request, reply) => {
+    // Lógica de Dry Run para testes
+    const dryRun = request.headers["x-dry-run"] === "true";
+
+    // Validação
+    const parseResult = AnalyzeRequestSchema.safeParse(request.body);
+    if (!parseResult.success) {
+      return reply.status(400).send({
+        error: "Dados inválidos",
+        details: parseResult.error.issues
+      });
+    }
+
+    // Bypass para testes automatizados
+    if (dryRun) {
+      request.log.info("[DryRun] Skipping Agent execution");
+      return reply.send({
+        summary: "Dry Run Successful",
+        requestId: "dry-run-id",
+        timestamp: new Date().toISOString(),
+        analysis: { summary: "Dry Run", complexity: "Baixa", assumptions: [] },
+        product: { userStories: [] },
+        architect: { stack: "Test", diagram: "" },
+        engine: { files: [] },
+        ux: { components: [] },
+        quality: { tests: [] },
+        ops: { scripts: [] },
+        fenix: { notes: "Dry Run Mode" }
+      });
+    }
+
+    const { text, currentContext } = parseResult.data;
+
+    // Extrai API key do header Authorization
+    const authHeader = request.headers["authorization"];
+    const apiKey = (authHeader && authHeader.startsWith("Bearer "))
+      ? authHeader.substring(7)
+      : DEFAULT_API_KEY;
+
+    if (!apiKey) {
+      return reply.status(401).send({
+        error: "API Key não configurada",
+        message: "Configure a variável OPENAI_API_KEY ou envie via header Authorization"
+      });
+    }
+
+    try {
+      // HU-MINI-IDE-PERF-001: Lógica Singleton
+      let agent: AnalysisAgent;
+
+      if (apiKey === DEFAULT_API_KEY && defaultAgentInstance) {
+        // Reusa instância global
+        agent = defaultAgentInstance;
+        request.log.info("Reusing Global AnalysisAgent Instance");
+      } else {
+        // Cria nova instância (chave customizada)
+        agent = new AnalysisAgent(apiKey);
+        request.log.info("Creating New AnalysisAgent Instance (Custom Key)");
+      }
+
+      const result = await agent.analyze(text, currentContext);
+      return reply.send(result);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha no Agente");
+      return reply.status(502).send({
+        error: "Falha no Agente",
+        details: errorMessage
+      });
+    }
+  });
+
+  // Endpoint de exportação
+  app.post("/export", exportController);
+
+  // Inicia o servidor
+  await app.listen({ port: PORT, host: "0.0.0.0" });
+  app.log.info(`🚀 Server running at http://localhost:${PORT}`);
+};
+
+start().catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
+});

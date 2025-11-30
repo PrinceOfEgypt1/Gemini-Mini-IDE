@@ -13,17 +13,26 @@ describe('buildFileTree', () => {
 
     // Esperamos 2 nós na raiz: src (folder) e README.md (file)
     expect(tree).toHaveLength(2);
-    expect(tree[0].name).toBe('src');
-    expect(tree[0].type).toBe('folder');
-    expect(tree[1].name).toBe('README.md');
-    expect(tree[1].type).toBe('file');
+    
+    const srcNode = tree[0];
+    const readmeNode = tree[1];
+    
+    expect(srcNode).toBeDefined();
+    expect(srcNode?.name).toBe('src');
+    expect(srcNode?.type).toBe('folder');
+    
+    expect(readmeNode).toBeDefined();
+    expect(readmeNode?.name).toBe('README.md');
+    expect(readmeNode?.type).toBe('file');
 
     // Verificando filhos de src
-    const srcChildren = tree[0].children!;
+    const srcChildren = srcNode?.children;
+    expect(srcChildren).toBeDefined();
     expect(srcChildren).toHaveLength(2);
+    
     // components (folder) vem antes de index.ts (file) devido à ordenação
-    expect(srcChildren[0].name).toBe('components');
-    expect(srcChildren[1].name).toBe('index.ts');
+    expect(srcChildren?.[0]?.name).toBe('components');
+    expect(srcChildren?.[1]?.name).toBe('index.ts');
   });
 
   it('deve lidar com array vazio', () => {

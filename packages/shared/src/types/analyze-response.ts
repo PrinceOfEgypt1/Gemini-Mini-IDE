@@ -1,39 +1,73 @@
 /**
- * Representa a resposta estruturada retornada pelo endpoint de análise.
+ * Contrato de resposta do endpoint /analyze
+ * Atualizado: 2025-11-29 (v4.0.0 - UTF-8 Fixed)
  */
-export interface AnalyzeResponse {
-  /**
-   * Um resumo textual da análise gerada pelo agente.
-   */
+
+export type Complexity = "Baixa" | "Média" | "Alta" | "Crítica";
+export type Priority = "P0" | "P1" | "P2" | "P3";
+
+export interface MappedUserStory {
+  id: string;
+  title: string;
+  priority: Priority;
+  role: string;
+  action: string;
+  benefit: string;
+  acceptanceCriteria: string[];
+  /** Mapeado de functionalRequirements */
+  functionalReqs: string[];
+  /** Mapeado de securityRequirements */
+  security: string[];
+  /** Mapeado de businessContext */
+  context: string;
+  nonFunctionalReqs: string[];
+  description: string;
+}
+
+export interface GeneratedFile {
+  path: string;
+  content: string;
+  language: string;
+}
+
+export interface AnalysisResult {
   summary: string;
+  complexity: Complexity;
+  assumptions: string[];
+}
 
-  /**
-   * O número de caracteres do texto de entrada.
-   */
-  inputLength: number;
+export interface ArchitectResult {
+  diagram?: string;
+  stack: string;
+}
 
-  /**
-   * O número de caracteres do resumo gerado.
-   */
-  outputLength: number;
-
-  /**
-   * Identificador único da requisição (UUID v4) para rastreabilidade.
-   */
+export interface AnalyzeResponse {
+  // Campos na raiz (acesso direto pelo Frontend)
+  summary: string;
   requestId: string;
-
-  /**
-   * Data e hora da geração da resposta em formato ISO 8601.
-   */
   timestamp: string;
 
-  /**
-   * Custo estimado da operação (se aplicável).
-   */
+  // Campos legados para compatibilidade
+  inputLength?: number;
+  outputLength?: number;
   budgetUsed?: number;
-
-  /**
-   * Orçamento restante do usuário após a operação.
-   */
   budgetRemaining?: number;
+
+  // Estrutura completa
+  analysis: AnalysisResult;
+
+  product: {
+    userStories: MappedUserStory[];
+  };
+
+  architect: ArchitectResult;
+
+  engine: {
+    files: GeneratedFile[];
+  };
+
+  ux: { components: unknown[] };
+  quality: { tests: unknown[] };
+  ops: { scripts: unknown[] };
+  fenix: { notes: string };
 }

@@ -1,7 +1,7 @@
 {
   "name": "mini-ide-monorepo",
   "version": "1.0.0",
-  "description": "",
+  "description": "Mini-IDE - Ambiente de Desenvolvimento Assistido por IA",
   "main": "index.js",
   "scripts": {
     "lint": "pnpm -r lint",
@@ -9,24 +9,36 @@
     "typecheck": "pnpm -r typecheck",
     "build": "pnpm -r build",
     "dev": "pnpm --filter @mini-ide/ui dev",
-    "start": "pnpm --filter @mini-ide/server start"
+    "start": "pnpm --filter @mini-ide/server start",
+    "clean": "pnpm -r exec rm -rf dist node_modules",
+    "prepare": "pnpm -r build"
   },
-  "keywords": [],
+  "keywords": ["ide", "ai", "typescript", "react"],
   "author": "",
   "license": "ISC",
   "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
-    "@types/node": "^24.10.1",
+    "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
-    "jq": "^1.7.2",
     "prettier": "^3.6.2",
-    "typescript": "^5.9.3",
+    "typescript": "^5.3.3",
     "typescript-eslint": "^8.47.0",
-    "vitest": "^4.0.13"
+    "vitest": "^1.6.1"
   },
-  "type": "module"
+  "pnpm": {
+    "overrides": {
+      "@types/node": "^20.10.0",
+      "typescript": "^5.3.3",
+      "vitest": "^1.6.1"
+    }
+  }
 }
