@@ -1,3 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ==============================================================================
+# SCRIPT: 11_fix_test_mock.sh
+# DESCRIÇÃO: Atualiza os mocks de teste para satisfazerem as novas regras de
+#            validação rígida (Epics > 0, Manifest > 2).
+# AUTOR: Mini-IDE Engine Team
+# ==============================================================================
+
+echo ">>> Ajustando Mocks de Teste para Compliance com Validação..."
+
+cat > packages/analysis-agent/src/agent.test.ts << 'EOF'
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AnalysisAgent } from './agent.js';
 
@@ -79,3 +92,10 @@ describe('AnalysisAgent', () => {
     expect(['Baixa', 'Média']).toContain(result.analysis.complexity);
   });
 });
+EOF
+
+echo ">>> Validando Correção..."
+pnpm --filter @mini-ide/analysis-agent test
+
+echo "✅ Testes ajustados e passando com Validação Rígida ativa."
+EOF

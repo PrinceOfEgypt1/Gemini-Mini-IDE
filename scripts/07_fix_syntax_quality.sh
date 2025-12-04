@@ -1,3 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ==============================================================================
+# SCRIPT: 07_fix_syntax_quality.sh
+# DESCRIÇÃO: 
+#   1. Reescreve cache.service.ts com tratamento de ESLint.
+#   2. Executa validação com sintaxe correta do pnpm (--filter antes do comando).
+# AUTOR: Mini-IDE Engine Team
+# ==============================================================================
+
+echo ">>> Iniciando Polimento de Qualidade (Tentativa 2 - Syntax Fix)..."
+
+# ------------------------------------------------------------------------------
+# 1. Corrigindo packages/analysis-agent/src/services/cache.service.ts
+# ------------------------------------------------------------------------------
+echo ">>> Garantindo arquivo packages/analysis-agent/src/services/cache.service.ts..."
+cat > packages/analysis-agent/src/services/cache.service.ts << 'EOF'
 import { createHash } from "crypto";
 import fs from "fs";
 import path from "path";
@@ -82,3 +100,22 @@ export class CacheService {
 
 // Singleton Exportado
 export const globalAnalysisCache = new CacheService();
+EOF
+
+# ------------------------------------------------------------------------------
+# 2. Verificação Rigorosa (Zero Warnings) - Sintaxe Correta
+# ------------------------------------------------------------------------------
+echo ">>> Executando validação rigorosa..."
+
+# Correção: --filter vem ANTES do comando lint
+echo ">>> [Check] ESLint (Max Warnings: 0)..."
+pnpm --filter @mini-ide/analysis-agent lint --max-warnings 0 || { echo "❌ Lint falhou com warnings"; exit 1; }
+
+echo ">>> [Check] Typecheck..."
+pnpm --filter @mini-ide/analysis-agent typecheck || { echo "❌ Typecheck falhou"; exit 1; }
+
+echo ">>> [Check] Build..."
+pnpm --filter @mini-ide/analysis-agent build || { echo "❌ Build falhou"; exit 1; }
+
+echo "✅ Polimento concluído: Código Limpo, Sem Warnings e Persistente."
+EOF

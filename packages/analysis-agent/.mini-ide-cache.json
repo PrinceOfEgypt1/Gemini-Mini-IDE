@@ -1,0 +1,1090 @@
+{
+  "4ef0ee97c2dbe674d2bb02ef0396eaea119a79a24251bf00be16783c48566608": {
+    "timestamp": 1764558492030,
+    "data": {
+      "type": "NEW_PROJECT"
+    }
+  },
+  "e0df9ee85d8f8c6e30b246ee33c3de9132ea22f4bb0b7297a6403c231ff589b2": {
+    "timestamp": 1764558492030,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Baixa",
+      "assumptions": []
+    }
+  },
+  "f79c6af1834d611900285df42547b674a0689e9c7873dd1e7bb1506d6e22512d": {
+    "timestamp": 1764558492030,
+    "data": {
+      "epics": []
+    }
+  },
+  "faaf2e4fdb0eecf77e79afa67c28ba865a7823d55d07a036d90b22405f62d55a": {
+    "timestamp": 1764558492031,
+    "data": {
+      "stack": "TestStack",
+      "manifest": []
+    }
+  },
+  "aa46f1c1e783d9aa7b87df57047000feeb498fec88c802166562d567c3ea9591": {
+    "timestamp": 1764558492031,
+    "data": {
+      "userStories": []
+    }
+  },
+  "3c2bd8b94a26a8c4d83183a807d2bdc6a1562dd6b8a6eb4d2a877387ed2c420c": {
+    "timestamp": 1764602894552,
+    "data": {
+      "type": "NEW_PROJECT"
+    }
+  },
+  "f15b53ab28759d63b8ad95ae3b148864a1ba9c9db1a3636d98ff927c105bdd6b": {
+    "timestamp": 1764602894552,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Baixa",
+      "assumptions": []
+    }
+  },
+  "cdf429a8beccf91e22d7be0e605fc3510cdd710cb028d042dca2e8bae3f6fefb": {
+    "timestamp": 1764602894552,
+    "data": {
+      "epics": []
+    }
+  },
+  "a47cd23a8e88d1e3e5c52205fe803f92e8c1e17864b657c45d6b3adaaf380a24": {
+    "timestamp": 1764602894553,
+    "data": {
+      "stack": "TestStack",
+      "manifest": []
+    }
+  },
+  "c97b323feb6ce72fd91ca4178c4d8289f2f6aafbd9ca1913895d56b3ccc40bc1": {
+    "timestamp": 1764602894553,
+    "data": {
+      "userStories": []
+    }
+  },
+  "0fc0bc2877699f974d001f59f16182bf433863cda88c69e36bcd221e018b0ebe": {
+    "timestamp": 1764603954894,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Baixa",
+      "assumptions": []
+    }
+  },
+  "0efb5ca9e4887fbe8025ebbbdd4f3f7918eb848d4f95f4854d70ca05c3d979cc": {
+    "timestamp": 1764603954895,
+    "data": {
+      "epics": []
+    }
+  },
+  "52e3b9b125c8c137ebfeef3b76dbf3012c9b53e56c82e876530a09a152b28845": {
+    "timestamp": 1764603954895,
+    "data": {
+      "stack": "TestStack",
+      "manifest": []
+    }
+  },
+  "d607913b0569f9eed24b89db5bc3fc38782f1b94e41eb76c3786ddd9de50eddc": {
+    "timestamp": 1764603954895,
+    "data": {
+      "userStories": []
+    }
+  },
+  "d70057d65a25753888fa31ab99e129155ef32297297d1138014b0a462c7694ad": {
+    "timestamp": 1764609910482,
+    "data": {
+      "type": "NEW_PROJECT"
+    }
+  },
+  "ae30843419b0d7b836c1ae679cdbe871d1b56f8db6f9fdfc706608ef20f53a77": {
+    "timestamp": 1764609910483,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Baixa",
+      "assumptions": []
+    }
+  },
+  "fb82e93a423bc0cb15b3acc95eac05ebdd96d680c4bee214ada0614beddefb06": {
+    "timestamp": 1764609910483,
+    "data": {
+      "epics": []
+    }
+  },
+  "61f456f6c0af23c428182856d6786b8aac00563b28a0221ec43d3279ab6c676d": {
+    "timestamp": 1764609910483,
+    "data": {
+      "stack": "TestStack",
+      "manifest": []
+    }
+  },
+  "27c0d487cff6bfdcfbd1d733e9a57c086fd3164c92788233bc19b33cec60ef53": {
+    "timestamp": 1764609910483,
+    "data": {
+      "manifest": []
+    }
+  },
+  "5c94075186286a4b1f43c84cc1fce3d5426fd7ae8d34e9c9ed3634f288074dcc": {
+    "timestamp": 1764609910484,
+    "data": {
+      "manifest": []
+    }
+  },
+  "6ff5c7a6f42ba8de73d4a48f76a919328fd42959d75208131e5b835602937b30": {
+    "timestamp": 1764609910484,
+    "data": {
+      "userStories": []
+    }
+  },
+  "225f5dcee303bda8f1a318062ae32966bf963ca54df9f6aa494b7717cf20c40d": {
+    "timestamp": 1764613061721,
+    "data": {
+      "type": "NEW_PROJECT"
+    }
+  },
+  "89b1bf432797802007cd059e7b33625034dd24db0ca19b3010745305f58363d4": {
+    "timestamp": 1764613061723,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Baixa",
+      "assumptions": []
+    }
+  },
+  "08726cbf01fb17f717e286e0fb0383d732f350517e492431c99e04d97ea8af24": {
+    "timestamp": 1764613061726,
+    "data": {
+      "epics": []
+    }
+  },
+  "27125279c8d2305d865ff9e100b1c5d632fa9a85c444bf8c48fb9a10430fa22a": {
+    "timestamp": 1764613061726,
+    "data": {
+      "stack": "TestStack",
+      "manifest": []
+    }
+  },
+  "23273272d2f5dbf6cf047e5d16612146baf0d9b7485660055455e7bba4c772ef": {
+    "timestamp": 1764613061727,
+    "data": {
+      "manifest": []
+    }
+  },
+  "14da6d5c6c3ef63604d577bb3e1404e56d6182b4bb5dacab24d689ec31a9dbad": {
+    "timestamp": 1764613061727,
+    "data": {
+      "manifest": []
+    }
+  },
+  "6828705f8a25e0f4da213384ba0b98bb9af9907a6ab976b17ed8768ea5836ab8": {
+    "timestamp": 1764613061727,
+    "data": {
+      "userStories": []
+    }
+  },
+  "001ac643f2196d8c1c5601851772b8bfdcdb7d1664bef9b85cc7fddb5bb2c233": {
+    "timestamp": 1764629876348,
+    "data": {
+      "stack": "TestStack",
+      "manifest": []
+    }
+  },
+  "80fae41c43700dd0fc12d2319a058c7541318584f1a6bd1baf4eb08b4a54099c": {
+    "timestamp": 1764630632796,
+    "data": {
+      "type": "NEW_PROJECT",
+      "reasoning": "Test"
+    }
+  },
+  "a234fd1015e56f65fda4c35166df9716913969ec21810a98a57a36e74bc27ed9": {
+    "timestamp": 1764630632797,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Média",
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "35d5e5425767d8ecb8fe3236828164f1bfadcd0547a8c84ad6b0e95016f349b7": {
+    "timestamp": 1764630632798,
+    "data": {
+      "epics": [
+        {
+          "title": "Epic 1",
+          "context": "Ctx",
+          "requirements": [
+            "Req1"
+          ]
+        }
+      ]
+    }
+  },
+  "221a59bccef1c9f6a46b44aa300882e9d420c1257ddf19ede125a4a076beadc6": {
+    "timestamp": 1764630632798,
+    "data": {
+      "stack": "TestStack",
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "Config"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Config",
+          "criticality": "Config"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Core",
+          "criticality": "Core"
+        }
+      ]
+    }
+  },
+  "9d26e47461f7b5ecf7f77d2938538689918bccc0310109773d449e54a601aa53": {
+    "timestamp": 1764630632799,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "ca887b917e6f826f6ab4fa3acb8482799c73703ac69a296670956a15e65256ee": {
+    "timestamp": 1764630632799,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "a594debf76b50abd293432cde0ce11a3af8d9d3b2582b59ab4af1bfaf135a749": {
+    "timestamp": 1764630632799,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "0cdb6cd8a67f317283a3aad36576ab21d7007edfb447d6f2b769273b12fad72d": {
+    "timestamp": 1764630632799,
+    "data": {
+      "userStories": [
+        {
+          "id": "HU-1",
+          "title": "Story 1",
+          "priority": "P0",
+          "role": "User",
+          "action": "Test",
+          "benefit": "Value",
+          "acceptanceCriteria": [
+            "AC1"
+          ],
+          "functionalRequirements": [],
+          "securityRequirements": [],
+          "businessContext": "Ctx"
+        }
+      ]
+    }
+  },
+  "95688663fad15e6e0601e97caf0b10a71e04b7c188d922b7f763602c8c0f249b": {
+    "timestamp": 1764633456575,
+    "data": {
+      "type": "NEW_PROJECT",
+      "reasoning": "Test"
+    }
+  },
+  "a6d210899e75d66b79ac5eefa000948b933b9f0f92a19772af6a5c9f549eac07": {
+    "timestamp": 1764633456576,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Média",
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "c4f71157c8af8e64fe4c05007ab44995465a94f610b71c61bb53c8cd6935e1d1": {
+    "timestamp": 1764633456576,
+    "data": {
+      "epics": [
+        {
+          "title": "Epic 1",
+          "context": "Ctx",
+          "requirements": [
+            "Req1"
+          ]
+        }
+      ]
+    }
+  },
+  "5328c4242198b8a83a5a654b62712b3c9848d8eb30debb733b7c200025ad2b11": {
+    "timestamp": 1764633456577,
+    "data": {
+      "stack": "TestStack",
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "Config"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Config",
+          "criticality": "Config"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Core",
+          "criticality": "Core"
+        }
+      ]
+    }
+  },
+  "d92765c481072f117e439b87296474f6e24a228845029a2c0874cc9aa08e862c": {
+    "timestamp": 1764633456577,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "e934ed7bf9886a74348a11da6c506759b4ddeb795c2c6d703e8cf9d4c2e27865": {
+    "timestamp": 1764633456577,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "d908d245f083117496525db11056a2b8131ea0ec412a3862010cdefbc2e817df": {
+    "timestamp": 1764633456578,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "ce14ca9b1ff37ea1c5afc9a67ccd51db11859142a17543dfbe3e636b08f4303c": {
+    "timestamp": 1764633456578,
+    "data": {
+      "userStories": [
+        {
+          "id": "HU-1",
+          "title": "Story 1",
+          "priority": "P0",
+          "role": "User",
+          "action": "Test",
+          "benefit": "Value",
+          "acceptanceCriteria": [
+            "AC1"
+          ],
+          "functionalRequirements": [],
+          "securityRequirements": [],
+          "businessContext": "Ctx"
+        }
+      ]
+    }
+  },
+  "4ccb11ceec4a5b73ca2caa4cf5123d56c10895a3b1c418dcf8f189df0fc80022": {
+    "timestamp": 1764635976112,
+    "data": {
+      "type": "NEW_PROJECT",
+      "reasoning": "Test"
+    }
+  },
+  "92e838dd5526c1a717a45454b14028d3bf9539642d231989d2c90cb46276b993": {
+    "timestamp": 1764635976113,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Média",
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "de7caf65930a13e00baa4a2c91a5bba4bcfefbecd86b1b57af37c7a28a0e3119": {
+    "timestamp": 1764635976114,
+    "data": {
+      "epics": [
+        {
+          "title": "Epic 1",
+          "context": "Ctx",
+          "requirements": [
+            "Req1"
+          ]
+        }
+      ]
+    }
+  },
+  "df232c105db0a352dd09eecd7a1605df76dcf377cea5ac7a643a19b03de934be": {
+    "timestamp": 1764635976114,
+    "data": {
+      "stack": "TestStack",
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "Config"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Config",
+          "criticality": "Config"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Core",
+          "criticality": "Core"
+        }
+      ]
+    }
+  },
+  "5f6e784398f509782aeb0fb84d86f03a5d3e7492ba2b40f3845d3dcc64ac1b5a": {
+    "timestamp": 1764635976115,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "4e1f2aef7d932517b956a5b098baa99471d34e6f8a431ce0290bda7b56da66d1": {
+    "timestamp": 1764635976115,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "15b392c71a7f586ceda6e618ad146dc151ae208b31f11f5c59469c0b489e26a3": {
+    "timestamp": 1764635976115,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "b8962d921fb34459717161da695eea8c91ffe86e43e1d34a3cab36d5f582a185": {
+    "timestamp": 1764635976116,
+    "data": {
+      "userStories": [
+        {
+          "id": "HU-1",
+          "title": "Story 1",
+          "priority": "P0",
+          "role": "User",
+          "action": "Test",
+          "benefit": "Value",
+          "acceptanceCriteria": [
+            "AC1"
+          ],
+          "functionalRequirements": [],
+          "securityRequirements": [],
+          "businessContext": "Ctx"
+        }
+      ]
+    }
+  },
+  "8521f07671345dda180ef9a6e79f4ed46be09d0c52ed708ed6aeb448367bbe5a": {
+    "timestamp": 1764640587782,
+    "data": {
+      "type": "NEW_PROJECT",
+      "reasoning": "Test"
+    }
+  },
+  "c14d74f80d43d5c641176e611fdcc657f39c09f87c47fb193ba1a616a4dbacbf": {
+    "timestamp": 1764640587783,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Média",
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "54eb105d9df7c628d04d2aa80007a7df8bdc4bbdaaefe79618d021fc59c46286": {
+    "timestamp": 1764640587784,
+    "data": {
+      "epics": [
+        {
+          "title": "Epic 1",
+          "context": "Ctx",
+          "requirements": [
+            "Req1"
+          ]
+        }
+      ]
+    }
+  },
+  "a79126e2849810f42e23062165c66e264b1ed755401e06c670ed6970622c29f4": {
+    "timestamp": 1764640587784,
+    "data": {
+      "stack": "TestStack",
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "Config"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Config",
+          "criticality": "Config"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Core",
+          "criticality": "Core"
+        }
+      ]
+    }
+  },
+  "6da25577e566bb545046b9deed1041e38d5d4b3d35303d73326fbbe1344f2dac": {
+    "timestamp": 1764640587785,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "c12c660658c94fee1b6f2e899ccaf6dc3160c68233f3b66f9b900c0ee8a6c891": {
+    "timestamp": 1764640587785,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "fe86beadaa2e3be71454ae49d204a91361f72a1e64b2dc4b8619e194c5fc40f8": {
+    "timestamp": 1764640587785,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "a36ab84e30f0ab0c53be057e8d8d6c13e4da6c3c8bf1a23a00fbb2f1aa38e397": {
+    "timestamp": 1764640587785,
+    "data": {
+      "userStories": [
+        {
+          "id": "HU-1",
+          "title": "Story 1",
+          "priority": "P0",
+          "role": "User",
+          "action": "Test",
+          "benefit": "Value",
+          "acceptanceCriteria": [
+            "AC1"
+          ],
+          "functionalRequirements": [],
+          "securityRequirements": [],
+          "businessContext": "Ctx"
+        }
+      ]
+    }
+  },
+  "725ccc88cc48ea9e1d010121febfb95248732ce8e9b619dddf004d82bd442c58": {
+    "timestamp": 1764719917134,
+    "data": {
+      "type": "NEW_PROJECT",
+      "reasoning": "Test"
+    }
+  },
+  "9d8cf78015aaf59ec9c4af3d3aa9639f2bf044c237690aeeb4c7322a0b98b0bc": {
+    "timestamp": 1764719917135,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Média",
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "c058251a37e9f0a5b80d43224ae72d6b643f72d0fdfe81bb643d1f75b4b7c468": {
+    "timestamp": 1764719917138,
+    "data": {
+      "epics": []
+    }
+  },
+  "f3e4b509bad6c36c37d13a0751eb012c5e5e74cc1d5c8549e7ac19db89a82acb": {
+    "timestamp": 1764719917139,
+    "data": {
+      "stack": "TestStack",
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "Config"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Config",
+          "criticality": "Config"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Core",
+          "criticality": "Core"
+        }
+      ]
+    }
+  },
+  "14709fa58adba15f43b1bae4226c552365a4c621fa9ada4da0e1eebf2972bed0": {
+    "timestamp": 1764719917140,
+    "data": {
+      "file_path": "README.md",
+      "technical_spec": {
+        "imports_required": [],
+        "interfaces_to_define": [],
+        "functions_to_implement": []
+      }
+    }
+  },
+  "6a439781fb935e2191814410c3db6d4e476ba9465d12c1814e28039dc4bbfaaa": {
+    "timestamp": 1764719917141,
+    "data": {
+      "file_path": "package.json",
+      "technical_spec": {
+        "imports_required": [],
+        "interfaces_to_define": [],
+        "functions_to_implement": []
+      }
+    }
+  },
+  "496d389c0150bdadb4fa37bfb65de5cab9e2bf950bbdbbe2e57c0986604c0952": {
+    "timestamp": 1764719917141,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "20e305003f6a751f9bf68cb43ae97246794fc431408b5dba230c06c43e23cbdd": {
+    "timestamp": 1764719917141,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "34ee941a7b3bdd2786310bcc90eb6f2aa6c3f2fd4e48add5c61b472b8237dc95": {
+    "timestamp": 1764719917142,
+    "data": {
+      "file_path": "src/main.ts",
+      "technical_spec": {
+        "imports_required": [],
+        "interfaces_to_define": [],
+        "functions_to_implement": []
+      }
+    }
+  },
+  "686e96c4391960a56248af72977bcea09c950ee66fd0429a8f4969e29caf2034": {
+    "timestamp": 1764719917143,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "c001764993d33f7e18ff9e33527ac60272f895547920ca1f44d8668faf4de446": {
+    "timestamp": 1764719917143,
+    "data": {
+      "userStories": [
+        {
+          "id": "HU-1",
+          "title": "Story 1",
+          "priority": "P0",
+          "role": "User",
+          "action": "Test",
+          "benefit": "Value",
+          "acceptanceCriteria": [
+            "AC1"
+          ],
+          "functionalRequirements": [],
+          "securityRequirements": [],
+          "businessContext": "Ctx"
+        }
+      ]
+    }
+  },
+  "c5f74e3b8e76f0ea83a1a042d75026edcbd0005926749bae8694643ce6751b5d": {
+    "timestamp": 1764723790570,
+    "data": {
+      "type": "NEW_PROJECT",
+      "reasoning": "Test"
+    }
+  },
+  "ccb66eb5ef63da4886ae152bb1e16442b7632392c8bfc4ac59c59293b46824d0": {
+    "timestamp": 1764723790571,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Média",
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "40fcfd45a497b761233b81665d3f40bc0f74769defcdf973882e295eedeaecfa": {
+    "timestamp": 1764723790574,
+    "data": {
+      "epics": []
+    }
+  },
+  "c3751bf1af569d37a30270444afb05100f6514d505f3eb13a59ae92eddae6b03": {
+    "timestamp": 1764723790575,
+    "data": {
+      "stack": "TestStack",
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "Config"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Config",
+          "criticality": "Config"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Core",
+          "criticality": "Core"
+        }
+      ]
+    }
+  },
+  "7443665e2040d7ada742c3673d0c17e55b44f127af999edd493d0b668f1442d8": {
+    "timestamp": 1764723790576,
+    "data": {
+      "file_path": "README.md",
+      "technical_spec": {
+        "imports_required": [],
+        "interfaces_to_define": [],
+        "functions_to_implement": []
+      }
+    }
+  },
+  "384e73957357e59657e6658a1c3753bfc88e39fc2f69b9783a528950995c4f01": {
+    "timestamp": 1764723790577,
+    "data": {
+      "file_path": "package.json",
+      "technical_spec": {
+        "imports_required": [],
+        "interfaces_to_define": [],
+        "functions_to_implement": []
+      }
+    }
+  },
+  "c05b0a784db5e4fa45aa5057d987bb59c1c23f1b5e7f7332da04f83cf33a080a": {
+    "timestamp": 1764723790577,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "759ed22d3d33bbb06ef478944758c4f5d3f4d6d1a92478d178ce04e295a9d093": {
+    "timestamp": 1764723790577,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "283806b6cc2f380e0994c1fbb33cf24990ab5181066bfaf0c801643072300161": {
+    "timestamp": 1764723790578,
+    "data": {
+      "file_path": "src/main.ts",
+      "technical_spec": {
+        "imports_required": [],
+        "interfaces_to_define": [],
+        "functions_to_implement": []
+      }
+    }
+  },
+  "06abf54109f35ebd990f9f5e46d1c509e731f83a9bf5720cf460406dc30b2673": {
+    "timestamp": 1764723790578,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "cbd8a72f35d355008950fa061ee4f0824e98f8b65fa9b1f336c236a1f0b0ed69": {
+    "timestamp": 1764723790579,
+    "data": {
+      "userStories": [
+        {
+          "id": "HU-1",
+          "title": "Story 1",
+          "priority": "P0",
+          "role": "User",
+          "action": "Test",
+          "benefit": "Value",
+          "acceptanceCriteria": [
+            "AC1"
+          ],
+          "functionalRequirements": [],
+          "securityRequirements": [],
+          "businessContext": "Ctx"
+        }
+      ]
+    }
+  },
+  "67cece151a60ca77c4631a38a0c62301eb1574e020a72a4ac8c6d45af60d85be": {
+    "timestamp": 1764727126078,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Média",
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "5d61d40db04476a9d2bce3aa9b116c8028231497c2d65810b4c05682852a23de": {
+    "timestamp": 1764727126079,
+    "data": {
+      "epics": []
+    }
+  },
+  "687a230b99925e38aa560b1602e01fcebfbbd7b3df6dad9e86112ec12ff12fd6": {
+    "timestamp": 1764727126079,
+    "data": {
+      "stack": "TestStack",
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "Config"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Config",
+          "criticality": "Config"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Core",
+          "criticality": "Core"
+        }
+      ]
+    }
+  },
+  "a6b9992e7cd039b5ae32f67b9d725ba13e0a3fbbe3fa6953be87467da05421fd": {
+    "timestamp": 1764727126080,
+    "data": {
+      "file_path": "README.md",
+      "technical_spec": {
+        "imports_required": [],
+        "interfaces_to_define": [],
+        "functions_to_implement": [
+          {
+            "name": "defaultImplementation",
+            "args": "",
+            "return_type": "void",
+            "logic_steps": [
+              "Implement logic based on file purpose and standard patterns"
+            ],
+            "error_handling": "Standard error handling"
+          }
+        ]
+      }
+    }
+  },
+  "8a15de0847efcc6db767a831b86af09a8baa6bb92aada35c4916c0b94014e2c0": {
+    "timestamp": 1764727126081,
+    "data": {
+      "file_path": "package.json",
+      "technical_spec": {
+        "imports_required": [],
+        "interfaces_to_define": [],
+        "functions_to_implement": [
+          {
+            "name": "defaultImplementation",
+            "args": "",
+            "return_type": "void",
+            "logic_steps": [
+              "Implement logic based on file purpose and standard patterns"
+            ],
+            "error_handling": "Standard error handling"
+          }
+        ]
+      }
+    }
+  },
+  "a5db236872a3bec3e238fe30d0cbfee39548e118b5ac5a307fad5250436311c7": {
+    "timestamp": 1764727126081,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "91894eac70afcf5e8678b60c922e6a0ff25908e85938b71b21bef8c64de0abcc": {
+    "timestamp": 1764727126081,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "081c30ba6f744132b4ded7a949c1c01ce60ddc8bc34e959a86465a151dffb094": {
+    "timestamp": 1764727126082,
+    "data": {
+      "file_path": "src/main.ts",
+      "technical_spec": {
+        "imports_required": [],
+        "interfaces_to_define": [],
+        "functions_to_implement": [
+          {
+            "name": "defaultImplementation",
+            "args": "",
+            "return_type": "void",
+            "logic_steps": [
+              "Implement logic based on file purpose and standard patterns"
+            ],
+            "error_handling": "Standard error handling"
+          }
+        ]
+      }
+    }
+  },
+  "0b4a45073f5e38270da940e1ed1100e926f5bdcfe161d69c3481ddbcab2d22e8": {
+    "timestamp": 1764727126082,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "f8c9697bfdd9b9f8deac1f55020236a23e666e06873180d659f8b180303fbb43": {
+    "timestamp": 1764727126083,
+    "data": {
+      "userStories": [
+        {
+          "id": "HU-1",
+          "title": "Story 1",
+          "priority": "P0",
+          "role": "User",
+          "action": "Test",
+          "benefit": "Value",
+          "acceptanceCriteria": [
+            "AC1"
+          ],
+          "functionalRequirements": [],
+          "securityRequirements": [],
+          "businessContext": "Ctx"
+        }
+      ]
+    }
+  },
+  "cfbc77cf205439ae12687c5d3ed424c6813538e208c60301f06ac6ac5d17130e": {
+    "timestamp": 1764804440452,
+    "data": {
+      "type": "NEW_PROJECT",
+      "reasoning": "Test"
+    }
+  },
+  "ab36346a63b165a0039f7b063d3fd9a4cabdabecf3dbfbbc3aa7a9ae370d611c": {
+    "timestamp": 1764804440453,
+    "data": {
+      "summary": "Test Project",
+      "complexity": "Média",
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "7f7194af9639e7b6d9e02bbb725b07bd0ce5bb3c4612101e7cb75dda439af5cb": {
+    "timestamp": 1764804440453,
+    "data": {
+      "epics": [
+        {
+          "title": "Epic 1",
+          "context": "Ctx",
+          "requirements": [
+            "Req1"
+          ]
+        }
+      ]
+    }
+  },
+  "4fd46d0182c56ec1c8b7daa34d902e52fef2fc9d7f173a0dc613f3f660e80fce": {
+    "timestamp": 1764804440454,
+    "data": {
+      "stack": "TestStack",
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "Config"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Config",
+          "criticality": "Config"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Core",
+          "criticality": "Core"
+        }
+      ]
+    }
+  },
+  "870093b13a983e910b071561cdf843c13050719df3d0280b9a9993d2270847d9": {
+    "timestamp": 1764804440454,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "2e756cf30dca78ff7f5394aeda4e8181725bba694ba1f96069a0295223dd6af6": {
+    "timestamp": 1764804440454,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "3124189b34454b69d92c0c379d779122cc60aa7cd8a1f02b3721f376226a9ca1": {
+    "timestamp": 1764804440455,
+    "data": {
+      "path": "test.ts",
+      "code": "console.log('test')",
+      "explanation": "ok"
+    }
+  },
+  "1a83aacac35534d4e0002ee3a1b4b4cacf35a85ab92620da4e8718c5f0e0fca6": {
+    "timestamp": 1764804440455,
+    "data": {
+      "userStories": [
+        {
+          "id": "HU-1",
+          "title": "Story 1",
+          "priority": "P0",
+          "role": "User",
+          "action": "Test",
+          "benefit": "Value",
+          "acceptanceCriteria": [
+            "AC1"
+          ],
+          "functionalRequirements": [],
+          "securityRequirements": [],
+          "businessContext": "Ctx"
+        }
+      ]
+    }
+  }
+}

@@ -1,9 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ==============================================================================
+# SCRIPT: 12_fix_types_and_logic.sh
+# DESCRIÇÃO: 
+#   1. Corrige TS6133: Utiliza 'productPlan' em 'runArchitectureStep' para dar
+#      mais contexto ao Arquiteto (melhoria de inteligência).
+#   2. Corrige TS2322: Ajusta ArchitectureSchema para garantir que 'stack'
+#      seja sempre string, resolvendo conflito de tipagem Zod/TS.
+# AUTOR: Mini-IDE Engine Team
+# ==============================================================================
+
+echo ">>> Iniciando correção de tipagem e lógica do Agente..."
+
+cat > packages/analysis-agent/src/agent.ts << 'EOF'
 import OpenAI from "openai";
 import { z } from "zod";
 import { SYSTEM_PROMPTS } from "./prompts/index.js";
 import { globalAnalysisCache } from "./services/cache.service.js";
 
-// --- TIPOS ---
+// --- TIPOS (Mantidos) ---
 export type Complexity = "Baixa" | "Média" | "Alta" | "Crítica";
 export type Priority = "P0" | "P1" | "P2" | "P3";
 export type Criticality = "Core" | "Support" | "Config";
@@ -23,15 +39,17 @@ export interface BudgetContext { files?: Array<{ path: string; purpose?: string 
 export interface AgentTimings { total: number; analysis: number; product: number; architecture: number; codeGen: number; userStories: number; }
 export interface AgentResult { summary: string; requestId: string; timestamp: string; timings: AgentTimings; analysis: Analysis; product: { userStories: MappedUserStory[] }; architect: { diagram?: string; stack: string }; engine: { files: GeneratedFile[] }; ux: { components: unknown[] }; quality: { tests: unknown[] }; ops: { scripts: unknown[] }; fenix: { notes: string }; }
 
-// --- SCHEMAS ---
+// --- SCHEMAS (Corrigidos) ---
 const AnalysisSchema = z.object({ summary: z.string(), complexity: z.enum(["Baixa", "Média", "Alta", "Crítica"]), assumptions: z.array(z.string()) });
 const EpicSchema = z.object({ title: z.string(), context: z.string(), requirements: z.array(z.string()) });
 const ProductPlanSchema = z.object({ epics: z.array(EpicSchema) });
 const ManifestItemSchema = z.object({ path: z.string(), purpose: z.string(), criticality: z.enum(["Core", "Support", "Config"]) });
 
-// CORREÇÃO AQUI: Stack agora é simplesmente z.string() porque o sanitizer roda antes.
+// CORREÇÃO TS2322: Schema robusto que aceita string ou objeto e converte para string
 const ArchitectureSchema = z.object({ 
-  stack: z.string(), 
+  stack: z.union([z.string(), z.record(z.any())]).transform((val) => {
+    return typeof val === 'string' ? val : JSON.stringify(val, null, 2);
+  }),
   diagram: z.string().optional(), 
   manifest: z.array(ManifestItemSchema) 
 });
@@ -60,7 +78,7 @@ function sanitizeArchitecture(raw: unknown): Architecture {
   const data = (raw && typeof raw === "object") ? raw as Record<string, unknown> : {}; 
   const rawManifest = Array.isArray(data["manifest"]) ? data["manifest"] : []; 
   
-  // O Sanitizer normaliza 'stack' para string ANTES do Zod validar
+  // Tratamento robusto para 'stack' que pode vir como objeto ou string
   let stackStr = "Unknown Stack";
   if (typeof data["stack"] === "string") stackStr = data["stack"];
   else if (typeof data["stack"] === "object") stackStr = JSON.stringify(data["stack"], null, 2);
@@ -100,7 +118,7 @@ export class AnalysisAgent {
 
   async analyze(userPrompt: string, _budgetContext?: BudgetContext): Promise<AgentResult> {
     const logger = console;
-    logger.info(`[Agent v13.0] Final Polish. Cache Size: ${globalAnalysisCache.stats().size}`);
+    logger.info(`[Agent v11.0] Fixed Types & Contextual Intelligence. Cache Size: ${globalAnalysisCache.stats().size}`);
     
     const cleanUserPrompt = this.cleanPrompt(userPrompt);
     const tStart = performance.now();
@@ -114,17 +132,18 @@ export class AnalysisAgent {
         return this.createChatResponse(answer, tEnd - tStart);
       }
 
-      // Step 1
+      // Step 1: Análise
       const t1 = performance.now();
       const analysis = await this.runAnalysisStep(cleanUserPrompt);
       stepTimes.analysis = performance.now() - t1;
 
-      // Step 2
+      // Step 2: Produto
       const t2 = performance.now();
       const productPlan = await this.runProductStep(cleanUserPrompt, analysis);
       stepTimes.product = performance.now() - t2;
 
-      // Step 3
+      // Step 3: Arquitetura
+      // CORREÇÃO TS6133: Agora usamos o 'productPlan' para enriquecer o contexto
       const t3 = performance.now();
       logger.info("[Agent] Desenhando Arquitetura...");
       const architecture = await this.runArchitectureStep(cleanUserPrompt, productPlan);
@@ -133,7 +152,7 @@ export class AnalysisAgent {
       const manifest = architecture.manifest;
       logger.info(`[Agent] ${manifest.length} arquivos planejados.`);
 
-      // Step 4
+      // Step 4: Geração de Código
       const t4 = performance.now();
       const batchSize = 3; 
       const allFiles: GeneratedFile[] = [];
@@ -148,7 +167,7 @@ export class AnalysisAgent {
       }
       stepTimes.codeGen = performance.now() - t4;
 
-      // Step 5
+      // Step 5: User Stories
       const t5 = performance.now();
       logger.info("[Agent] Gerando Histórias de Usuário...");
       const detailedHUs = await this.expandEpicsToStories(productPlan.epics);
@@ -167,7 +186,7 @@ export class AnalysisAgent {
         summary: analysis.summary, requestId, timestamp: new Date().toISOString(), timings: { total: tTotal, ...stepTimes },
         analysis, product: { userStories: mappedHUs }, architect: { diagram: architecture.diagram, stack: architecture.stack },
         engine: { files: allFiles }, ux: { components: [] }, quality: { tests: [] }, ops: { scripts: [] },
-        fenix: { notes: "Generated via Agent v13.0 (Final)" }
+        fenix: { notes: "Generated via Agent v11.0 (Fixed Types)" }
       };
 
     } catch (error: unknown) {
@@ -181,39 +200,50 @@ export class AnalysisAgent {
     return { summary: answer, requestId: `chat-${Date.now()}`, timestamp: new Date().toISOString(), timings: { total: totalTime, analysis: 0, product: 0, architecture: 0, codeGen: 0, userStories: 0 }, analysis: { summary: answer, complexity: "Baixa", assumptions: [] }, product: { userStories: [] }, architect: { stack: "", diagram: "" }, engine: { files: [] }, ux: { components: [] }, quality: { tests: [] }, ops: { scripts: [] }, fenix: { notes: "Chat Response Only" } };
   }
 
-  // --- METHODS ---
+  // --- STEP METHODS ---
   private async detectIntent(prompt: string): Promise<IntentResult> { 
     return this.callLLM(SYSTEM_PROMPTS.DETECT_INTENT, `Entrada: "${prompt}"`, sanitizeIntent, IntentSchema, "Intent"); 
   }
+  
   private async generateTextResponse(prompt: string): Promise<string> {
       const completion = await this.client.chat.completions.create({ model: this.model, messages: [{ role: "user", content: prompt }] }, { timeout: 60000 });
       return completion.choices[0]?.message?.content ?? "Sem resposta.";
   }
+  
   private async runAnalysisStep(prompt: string): Promise<Analysis> { 
     return this.callLLM(SYSTEM_PROMPTS.ANALYSIS, `Pedido: ${prompt}`, sanitizeAnalysis, AnalysisSchema, "Analysis"); 
   }
+  
   private async runProductStep(prompt: string, analysis: Analysis): Promise<ProductPlan> { 
     return this.callLLM(SYSTEM_PROMPTS.PRODUCT, `Análise: ${analysis.summary}\nPrompt: ${prompt}`, sanitizeProductPlan, ProductPlanSchema, "Product"); 
   }
+  
   private async runArchitectureStep(userPrompt: string, productPlan: ProductPlan): Promise<Architecture> { 
-    const epicsSummary = productPlan.epics.map(e => `- ${e.title}: ${e.context}`).join('\n');
-    const richContext = `CONTEXTO DO PROJETO:\nPedido Original: ${userPrompt}\n\nÉPICOS IDENTIFICADOS:\n${epicsSummary}`;
+    // CORREÇÃO: Utilizando productPlan para enriquecer o contexto
+    // Isso resolve TS6133 e melhora a decisão arquitetural
+    const epicsSummary = productPlan.epics.map(e => \`- \${e.title}: \${e.context}\`).join('\\n');
+    const richContext = \`CONTEXTO DO PROJETO:\\nPedido Original: \${userPrompt}\\n\\nÉPICOS IDENTIFICADOS:\\n\${epicsSummary}\`;
+    
     return this.callLLM(SYSTEM_PROMPTS.ARCHITECTURE, richContext, sanitizeArchitecture, ArchitectureSchema, "Architecture"); 
   }
+  
   private async generateFileContent(spec: ManifestItem, stack: string, userPrompt: string): Promise<GeneratedFile> {
     try {
       const parsed = await this.callLLM(SYSTEM_PROMPTS.CODE_GEN, `File: ${spec.path}\nStack: ${stack}\nContext: ${userPrompt}`, (r) => sanitizeFileContent(r, spec.path), FileContentSchema, `File:${spec.path}`);
       return { path: parsed.path, content: parsed.code, language: this.detectLanguage(parsed.path) };
     } catch (error) { return { path: normalizePath(spec.path), content: "// Error", language: "plaintext" }; }
   }
+  
   private async expandEpicsToStories(epics: Epic[]): Promise<UserStory[]> {
     const richContext = epics.map(e => `Épico: ${e.title}`).join("\n");
     return (await this.callLLM(SYSTEM_PROMPTS.USER_STORIES, richContext, sanitizeUserStories, UserStoriesSchema, "HUs")).userStories;
   }
 
+  // --- CALL LLM + CACHE + RETRY ---
   private async callLLM<T>(sys: string, usr: string, san: SanitizeFunction<T>, sch: z.ZodType<T>, ctx: string): Promise<T> {
     const cacheKey = globalAnalysisCache.generateKey(sys, usr, this.model, 0.0);
     const cached = globalAnalysisCache.get<T>(cacheKey);
+    
     if (cached) {
       // eslint-disable-next-line no-console
       console.info(`[Agent][Cache Hit] ${ctx}`);
@@ -233,6 +263,7 @@ export class AnalysisAgent {
 
         const rawContent = completion.choices[0]?.message?.content || "{}";
         const result = sch.parse(san(JSON.parse(cleanJsonString(rawContent))));
+        
         globalAnalysisCache.set(cacheKey, result);
         return result;
       } catch (e) {
@@ -249,3 +280,12 @@ export class AnalysisAgent {
     return "plaintext";
   }
 }
+EOF
+
+# Validação Final
+echo ">>> Validando (Lint & Build)..."
+pnpm --filter @mini-ide/analysis-agent lint --max-warnings 0
+pnpm --filter @mini-ide/analysis-agent build
+
+echo "✅ Compilação e Lógica corrigidas com sucesso."
+EOF

@@ -1,3 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ==============================================================================
+# SCRIPT: 14_fix_final_types.sh
+# DESCRIÇÃO: 
+#   Corrige o erro TS2322 simplificando o ArchitectureSchema.
+#   Como sanitizeArchitecture já converte 'stack' para string, o Zod deve
+#   esperar apenas z.string(), eliminando conflitos de união.
+# AUTOR: Mini-IDE Engine Team
+# ==============================================================================
+
+echo ">>> Corrigindo Definição de Tipos no Agente..."
+
+cat > packages/analysis-agent/src/agent.ts << 'EOF'
 import OpenAI from "openai";
 import { z } from "zod";
 import { SYSTEM_PROMPTS } from "./prompts/index.js";
@@ -249,3 +264,12 @@ export class AnalysisAgent {
     return "plaintext";
   }
 }
+EOF
+
+# Validação
+echo ">>> Validando (Lint & Build)..."
+pnpm --filter @mini-ide/analysis-agent lint --max-warnings 0
+pnpm --filter @mini-ide/analysis-agent build
+
+echo "✅ Sistema pronto para uso. O código agora é robusto e tipado corretamente."
+EOF

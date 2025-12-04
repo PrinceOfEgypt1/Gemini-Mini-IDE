@@ -1,20 +1,6 @@
-// Exports principais
-export { AnalysisAgent } from "./agent.js";
-export type {
-  Analysis,
-  Architecture,
-  Epic,
-  ProductPlan,
-  ManifestItem,
-  FileContent,
-  GeneratedFile,
-  UserStory,
-  UserStoriesResult,
-  MappedUserStory,
-  IntentResult,
-  BudgetContext,
-  AgentResult,
-  Complexity,
-  Priority,
-  Criticality
-} from "./agent.js";
+// Re-exporta tudo do agent para garantir visibilidade
+export * from "./agent.js";
+// Exporta prompts se necessário externamente
+export * from "./prompts/index.js";
+// Exporta serviço de cache
+export * from "./services/cache.service.js";
