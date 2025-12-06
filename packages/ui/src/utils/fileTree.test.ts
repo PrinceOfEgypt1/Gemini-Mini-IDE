@@ -1,5 +1,3 @@
-/* eslint-disable */
-// @ts-nocheck
 import { describe, it, expect } from 'vitest';
 import { buildFileTree } from './fileTree';
 
@@ -13,14 +11,9 @@ describe('FileTree Utils', () => {
     const tree = buildFileTree(input);
     
     // Estrutura esperada: src -> backend -> [controllers, index.ts]
-    const srcNode = tree[0];
-    expect(srcNode).toBeDefined();
-    expect(srcNode?.name).toBe('src');
-    
-    const backendNode = srcNode?.children?.[0];
-    expect(backendNode).toBeDefined();
-    expect(backendNode?.name).toBe('backend');
-    expect(backendNode?.children).toHaveLength(2);
+    expect(tree[0].name).toBe('src');
+    expect(tree[0].children?.[0].name).toBe('backend');
+    expect(tree[0].children?.[0].children).toHaveLength(2);
   });
 
   it('deve ser resiliente a caminhos malformados', () => {

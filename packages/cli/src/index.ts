@@ -20,7 +20,7 @@ const program = new Command();
 
 program
   .name('mini-ide')
-  .description('CLI para o Mini-IDE - Ambiente de Desenvolvimento Assistido por IA')
+  .description('CLI para o Gemini Gemini Mini-IDE - Ambiente de Desenvolvimento Assistido por IA')
   .version('0.0.1');
 
 program

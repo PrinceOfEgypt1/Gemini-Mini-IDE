@@ -1,7 +1,7 @@
 {
-  "name": "mini-ide-monorepo",
+  "name": "gemini-mini-ide-monorepo",
   "version": "1.0.0",
-  "description": "Mini-IDE - Ambiente de Desenvolvimento Assistido por IA",
+  "description": "Gemini Mini-IDE - Ambiente de Desenvolvimento Assistido por IA",
   "main": "index.js",
   "scripts": {
     "lint": "pnpm -r lint",

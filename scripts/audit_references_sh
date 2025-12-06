@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+#===============================================================================
+# 🔍 AUDIT: Verificar referências cruzadas Mini-IDE ↔ Gemini-Mini-IDE
+#===============================================================================
+
+CYAN='\033[0;36m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+GEMINI_DIR="$HOME/workspace/Gemini-Mini-IDE"
+
+echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}🔍 AUDITORIA: Referências ao 'Mini-IDE' em Gemini-Mini-IDE${NC}"
+echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
+
+cd "$GEMINI_DIR"
+
+echo ""
+echo -e "${YELLOW}▶ 1. Buscando 'Mini-IDE' em arquivos de código:${NC}"
+FOUND=$(grep -r "Mini-IDE" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.json" --include="*.md" . 2>/dev/null | grep -v node_modules | grep -v ".git" | grep -v "dist/" || true)
+
+if [[ -n "$FOUND" ]]; then
+  echo -e "${RED}Encontrado:${NC}"
+  echo "$FOUND"
+else
+  echo -e "${GREEN}✓ Nenhuma referência a 'Mini-IDE' encontrada${NC}"
+fi
+
+echo ""
+echo -e "${YELLOW}▶ 2. Verificando package.json (nome do pacote):${NC}"
+echo "Root package.json:"
+grep -E '"name"' package.json | head -1
+
+echo ""
+echo "UI package.json:"
+grep -E '"name"' packages/ui/package.json | head -1
+
+echo ""
+echo -e "${YELLOW}▶ 3. Verificando remote Git:${NC}"
+git remote -v
+
+echo ""
+echo -e "${YELLOW}▶ 4. Verificando título no index.html:${NC}"
+grep -i "title" packages/ui/index.html
+
+echo ""
+echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}✅ Auditoria concluída${NC}"
+echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"

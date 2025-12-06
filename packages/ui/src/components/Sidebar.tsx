@@ -43,7 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ files = [], onSelectFile }) =>
       </div>
 
       <div className="p-4 border-t border-gray-800 bg-gray-900 text-xs text-gray-500">
-        Mini-IDE v0.15.0
+        Gemini Mini-IDE v0.15.0
       </div>
     </aside>
   );

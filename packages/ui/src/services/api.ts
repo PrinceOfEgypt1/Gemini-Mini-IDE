@@ -30,8 +30,8 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/analyze`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({
-          text,
+      body: JSON.stringify({ 
+          text, 
           maxLen: 2000,
           currentContext: currentContext // Envia o estado atual
       }),

@@ -1,5 +1,5 @@
 {
-  "name": "@mini-ide/server",
+  "name": "@gemini-mini-ide/server",
   "version": "0.0.1",
   "type": "module",
   "main": "dist/index.js",
@@ -16,8 +16,8 @@
     "@fastify/rate-limit": "^9.1.0",
     "@fastify/swagger": "^8.14.0",
     "@fastify/swagger-ui": "^3.0.0",
-    "@mini-ide/analysis-agent": "workspace:*",
-    "@mini-ide/shared": "workspace:*",
+    "@gemini-mini-ide/analysis-agent": "workspace:*",
+    "@gemini-mini-ide/shared": "workspace:*",
     "archiver": "^7.0.1",
     "dotenv": "^16.3.1",
     "fastify": "^4.26.1",

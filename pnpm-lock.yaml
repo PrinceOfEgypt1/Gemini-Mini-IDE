@@ -46,7 +46,7 @@ importers:
 
   packages/analysis-agent:
     dependencies:
-      '@mini-ide/shared':
+      '@gemini-mini-ide/shared':
         specifier: workspace:*
         version: link:../shared
       dotenv:
@@ -105,10 +105,10 @@ importers:
       '@fastify/swagger-ui':
         specifier: ^3.0.0
         version: 3.1.0
-      '@mini-ide/analysis-agent':
+      '@gemini-mini-ide/analysis-agent':
         specifier: workspace:*
         version: link:../analysis-agent
-      '@mini-ide/shared':
+      '@gemini-mini-ide/shared':
         specifier: workspace:*
         version: link:../shared
       archiver:

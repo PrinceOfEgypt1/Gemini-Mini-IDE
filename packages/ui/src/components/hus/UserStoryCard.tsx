@@ -37,9 +37,7 @@ export const UserStoryCard: React.FC<UserStoryCardProps> = ({ story }) => {
       const pattern = keywords.join('|');
       const regex = new RegExp(`(?:##|\\*\\*|\\n)\\s*(?:${pattern})[:\\s]*([\\s\\S]*?)(?=(?:##|\\*\\*|\\n[A-Z][a-z]+:|$))`, 'i');
       const match = rawText.match(regex);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-      return match ? match[1]?.trim() ?? null : null;
+      return match ? match[1].trim() : null;
     };
 
     const textToList = (text: string | null): string[] => {
@@ -55,9 +53,7 @@ export const UserStoryCard: React.FC<UserStoryCardProps> = ({ story }) => {
     // Fallback para extração de texto bruto se os campos estruturados falharem
     if (role === "Não especificado" && rawText) {
        const match = rawText.match(/Como\s+([^,.]+)/i);
-       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-       if (match && match[1]) role = match[1].trim();
+       if (match) role = match[1].trim();
     }
 
     return {
@@ -65,10 +61,10 @@ export const UserStoryCard: React.FC<UserStoryCardProps> = ({ story }) => {
       action,
       benefit,
       context: story.context || extractSection(['Contexto', 'Business Context']),
-      rf: (story.functionalReqs?.length ?? 0) > 0 ? story.functionalReqs ?? [] : textToList(extractSection(['Requisitos Funcionais'])),
-      rnf: (story.nonFunctionalReqs?.length ?? 0) > 0 ? story.nonFunctionalReqs ?? [] : textToList(extractSection(['Requisitos Não Funcionais'])),
-      security: (story.security?.length ?? 0) > 0 ? story.security ?? [] : textToList(extractSection(['Segurança'])),
-      criteria: (story.acceptanceCriteria?.length ?? 0) > 0 ? story.acceptanceCriteria ?? [] : textToList(extractSection(['Critérios']))
+      rf: (story.functionalReqs?.length ?? 0) > 0 ? story.functionalReqs : textToList(extractSection(['Requisitos Funcionais'])),
+      rnf: (story.nonFunctionalReqs?.length ?? 0) > 0 ? story.nonFunctionalReqs : textToList(extractSection(['Requisitos Não Funcionais'])),
+      security: (story.security?.length ?? 0) > 0 ? story.security : textToList(extractSection(['Segurança'])),
+      criteria: (story.acceptanceCriteria?.length ?? 0) > 0 ? story.acceptanceCriteria : textToList(extractSection(['Critérios']))
     };
   }, [story]);
 
@@ -113,24 +109,11 @@ export const UserStoryCard: React.FC<UserStoryCardProps> = ({ story }) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
              <section>
                 <h4 className="text-[10px] font-bold uppercase text-[var(--text-muted)] mb-2 tracking-widest border-b border-[var(--border-main)] pb-1">Critérios de Aceite</h4>
-                <ul className="space-y-2">
-                  {structuredData.criteria.map((c, i) => (
-                    <li key={i} className="flex gap-2">
-                      <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[var(--success)] flex-shrink-0"/>
-                      <span>{c}</span>
-                    </li>
-                  ))}
-                </ul>
+                <ul className="space-y-2">{structuredData.criteria?.map((c, i) => <li key={i} className="flex gap-2"><div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[var(--success)] flex-shrink-0"/><span>{c}</span></li>)}</ul>
              </section>
              <section>
                 <h4 className="text-[10px] font-bold uppercase text-[var(--text-muted)] mb-2 tracking-widest border-b border-[var(--border-main)] pb-1">Segurança</h4>
-                <ul className="space-y-1">
-                  {structuredData.security.map((s, i) => (
-                    <li key={i} className="text-[var(--text-secondary)] flex gap-2">
-                      <span className="opacity-70">🛡️</span>{s}
-                    </li>
-                  ))}
-                </ul>
+                <ul className="space-y-1">{structuredData.security?.map((s, i) => <li key={i} className="text-[var(--text-secondary)] flex gap-2"><span className="opacity-70">🛡️</span>{s}</li>)}</ul>
              </section>
           </div>
         </div>

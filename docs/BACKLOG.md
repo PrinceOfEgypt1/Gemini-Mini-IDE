@@ -1,4 +1,4 @@
-# Backlog de Histórias de Usuário — Mini-IDE
+# Backlog de Histórias de Usuário — Gemini Mini-IDE
 
 **Status Geral:** Fase 15 Concluída. Foco em Refinamento de Inteligência e Persistência.
 

@@ -1,4 +1,4 @@
-# Mini-IDE (Monorepo)
+# Gemini Mini-IDE (Monorepo)
 
 Ambiente de desenvolvimento assistido por IA, capaz de transformar intenções em planos e código.
 

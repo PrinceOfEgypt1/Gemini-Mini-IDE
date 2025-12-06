@@ -1,4 +1,4 @@
-# Mini-IDE — Manual de Engenharia
+# Gemini Mini-IDE — Manual de Engenharia
 
 > **Versão do Documento:** 10.0 (Visualization Complete)
 > **Versão do Software:** v0.15.1 (UI Powered)

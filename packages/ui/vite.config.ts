@@ -4,20 +4,21 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: { '@': path.resolve(__dirname, './src') },
+  },
   server: {
     port: 5173,
+    strictPort: true,
+    host: true,
     proxy: {
-      // Redireciona chamadas /api para o backend local
       '/api': {
         target: process.env.VITE_API_URL || 'http://localhost:3200',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
-    }
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+        rewrite: (p) => p.replace(/^\/api/, ''),
+      },
     },
   },
+  build: { emptyOutDir: true, sourcemap: true },
+  optimizeDeps: { force: true },
 });

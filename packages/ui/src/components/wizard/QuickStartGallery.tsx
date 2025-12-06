@@ -64,7 +64,7 @@ export const QuickStartGallery: React.FC<QuickStartGalleryProps> = ({
             <div className="flex gap-3 items-center">
               <div className="bg-[#4ba3ff]/20 p-2 rounded-full text-xl">🎓</div>
               <div>
-                <h3 className="text-[#e6ecff] font-semibold">Novo na Mini-IDE?</h3>
+                <h3 className="text-[#e6ecff] font-semibold">Novo no Gemini Mini-IDE?</h3>
                 <p className="text-[#9fb0d3] text-xs">Faça um tour guiado para conhecer as ferramentas.</p>
               </div>
             </div>

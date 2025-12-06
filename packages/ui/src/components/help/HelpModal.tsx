@@ -8,9 +8,9 @@ interface HelpModalProps {
 }
 
 const MANUAL_CONTENT = `
-# Manual da Mini-IDE
+# Manual do Gemini Mini-IDE
 
-Bem-vindo! A Mini-IDE é um **Agente de Engenharia de Software** projetado para transformar ideias em código estruturado.
+Bem-vindo! O Gemini Mini-IDE é um **Agente de Engenharia de Software** projetado para transformar ideias em código estruturado.
 
 ## 🚀 Como Funciona
 
@@ -30,7 +30,7 @@ O fluxo de trabalho é dividido em 3 etapas principais:
 
 ## ⚠️ Limitações Importantes
 
-- **Ambiente Local:** A Mini-IDE roda no seu navegador e servidor local. Ela não faz deploy automático na nuvem (AWS, Vercel, etc).
+- **Ambiente Local:** O Gemini Mini-IDE roda no seu navegador e servidor local. Ela não faz deploy automático na nuvem (AWS, Vercel, etc).
 - **Contexto:** O agente lembra da conversa atual, mas se você recarregar a página (F5) sem exportar, o contexto da memória do agente será reiniciado (embora as configurações fiquem salvas).
 - **Segurança:** Sua API Key é salva apenas no seu navegador. Nós nunca a armazenamos em nossos servidores.
 
