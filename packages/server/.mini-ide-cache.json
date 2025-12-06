@@ -16213,5 +16213,204 @@
         }
       ]
     }
+  },
+  "640e401f136fa055fe47105a3b3c70362d9ba124897de3927dfad0b59a8ccfb8": {
+    "timestamp": 1765055566230,
+    "data": {
+      "type": "NEW_PROJECT",
+      "reasoning": "O usuário está solicitando a criação de uma nova biblioteca em TypeScript com requisitos específicos, como a função de validação de CPF, testes unitários e um README. Verbos como 'crie' indicam intenção de criação."
+    }
+  },
+  "4f13e0d4a10b1b45dc3a5f1682a8fbb919e6e7123796ccf4787732fcf14ac100": {
+    "timestamp": 1765055570239,
+    "data": {
+      "summary": "Biblioteca em TypeScript para validação de CPF brasileiro, incluindo lógica de validação, teste unitário e documentação de uso.",
+      "complexity": "Média",
+      "assumptions": [
+        "A função de validação deve seguir o algoritmo padrão de CPF",
+        "O projeto deve ser configurado para uso com Node.js",
+        "Os testes unitários serão escritos usando um framework popular como Jest ou Mocha",
+        "O README deve incluir instruções claras de instalação e uso"
+      ]
+    }
+  },
+  "0b14091882c98b34825a21f6f64cda9589dd16f5c71edc3bbff8ff18e6818129": {
+    "timestamp": 1765055579143,
+    "data": {
+      "epics": [
+        {
+          "title": "Lógica de Validação de CPF",
+          "context": "A validação de CPF é essencial para garantir que os dados pessoais sejam corretos e evitar fraudes.",
+          "requirements": [
+            "Implementar função que verifica se um CPF é válido",
+            "Considerar regras de formação de CPF (11 dígitos, dígitos verificadores)",
+            "Tratar CPFs com formatação (pontuação) e sem formatação"
+          ]
+        },
+        {
+          "title": "Teste Unitário",
+          "context": "Testes unitários garantem que a lógica de validação funcione corretamente e previnem regressões futuras.",
+          "requirements": [
+            "Escrever testes unitários para a função de validação",
+            "Cobrir casos de CPFs válidos e inválidos",
+            "Incluir testes para CPFs com e sem formatação"
+          ]
+        },
+        {
+          "title": "Documentação de Uso",
+          "context": "Documentação clara é crucial para que desenvolvedores integrem a biblioteca facilmente em seus projetos.",
+          "requirements": [
+            "Criar README com instruções de instalação",
+            "Exemplos de uso da função de validação",
+            "Instruções para rodar testes unitários"
+          ]
+        },
+        {
+          "title": "Configuração de Ambiente de Desenvolvimento",
+          "context": "Um ambiente de desenvolvimento bem configurado facilita contribuições e manutenção da biblioteca.",
+          "requirements": [
+            "Configurar TypeScript com tsconfig.json",
+            "Configurar Jest para testes unitários",
+            "Incluir ESLint para padronização de código"
+          ]
+        }
+      ]
+    }
+  },
+  "1ccc0cbb57b52f83adafae53c92f923854e6d8868bcce84e22d98f37af31d2bb": {
+    "timestamp": 1765055585464,
+    "data": {
+      "stack": "{\n  \"runtime\": \"Node.js 20 LTS\",\n  \"language\": \"TypeScript 5.x (strict mode)\",\n  \"framework\": \"N/A\",\n  \"orm\": \"N/A\",\n  \"database\": \"N/A\",\n  \"cache\": \"N/A\",\n  \"queue\": \"N/A\",\n  \"testing\": \"Vitest\",\n  \"documentation\": \"Markdown\"\n}",
+      "diagram": "graph TD; User-->Library[CPF Validation Library]; Library-->ValidationLogic[Validation Logic]; Library-->Tests[Unit Tests];",
+      "manifest": [
+        {
+          "path": "src/validateCPF.ts",
+          "purpose": "Lógica de validação de CPF",
+          "criticality": "Core"
+        },
+        {
+          "path": "tests/unit/validateCPF.test.ts",
+          "purpose": "Teste unitário para validação de CPF",
+          "criticality": "Core"
+        },
+        {
+          "path": "README.md",
+          "purpose": "Documentação de uso da biblioteca",
+          "criticality": "Core"
+        },
+        {
+          "path": "tsconfig.json",
+          "purpose": "Configuração do compilador TypeScript",
+          "criticality": "Core"
+        },
+        {
+          "path": ".eslintrc.json",
+          "purpose": "Configuração de linting para TypeScript",
+          "criticality": "Core"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "purpose": "Pipeline de CI para lint e testes",
+          "criticality": "Core"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Dependências e scripts do projeto",
+          "criticality": "Core"
+        },
+        {
+          "path": ".gitignore",
+          "purpose": "Ignorar arquivos desnecessários no git",
+          "criticality": "Core"
+        }
+      ]
+    }
+  },
+  "1d8bde016d2a8c2b27491f83478d0356d43a954850fe3574b02c6188cb7103c1": {
+    "timestamp": 1765055587138,
+    "data": {
+      "path": "tests/unit/validateCPF.test.ts",
+      "code": "import { describe, it, expect } from 'vitest';\nimport { validateCPF } from '../../src/validateCPF';\n\ndescribe('validateCPF', () => {\n  it('should return true for a valid CPF', () => {\n    const validCPF = '123.456.789-09'; // Use a valid CPF for testing\n    expect(validateCPF(validCPF)).toBe(true);\n  });\n\n  it('should return false for an invalid CPF', () => {\n    const invalidCPF = '123.456.789-00';\n    expect(validateCPF(invalidCPF)).toBe(false);\n  });\n\n  it('should return false for a CPF with incorrect length', () => {\n    const shortCPF = '123.456';\n    expect(validateCPF(shortCPF)).toBe(false);\n  });\n\n  it('should return false for a CPF with non-numeric characters', () => {\n    const nonNumericCPF = '123.abc.789-09';\n    expect(validateCPF(nonNumericCPF)).toBe(false);\n  });\n});",
+      "explanation": "Os testes unitários para a função validateCPF cobrem casos de CPF válidos e inválidos, incluindo CPFs com comprimento incorreto e caracteres não numéricos. Isso garante que a função seja robusta e lide com entradas inesperadas de forma adequada."
+    }
+  },
+  "ed8084b7e9c25f3e43cce53579c6e5368932d5964af71bf46daf67aedb531bef": {
+    "timestamp": 1765055587897,
+    "data": {
+      "path": "README.md",
+      "code": "# CPF Validator Library\n\nThis is a simple TypeScript library for validating Brazilian CPF numbers. The library provides a single function to check if a given CPF is valid according to the standard rules.\n\n## Installation\n\nTo use this library, you can install it via npm:\n\n```bash\nnpm install cpf-validator\n```\n\n## Usage\n\nImport the `validateCPF` function and use it to validate CPF numbers:\n\n```typescript\nimport { validateCPF } from 'cpf-validator';\n\nconst isValid = validateCPF('123.456.789-09');\nconsole.log(isValid); // Output: true or false\n```\n\n## Functionality\n\nThe `validateCPF` function checks if a CPF number is valid by verifying its format and calculating the check digits. It returns a boolean indicating the validity of the CPF.\n\n## Testing\n\nThis library uses Vitest for unit testing. To run the tests, execute:\n\n```bash\nnpm test\n```\n\n## License\n\nThis project is licensed under the MIT License.",
+      "explanation": "O README fornece instruções claras sobre como instalar e usar a biblioteca de validação de CPF, incluindo exemplos de código. Ele também menciona como executar testes, garantindo que os desenvolvedores possam verificar a funcionalidade facilmente."
+    }
+  },
+  "b573cab0232cf4c076aa93563bc01027b5018a3a7b429ec4db33fec5e13fba3c": {
+    "timestamp": 1765055588531,
+    "data": {
+      "path": "src/validateCPF.ts",
+      "code": "export class CPFValidator {\n  /**\n   * Valida se um CPF é válido.\n   * @param cpf - CPF a ser validado\n   * @returns true se o CPF for válido, caso contrário, false\n   */\n  public static isValid(cpf: string): boolean {\n    const cleanCPF = cpf.replace(/[.-]/g, '');\n    if (!/^[0-9]{11}$/.test(cleanCPF)) return false;\n\n    const digits = cleanCPF.split('').map(Number);\n    if (new Set(digits).size === 1) return false; // CPF com todos os dígitos iguais\n\n    const calculateCheckDigit = (base: number[]): number => {\n      const sum = base.reduce((acc, digit, index) => acc + digit * (base.length + 1 - index), 0);\n      const remainder = (sum * 10) % 11;\n      return remainder === 10 ? 0 : remainder;\n    };\n\n    const firstCheckDigit = calculateCheckDigit(digits.slice(0, 9));\n    const secondCheckDigit = calculateCheckDigit(digits.slice(0, 10));\n\n    return firstCheckDigit === digits[9] && secondCheckDigit === digits[10];\n  }\n}",
+      "explanation": "A classe CPFValidator contém um método estático isValid que valida um CPF brasileiro. A função remove caracteres não numéricos, verifica se o CPF tem 11 dígitos e se todos os dígitos não são iguais. Em seguida, calcula os dígitos verificadores e os compara com os fornecidos. A lógica é encapsulada em uma classe para facilitar a extensão futura."
+    }
+  },
+  "3e0429f9c52c5e5ec658c57dc729819609f510956da2a22e6b8b3c45087579de": {
+    "timestamp": 1765055591820,
+    "data": {
+      "path": "tsconfig.json",
+      "code": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2020\",\n    \"module\": \"CommonJS\",\n    \"strict\": true,\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true,\n    \"forceConsistentCasingInFileNames\": true,\n    \"outDir\": \"dist\",\n    \"rootDir\": \"src\"\n  },\n  \"include\": [\"src\"],\n  \"exclude\": [\"node_modules\", \"dist\"]\n}",
+      "explanation": "Configuração do TypeScript para um projeto de biblioteca simples, com saída em 'dist' e código-fonte em 'src'. O modo estrito está ativado para garantir a segurança e a qualidade do código."
+    }
+  },
+  "0c508df4cf290a8b6519c0ee21b04470e0f77ade185cf24a4f4c1c47a6358d96": {
+    "timestamp": 1765055592284,
+    "data": {
+      "path": ".github/workflows/ci.yml",
+      "code": "name: CI\n\non:\n  push:\n    branches:\n      - main\n  pull_request:\n    branches:\n      - main\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n\n    strategy:\n      matrix:\n        node-version: [20.x]\n\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v2\n\n      - name: Setup Node.js\n        uses: actions/setup-node@v3\n        with:\n          node-version: ${{ matrix.node-version }}\n\n      - name: Install dependencies\n        run: npm install\n\n      - name: Run tests\n        run: npm test\n\n      - name: Lint code\n        run: npm run lint\n\n      - name: Build project\n        run: npm run build",
+      "explanation": "Este workflow de CI para GitHub Actions é configurado para ser executado em pushes e pull requests na branch 'main'. Ele utiliza a versão 20.x do Node.js, instala as dependências, executa os testes com Vitest, verifica o código com lint e constrói o projeto. Isso garante que o código seja testado e validado automaticamente em cada alteração."
+    }
+  },
+  "6aabfa730fbd7aa1962224f5c0b5070552af5c03f31c47d981b38f3163bdeb65": {
+    "timestamp": 1765055592291,
+    "data": {
+      "path": ".eslintrc.json",
+      "code": "{\n  \"env\": {\n    \"node\": true,\n    \"es2021\": true\n  },\n  \"extends\": [\n    \"eslint:recommended\",\n    \"plugin:@typescript-eslint/recommended\"\n  ],\n  \"parser\": \"@typescript-eslint/parser\",\n  \"parserOptions\": {\n    \"ecmaVersion\": 12,\n    \"sourceType\": \"module\"\n  },\n  \"plugins\": [\n    \"@typescript-eslint\"\n  ],\n  \"rules\": {\n    \"@typescript-eslint/no-explicit-any\": \"error\",\n    \"@typescript-eslint/explicit-module-boundary-types\": \"error\",\n    \"@typescript-eslint/no-unused-vars\": [\"error\", { \"argsIgnorePattern\": \"^_\" }],\n    \"@typescript-eslint/no-inferrable-types\": \"off\"\n  }\n}",
+      "explanation": "Configuração ESLint para um projeto TypeScript em Node.js, garantindo boas práticas de codificação. Inclui regras para evitar o uso de 'any', exigir tipos explícitos em fronteiras de módulo e evitar variáveis não utilizadas, exceto quando intencionalmente ignoradas."
+    }
+  },
+  "ea64f2ca672a187b5202cc62072c8a9753d49fb4cee9d509909be2900979530a": {
+    "timestamp": 1765055594146,
+    "data": {
+      "path": ".gitignore",
+      "code": "node_modules/\ndist/\n.env\n*.log\n*.tmp",
+      "explanation": "O arquivo .gitignore é configurado para ignorar a pasta node_modules, onde as dependências do Node.js são instaladas, e a pasta dist, onde o código transpilado é gerado. Também ignora arquivos de configuração sensíveis como .env e arquivos de log e temporários, que não devem ser versionados."
+    }
+  },
+  "38fea4b7391deec224f0c4e74ec1a586f1df52df4c915fc2818d31bcdfe566d5": {
+    "timestamp": 1765055595863,
+    "data": {
+      "path": "package.json",
+      "code": "{\n  \"name\": \"cpf-validator\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A simple library to validate Brazilian CPF numbers.\",\n  \"main\": \"dist/index.js\",\n  \"types\": \"dist/index.d.ts\",\n  \"scripts\": {\n    \"build\": \"tsc\",\n    \"test\": \"vitest\"\n  },\n  \"keywords\": [\n    \"cpf\",\n    \"validator\",\n    \"brazil\",\n    \"typescript\"\n  ],\n  \"author\": \"Seu Nome\",\n  \"license\": \"MIT\",\n  \"devDependencies\": {\n    \"typescript\": \"^5.0.0\",\n    \"vitest\": \"^0.30.0\"\n  }\n}",
+      "explanation": "O arquivo package.json define um projeto TypeScript para uma biblioteca de validação de CPF. Inclui scripts para build e testes, além de dependências de desenvolvimento para TypeScript e Vitest. A configuração é mínima, focando na funcionalidade de validação de CPF."
+    }
+  },
+  "0c51a1000b42c1ce1896e77173844e04bb32194b973c55f17c1f85d9f9d925fd": {
+    "timestamp": 1765055601371,
+    "data": {
+      "userStories": [
+        {
+          "id": "US-006",
+          "title": "Implementar validação de CPF",
+          "priority": "P0",
+          "role": "usuário",
+          "action": "realizar ação",
+          "benefit": "obter valor",
+          "acceptanceCriteria": [],
+          "functionalRequirements": [
+            "Requisito pendente"
+          ],
+          "securityRequirements": [
+            "Requisito de segurança padrão"
+          ],
+          "businessContext": "Contexto de negócio"
+        }
+      ]
+    }
   }
 }
