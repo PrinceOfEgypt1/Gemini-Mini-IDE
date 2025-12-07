@@ -1,3 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Cria o diretório scripts se não existir
+mkdir -p scripts
+
+echo "[INFO] Reescrevendo packages/analysis-agent/src/agent.ts (v14 Fixed)..."
+
+cat > packages/analysis-agent/src/agent.ts << 'EOF'
 import OpenAI from "openai";
 import { z } from "zod";
 import { SYSTEM_PROMPTS } from "./prompts/index.js";
@@ -5,6 +14,7 @@ import { globalAnalysisCache } from "./services/cache.service.js";
 
 // Importação dos Schemas Ricos e Interfaces
 import {
+  AnalysisSchema,
   RichAnalysisSchema,
   RichProductPlanSchema,
   RichArchitectureSchema,
@@ -14,9 +24,7 @@ import {
   RichArchitecture,
   UserStoriesResult,
   AgentResult,
-  TechStack,
-  RichManifestItem,
-  RichEpic
+  TechStack
 } from "./types/rich-schemas.js";
 
 // Importação de Contexto e Governança
@@ -47,16 +55,10 @@ function ensureStringArray(val: unknown, fallback: string[] = []): string[] {
   return fallback;
 }
 
-function normalizePriority(val: unknown): "P0" | "P1" | "P2" | "P3" {
+function normalizePriority(val: unknown): "P0" | "P1" | "P2" {
   const s = String(val).toUpperCase();
-  if (["P0", "P1", "P2", "P3"].includes(s)) return s as any;
+  if (s === "P0" || s === "P1" || s === "P2") return s;
   return "P1"; // Default
-}
-
-function normalizeComplexity(val: unknown): "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" {
-    const s = String(val).toUpperCase();
-    if (["LOW", "MEDIUM", "HIGH", "CRITICAL"].includes(s)) return s as any;
-    return "MEDIUM";
 }
 
 // --- SANITIZERS ESPECÍFICOS ---
@@ -69,7 +71,7 @@ function sanitizeRichAnalysis(data: any): RichAnalysis {
   return {
     summary: ensureString(data["summary"], "Análise indisponível"),
     complexity: {
-      level: normalizeComplexity(complexityData.level),
+      level: (["LOW", "MEDIUM", "HIGH", "CRITICAL"].includes(complexityData.level) ? complexityData.level : "MEDIUM") as any,
       score: ensureNumber(complexityData.score, 5),
       justification: ensureString(complexityData.justification, "Sem justificativa")
     },
@@ -82,7 +84,7 @@ function sanitizeRichAnalysis(data: any): RichAnalysis {
 function sanitizeRichProductPlan(data: any): RichProductPlan {
   const epicsRaw = Array.isArray(data["epics"]) ? data["epics"] : [];
   
-  const epics: RichEpic[] = epicsRaw.map((epic: any) => ({
+  const epics = epicsRaw.map((epic: any) => ({
     id: ensureString(epic["id"], "EPIC-001"),
     title: ensureString(epic["title"], "Untitled Epic"),
     category: (["CORE", "AUTH & SECURITY", "ADMIN", "OBSERVABILITY", "INTEGRATION", "INFRASTRUCTURE"].includes(epic["category"]) 
@@ -90,19 +92,14 @@ function sanitizeRichProductPlan(data: any): RichProductPlan {
       : "CORE") as any,
     context: ensureString(epic["context"], "Sem contexto"),
     requirements: ensureStringArray(epic["requirements"], []),
-    acceptanceCriteria: ensureStringArray(epic["acceptanceCriteria"], []),
-    priority: normalizePriority(epic["priority"]),
-    estimatedComplexity: normalizeComplexity(epic["estimatedComplexity"])
+    businessValue: ensureString(epic["businessValue"], "Valor não especificado")
   }));
 
   return {
     productVision: ensureString(data["productVision"], "Visão do produto não definida"),
     epics,
     outOfScope: ensureStringArray(data["outOfScope"], []),
-    risks: Array.isArray(data["risks"]) ? data["risks"].map((r: any) => ({
-        description: ensureString(r.description, "Risco genérico"),
-        mitigation: ensureString(r.mitigation, "Monitorar")
-    })) : []
+    risks: ensureStringArray(data["risks"], [])
   };
 }
 
@@ -114,7 +111,7 @@ function sanitizeRichArchitecture(data: any): RichArchitecture {
     language: ensureString(stackData["language"], "TypeScript"),
     framework: ensureString(stackData["framework"], "React"),
     testing: ensureString(stackData["testing"], "Vitest"),
-    // styling removido pois não existe na interface TechStack definida no rich-schemas.ts
+    styling: ensureString(stackData["styling"], "Tailwind"),
     documentation: ensureString(stackData["documentation"], "README.md"),
     orm: ensureString(stackData["orm"], "N/A"),
     database: ensureString(stackData["database"], "N/A"),
@@ -123,26 +120,22 @@ function sanitizeRichArchitecture(data: any): RichArchitecture {
   };
 
   const manifestRaw = Array.isArray(data["manifest"]) ? data["manifest"] : [];
-  const manifest: RichManifestItem[] = manifestRaw.map((file: any) => ({
+  const manifest = manifestRaw.map((file: any) => ({
     path: ensureString(file["path"], "unknown.txt"),
-    purpose: ensureString(file["purpose"], "Component implementation"),
-    criticality: (["HIGH", "MEDIUM", "LOW"].includes(file["criticality"]) ? file["criticality"] : "MEDIUM") as any,
+    description: ensureString(file["description"], "Sem descrição"),
     category: (["CONFIG", "DOMAIN", "APPLICATION", "INFRASTRUCTURE", "DEVOPS", "TESTS", "DOCS"].includes(file["category"]) 
       ? file["category"] 
-      : "APPLICATION") as any
+      : "APPLICATION") as any,
+    imports: ensureStringArray(file["imports"], [])
   }));
 
   return {
     architectureStyle: ensureString(data["architectureStyle"], "Modular Monolith"),
     stack,
-    diagram: ensureString(data["diagram"], ""),
     manifest,
-    keyDecisions: Array.isArray(data["keyDecisions"]) ? data["keyDecisions"].map((d: any) => ({
-        decision: ensureString(d.decision, "Decisão"),
-        rationale: ensureString(d.rationale, "Razão")
-    })) : [],
+    keyDecisions: ensureStringArray(data["keyDecisions"], []),
     securityConsiderations: ensureStringArray(data["securityConsiderations"], []),
-    scalabilityPath: ensureStringArray(data["scalabilityPath"], [])
+    scalabilityPath: ensureString(data["scalabilityPath"], "Horizontal scaling via containers")
   };
 }
 
@@ -155,7 +148,6 @@ function sanitizeUserStories(data: any): UserStoriesResult {
     return {
       id: ensureString(story["id"], "US-000"),
       title: ensureString(story["title"], "Untitled Story"),
-      description: ensureString(story["description"], "No description"),
       acceptanceCriteria: criteriaRaw.map((criterion: any, j: number) => ({
         id: ensureString(criterion["id"], `AC-${j+1}`),
         scenario: ensureString(criterion["scenario"], `Cenário ${j+1}`),
@@ -170,7 +162,10 @@ function sanitizeUserStories(data: any): UserStoriesResult {
     };
   });
 
-  // Indica variavel não usada com underscore
+  // Utilizando underscore para indicar que a variável é intencionalmente não usada
+  const _summaryData = (data["summary"] && typeof data["summary"] === "object")
+    ? data["summary"] as Record<string, unknown>
+    : {};
 
   return {
     epicId: ensureString(data["epicId"], "EPIC-000"),
@@ -208,7 +203,9 @@ export class AnalysisAgent {
 
   // Método auxiliar para parsing seguro de JSON
   private cleanJsonString(str: string): string {
+    // Remove blocos markdown ```json ... ```
     let cleaned = str.replace(/```json\s*/g, "").replace(/```\s*$/g, "");
+    // Remove comentários JS se houver (básico)
     cleaned = cleaned.replace(/\/\/.*/g, ""); 
     return cleaned.trim();
   }
@@ -241,7 +238,7 @@ export class AnalysisAgent {
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt }
           ],
-          temperature: temperature,
+          temperature: temperature, // Determinístico
           seed: 42,
           response_format: { type: "json_object" }
         });
@@ -250,7 +247,7 @@ export class AnalysisAgent {
         const cleaned = this.cleanJsonString(content);
         const parsed = JSON.parse(cleaned);
 
-        // Validação Schema (Opcional, apenas log)
+        // Validação Zod (Opcional, apenas log por enquanto se falhar muito feio)
         const validation = schema.safeParse(parsed);
         if (!validation.success) {
           console.warn(`[Validation Warning] ${stepName}:`, validation.error.message);
@@ -281,8 +278,9 @@ export class AnalysisAgent {
     );
   }
 
-  private async runProductStep(userPrompt: string, _analysis: RichAnalysis): Promise<RichProductPlan> {
-    const richContext = this.context.buildProductContext(); // Removido argumento, usa estado interno
+  private async runProductStep(userPrompt: string, analysis: RichAnalysis): Promise<RichProductPlan> {
+    // Injeta contexto da análise no prompt de produto
+    const richContext = this.context.buildProductContext(analysis);
     return this.callLLM(
       SYSTEM_PROMPTS.PRODUCT,
       `${userPrompt}\n\nCONTEXTO DE ANÁLISE:\n${richContext}`,
@@ -292,8 +290,9 @@ export class AnalysisAgent {
     );
   }
 
-  private async runArchitectureStep(userPrompt: string, _productPlan: RichProductPlan): Promise<RichArchitecture> {
-    const richContext = this.context.buildArchitectureContext(); // Removido argumento
+  private async runArchitectureStep(userPrompt: string, productPlan: RichProductPlan): Promise<RichArchitecture> {
+    // Injeta contexto acumulado
+    const richContext = this.context.buildArchitectureContext(productPlan);
     return this.callLLM(
       SYSTEM_PROMPTS.ARCHITECTURE,
       `${userPrompt}\n\nCONTEXTO DE PRODUTO:\n${richContext}`,
@@ -306,9 +305,14 @@ export class AnalysisAgent {
   private async expandEpicsToStories(product: RichProductPlan): Promise<UserStoriesResult[]> {
     const results: UserStoriesResult[] = [];
     
+    // Processa sequencialmente para garantir contexto ordenado
     for (const epic of product.epics) {
-      // Método buildUserStoriesContext corrigido conforme definition
-      const promptContext = this.context.buildUserStoriesContext(epic.id);
+      const promptContext = `
+        EPIC ID: ${epic.id}
+        TITLE: ${epic.title}
+        CONTEXT: ${epic.context}
+        REQUIREMENTS: ${epic.requirements.join("; ")}
+      `;
 
       const stories = await this.callLLM(
         SYSTEM_PROMPTS.USER_STORIES,
@@ -319,14 +323,13 @@ export class AnalysisAgent {
       );
       
       results.push(stories);
-      this.context.addUserStories(stories.userStories);
     }
     return results;
   }
 
   private async generateFileContent(fileSpec: { path: string, description: string, imports: string[] }): Promise<{ path: string, content: string }> {
-    // Método corrigido para buildCodeGenContext
-    const contextStr = this.context.buildCodeGenContext(fileSpec.path);
+    // Contexto rico para o gerador de código
+    const contextStr = this.context.buildCodeGenerationContext(fileSpec.path, fileSpec.imports);
     
     const userPrompt = `
       FILE: ${fileSpec.path}
@@ -337,6 +340,7 @@ export class AnalysisAgent {
       ${contextStr}
     `;
 
+    // Loop de Anti-Lazy Guard (Governança)
     let attempts = 0;
     let content = "";
     let lastError = "";
@@ -344,12 +348,13 @@ export class AnalysisAgent {
     while (attempts < 3) {
       attempts++;
       
+      // Se houve erro anterior, injeta no prompt de correção
       const promptWithFeedback = lastError 
         ? `${userPrompt}\n\nATENÇÃO: A versão anterior foi rejeitada pelo auditor. Corrija este erro:\n${lastError}`
         : userPrompt;
 
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4o-mini", // Pode alternar para GPT-4o em tasks complexas
         messages: [
           { role: "system", content: SYSTEM_PROMPTS.CODE_GEN },
           { role: "user", content: promptWithFeedback }
@@ -371,24 +376,19 @@ export class AnalysisAgent {
         if (!completeness.isValid) {
           lastError = `Qualidade insuficiente: ${completeness.errors.join(", ")}`;
           console.warn(`[Governance Reject] ${fileSpec.path}: ${lastError}`);
-          continue; 
+          continue; // Tenta de novo
         }
 
-        // 2. Sandbox de Sintaxe
-        const syntax = this.syntaxSandbox.validateTS(content, fileSpec.path);
+        // 2. Sandbox de Sintaxe (Compilação Virtual)
+        const syntax = this.syntaxSandbox.validateTS(content);
         if (!syntax.isValid) {
           lastError = `Erro de Sintaxe TypeScript: ${syntax.error}`;
           console.warn(`[Syntax Reject] ${fileSpec.path}: ${lastError}`);
           continue;
         }
 
-        // Sucesso! Método corrigido para addGeneratedFile
-        this.context.addGeneratedFile({
-          path: fileSpec.path,
-          content: content,
-          language: "typescript"
-        });
-        
+        // Sucesso!
+        this.context.registerGeneratedFile(fileSpec.path, content);
         return { path: fileSpec.path, content };
 
       } catch (e) {
@@ -396,55 +396,54 @@ export class AnalysisAgent {
       }
     }
 
+    // Se falhar 3x, retorna o melhor esforço (ou erro)
     console.error(`[Failed] Could not generate clean code for ${fileSpec.path} after 3 attempts.`);
     return { path: fileSpec.path, content: `// FAILED TO GENERATE CLEAN CODE\n// Error: ${lastError}\n${content}` };
   }
 
   // --- ORQUESTRADOR PRINCIPAL ---
 
-  public async analyze(userPrompt: string, _options?: unknown): Promise<AgentResult> {
+  public async analyze(userPrompt: string): Promise<AgentResult> {
     const startTime = performance.now();
     const timings: any = {};
 
     try {
-      this.context.start(userPrompt);
+      // 0. Reset Context
+      this.context = new GenerationContext();
 
       // 1. Análise
       const t0 = performance.now();
       console.log("Step 1: Analysis...");
       const analysis = await this.runAnalysisStep(userPrompt);
-      this.context.setAnalysis(analysis);
       timings.analysis = performance.now() - t0;
 
       // 2. Produto
       const t1 = performance.now();
       console.log("Step 2: Product Strategy...");
       const product = await this.runProductStep(userPrompt, analysis);
-      this.context.setProduct(product);
       timings.product = performance.now() - t1;
 
       // 3. Arquitetura
       const t2 = performance.now();
       console.log("Step 3: Architecture...");
       let architecture = await this.runArchitectureStep(userPrompt, product);
-      this.context.setArchitecture(architecture);
       
+      // Auditoria de Estrutura (Governança)
       architecture = this.structureAuditor.auditAndFix(architecture);
       timings.architecture = performance.now() - t2;
 
       // 4. Histórias de Usuário
       const t3 = performance.now();
       console.log("Step 4: User Stories...");
-      const userStoriesResults = await this.expandEpicsToStories(product);
-      // userStoriesResults é UserStoriesResult[], mas AgentResult espera userStories: RichUserStory[]
-      const flatUserStories = userStoriesResults.flatMap(r => r.userStories);
+      const userStories = await this.expandEpicsToStories(product);
       timings.userStories = performance.now() - t3;
 
-      // 5. Geração de Código
+      // 5. Geração de Código (Engine)
       const t4 = performance.now();
       console.log(`Step 5: Engine (Generating ${architecture.manifest.length} files)...`);
       
-      const orderMap: Record<string, number> = { 
+      // Ordena manifesto para respeitar dependências (Types -> Utils -> Components)
+      const orderMap = { 
         "CONFIG": 1, "DOMAIN": 2, "APPLICATION": 3, "INFRASTRUCTURE": 4, "DEVOPS": 5, "TESTS": 6, "DOCS": 7 
       };
       
@@ -452,20 +451,15 @@ export class AnalysisAgent {
         return (orderMap[a.category] ?? 99) - (orderMap[b.category] ?? 99);
       });
 
-      const batchSize = 5; 
+      const batchSize = 5; // Paralelismo controlado
       const files: Array<{path: string, content: string}> = [];
 
       for (let i = 0; i < sortedManifest.length; i += batchSize) {
         const batch = sortedManifest.slice(i, i + batchSize);
         console.log(`Processing Batch ${Math.floor(i/batchSize)+1}...`);
         
-        // Mapeia RichManifestItem para o formato esperado pelo generateFileContent
         const batchResults = await Promise.all(
-          batch.map(spec => this.generateFileContent({
-              path: spec.path,
-              description: spec.purpose, // RichManifestItem usa purpose, mas generate espera description
-              imports: [] // Manifest não tem imports no schema rico atual, passando vazio
-          }))
+          batch.map(spec => this.generateFileContent(spec))
         );
         files.push(...batchResults);
       }
@@ -474,24 +468,12 @@ export class AnalysisAgent {
       timings.total = performance.now() - startTime;
 
       return {
-        summary: analysis.summary,
-        requestId: "req-" + Date.now(),
-        timestamp: new Date().toISOString(),
-        timings: timings as any,
         analysis,
-        product,
-        architect: architecture, // Alias para compatibilidade ou uso direto
-        userStories: flatUserStories,
-        engine: { 
-            files: files.map(f => ({ path: f.path, content: f.content, language: "typescript" })) 
-        },
-        quality: {
-            validationErrors: [],
-            codeCompleteness: 100
-        },
-        fenix: {
-            notes: "Generated by Gemini-Mini-IDE v14.1"
-        }
+        product: product, // Mantendo compatibilidade com interface, mas o dado rico está aqui
+        architecture,
+        userStories, // Agora na raiz
+        engine: { files },
+        timings
       };
 
     } catch (error) {
@@ -500,3 +482,6 @@ export class AnalysisAgent {
     }
   }
 }
+EOF
+
+echo "[SUCCESS] packages/analysis-agent/src/agent.ts reescrito com sucesso."

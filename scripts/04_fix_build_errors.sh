@@ -1,3 +1,137 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[INFO] Iniciando Reparo Final de Consistência..."
+
+# 1. CRIAR OS ARQUIVOS QUE FALTAM EM GOVERNANCE
+# ==============================================================================
+echo "[INFO] Criando packages/analysis-agent/src/governance/syntax-sandbox.ts..."
+cat > packages/analysis-agent/src/governance/syntax-sandbox.ts << 'EOF'
+import ts from "typescript";
+
+export interface ValidationResult {
+  isValid: boolean;
+  error?: string;
+}
+
+export class SyntaxSandbox {
+  /**
+   * Valida se o código fornecido é TypeScript sintaticamente válido.
+   * Não executa o código, apenas faz o parse da AST.
+   */
+  public validateTS(code: string): ValidationResult {
+    try {
+      // Cria um source file virtual para checar a sintaxe
+      const sourceFile = ts.createSourceFile(
+        "temp.ts",
+        code,
+        ts.ScriptTarget.Latest,
+        true // setParentNodes
+      );
+
+      const diagnostics = ts.getPreEmitDiagnostics(
+        ts.createProgram({
+          rootNames: ["temp.ts"],
+          options: {
+            noEmit: true,
+            target: ts.ScriptTarget.Latest,
+            skipLibCheck: true,
+            module: ts.ModuleKind.CommonJS
+          },
+          host: {
+            ...ts.createCompilerHost({}),
+            getSourceFile: (fileName) => fileName === "temp.ts" ? sourceFile : undefined,
+            writeFile: () => {},
+            getDefaultLibFileName: () => "lib.d.ts",
+            useCaseSensitiveFileNames: () => true,
+            getCanonicalFileName: fileName => fileName,
+            getCurrentDirectory: () => "",
+            getNewLine: () => "\n",
+            fileExists: (fileName) => fileName === "temp.ts",
+            readFile: () => "",
+          }
+        })
+      );
+
+      if (diagnostics.length > 0) {
+        const message = ts.flattenDiagnosticMessageText(diagnostics[0].messageText, "\n");
+        const line = diagnostics[0].file 
+          ? diagnostics[0].file.getLineAndCharacterOfPosition(diagnostics[0].start!).line + 1 
+          : 0;
+        return { isValid: false, error: `Line ${line}: ${message}` };
+      }
+
+      return { isValid: true };
+    } catch (err: any) {
+      return { isValid: false, error: err.message };
+    }
+  }
+}
+EOF
+
+echo "[INFO] Criando packages/analysis-agent/src/governance/structure-auditor.ts..."
+cat > packages/analysis-agent/src/governance/structure-auditor.ts << 'EOF'
+import { RichArchitecture, RichManifestItem } from "../types/rich-schemas.js";
+
+export class StructureAuditor {
+  /**
+   * Audita a arquitetura e injeta arquivos obrigatórios se estiverem faltando.
+   */
+  public auditAndFix(architecture: RichArchitecture): RichArchitecture {
+    const fixedManifest = [...architecture.manifest];
+    const stack = architecture.stack;
+    
+    // Helper para verificar existência
+    const hasFile = (pattern: RegExp) => fixedManifest.some(f => pattern.test(f.path));
+
+    // Helper para adicionar arquivo
+    const addFile = (path: string, purpose: string, category: "CONFIG" | "DOCS" | "TESTS" | "APPLICATION") => {
+      if (!hasFile(new RegExp(path.replace(".", "\\.")))) {
+        fixedManifest.push({
+          path,
+          purpose,
+          category,
+          criticality: "HIGH"
+        });
+      }
+    };
+
+    // 1. Documentação Obrigatória
+    addFile("README.md", "Documentation entry point", "DOCS");
+    addFile("USER_STORIES.md", "Project requirements and stories", "DOCS");
+
+    // 2. Configuração Básica (Baseado na Stack)
+    if (stack.runtime.toLowerCase().includes("node")) {
+      addFile("package.json", "Project dependencies and scripts", "CONFIG");
+    }
+    
+    if (stack.language.toLowerCase().includes("typescript")) {
+      addFile("tsconfig.json", "TypeScript compiler configuration", "CONFIG");
+    }
+
+    // 3. Framework specific checks
+    if (stack.framework.toLowerCase().includes("react")) {
+      addFile("vite.config.ts", "Vite build configuration", "CONFIG");
+      // Verifica se existe algum entrypoint
+      if (!hasFile(/src\/main\.tsx?/) && !hasFile(/src\/index\.tsx?/)) {
+        addFile("src/main.tsx", "Application entrypoint", "APPLICATION");
+      }
+    }
+
+    return {
+      ...architecture,
+      manifest: fixedManifest
+    };
+  }
+}
+EOF
+
+
+# 2. REESCREVER AGENT.TS CORRIGIDO (Tipos e Métodos Sincronizados)
+# ==============================================================================
+echo "[INFO] Reescrevendo packages/analysis-agent/src/agent.ts (v14.1 Fixed)..."
+
+cat > packages/analysis-agent/src/agent.ts << 'EOF'
 import OpenAI from "openai";
 import { z } from "zod";
 import { SYSTEM_PROMPTS } from "./prompts/index.js";
@@ -171,6 +305,9 @@ function sanitizeUserStories(data: any): UserStoriesResult {
   });
 
   // Indica variavel não usada com underscore
+  const _summaryData = (data["summary"] && typeof data["summary"] === "object")
+    ? data["summary"] as Record<string, unknown>
+    : {};
 
   return {
     epicId: ensureString(data["epicId"], "EPIC-000"),
@@ -281,7 +418,7 @@ export class AnalysisAgent {
     );
   }
 
-  private async runProductStep(userPrompt: string, _analysis: RichAnalysis): Promise<RichProductPlan> {
+  private async runProductStep(userPrompt: string, analysis: RichAnalysis): Promise<RichProductPlan> {
     const richContext = this.context.buildProductContext(); // Removido argumento, usa estado interno
     return this.callLLM(
       SYSTEM_PROMPTS.PRODUCT,
@@ -292,7 +429,7 @@ export class AnalysisAgent {
     );
   }
 
-  private async runArchitectureStep(userPrompt: string, _productPlan: RichProductPlan): Promise<RichArchitecture> {
+  private async runArchitectureStep(userPrompt: string, productPlan: RichProductPlan): Promise<RichArchitecture> {
     const richContext = this.context.buildArchitectureContext(); // Removido argumento
     return this.callLLM(
       SYSTEM_PROMPTS.ARCHITECTURE,
@@ -375,7 +512,7 @@ export class AnalysisAgent {
         }
 
         // 2. Sandbox de Sintaxe
-        const syntax = this.syntaxSandbox.validateTS(content, fileSpec.path);
+        const syntax = this.syntaxSandbox.validateTS(content);
         if (!syntax.isValid) {
           lastError = `Erro de Sintaxe TypeScript: ${syntax.error}`;
           console.warn(`[Syntax Reject] ${fileSpec.path}: ${lastError}`);
@@ -402,7 +539,7 @@ export class AnalysisAgent {
 
   // --- ORQUESTRADOR PRINCIPAL ---
 
-  public async analyze(userPrompt: string, _options?: unknown): Promise<AgentResult> {
+  public async analyze(userPrompt: string): Promise<AgentResult> {
     const startTime = performance.now();
     const timings: any = {};
 
@@ -481,6 +618,7 @@ export class AnalysisAgent {
         analysis,
         product,
         architect: architecture, // Alias para compatibilidade ou uso direto
+        architecture: architecture, 
         userStories: flatUserStories,
         engine: { 
             files: files.map(f => ({ path: f.path, content: f.content, language: "typescript" })) 
@@ -500,3 +638,6 @@ export class AnalysisAgent {
     }
   }
 }
+EOF
+
+echo "[SUCCESS] Upgrade Completo: Governança Criada + Agent Sincronizado."

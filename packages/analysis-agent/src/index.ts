@@ -1,6 +1,11 @@
-// Re-exporta tudo do agent para garantir visibilidade
-export * from "./agent.js";
-// Exporta prompts se necessário externamente
-export * from "./prompts/index.js";
-// Exporta serviço de cache
-export * from "./services/cache.service.js";
+import { AnalysisAgent } from "./agent.js";
+
+// Exporta a classe principal
+export { AnalysisAgent };
+
+// Exporta tipos essenciais para quem consome o pacote (CLI/Server)
+export * from "./types/index.js";
+export * from "./governance/index.js";
+
+// Exporta helpers se necessário
+export const createAgent = (apiKey: string) => new AnalysisAgent(apiKey);

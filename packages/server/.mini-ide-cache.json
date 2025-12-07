@@ -16412,5 +16412,3309 @@
         }
       ]
     }
+  },
+  "95df1df1d98504ae88b47d6a2c2acdb17a4a7424176712184b75bf1a8e95b2b9": {
+    "timestamp": 1765060947819,
+    "data": {
+      "type": "NEW_PROJECT",
+      "reasoning": "O usuário está solicitando a criação de um novo sistema (gerenciador de tarefas) com funcionalidades específicas (agrupar tarefas, salvar no localStorage). Verbos indicam criação."
+    }
+  },
+  "336924918c699d6cfb56cef1012424642278eadf805a5db0872365ab3e101068": {
+    "timestamp": 1765060950578,
+    "data": {
+      "summary": "Aplicação de gerenciamento de tarefas que permite a categorização de tarefas e armazenamento local no navegador.",
+      "complexity": "Média",
+      "assumptions": [
+        "Usuário pode criar, editar e deletar tarefas",
+        "Tarefas podem ser associadas a uma ou mais categorias",
+        "Interface de usuário simples e intuitiva",
+        "Armazenamento de dados no localStorage do navegador",
+        "Não há necessidade de autenticação de usuário"
+      ]
+    }
+  },
+  "e10cc041737102902c7d865698d4fc1fb37f39c38cd7f3b5d12447ac9e22cf0d": {
+    "timestamp": 1765060962044,
+    "data": {
+      "epics": [
+        {
+          "title": "Gestão de Tarefas",
+          "context": "Usuários precisam de uma forma eficiente de criar, editar e excluir tarefas para gerenciar suas atividades diárias.",
+          "requirements": [
+            "CRUD completo de tarefas",
+            "Atribuição de categorias a cada tarefa",
+            "Marcar tarefas como concluídas",
+            "Ordenação de tarefas por data de criação ou categoria"
+          ]
+        },
+        {
+          "title": "Armazenamento Local",
+          "context": "Para garantir que os dados do usuário persistam entre sessões, as tarefas devem ser armazenadas no localStorage do navegador.",
+          "requirements": [
+            "Salvar automaticamente tarefas no localStorage",
+            "Carregar tarefas do localStorage ao iniciar a aplicação",
+            "Sincronização de estado entre a interface e o localStorage"
+          ]
+        },
+        {
+          "title": "Interface de Usuário",
+          "context": "Uma interface intuitiva é crucial para a adoção do aplicativo, permitindo que usuários interajam facilmente com suas tarefas.",
+          "requirements": [
+            "Design responsivo para desktop e mobile",
+            "Interface limpa e minimalista",
+            "Feedback visual para ações do usuário (ex: adicionar, excluir)"
+          ]
+        },
+        {
+          "title": "Autenticação e Segurança",
+          "context": "Embora o armazenamento seja local, é importante garantir que o acesso aos dados seja seguro e privado.",
+          "requirements": [
+            "Proteção contra XSS e CSRF",
+            "Validação de entrada do usuário",
+            "Opção de bloqueio de tela com senha"
+          ]
+        },
+        {
+          "title": "Observabilidade e Monitoramento",
+          "context": "Monitorar o uso e a performance da aplicação é essencial para melhorias contínuas e resolução de problemas.",
+          "requirements": [
+            "Logs de erro no console do navegador",
+            "Métricas de uso (tempo médio de sessão, número de tarefas criadas)",
+            "Alertas para falhas críticas (ex: falha ao salvar no localStorage)"
+          ]
+        }
+      ]
+    }
+  },
+  "09e48d7ba8b03f0038ce310c31bc498b12c29bc2d68f0119f23a7dacd31214a0": {
+    "timestamp": 1765060969090,
+    "data": {
+      "stack": "{\n  \"runtime\": \"Node.js 20 LTS\",\n  \"language\": \"TypeScript 5.x (strict mode)\",\n  \"framework\": \"React 18.x\",\n  \"orm\": \"Nenhum (uso de localStorage)\",\n  \"database\": \"localStorage\",\n  \"cache\": \"Nenhum\",\n  \"queue\": \"Nenhum\",\n  \"testing\": \"Jest + React Testing Library\",\n  \"documentation\": \"Storybook\"\n}",
+      "diagram": "graph TD; UI[React UI]-->App[Application Layer]; App-->Domain[Domain Layer]; App-->Infra[Infrastructure]; Infra-->localStorage[(localStorage)];",
+      "manifest": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "purpose": "Pipeline de CI",
+          "criticality": "Core"
+        },
+        {
+          "path": "docker/Dockerfile.web",
+          "purpose": "Build otimizado para frontend",
+          "criticality": "Core"
+        },
+        {
+          "path": "docker/docker-compose.yml",
+          "purpose": "Ambiente local para desenvolvimento",
+          "criticality": "Core"
+        },
+        {
+          "path": "src/config/env.ts",
+          "purpose": "Configuração de variáveis de ambiente",
+          "criticality": "Core"
+        },
+        {
+          "path": "src/domain/entities/Task.ts",
+          "purpose": "Entidade Task com regras de negócio",
+          "criticality": "Core"
+        },
+        {
+          "path": "src/domain/repositories/ITaskRepository.ts",
+          "purpose": "Port para persistência de tarefas",
+          "criticality": "Core"
+        },
+        {
+          "path": "src/application/use-cases/CreateTaskUseCase.ts",
+          "purpose": "Orquestração da criação de tarefas",
+          "criticality": "Core"
+        },
+        {
+          "path": "src/infrastructure/storage/LocalStorageTaskRepository.ts",
+          "purpose": "Implementação do repositório usando localStorage",
+          "criticality": "Core"
+        },
+        {
+          "path": "src/infrastructure/ui/components/TaskList.tsx",
+          "purpose": "Componente de lista de tarefas",
+          "criticality": "Core"
+        },
+        {
+          "path": "src/infrastructure/ui/components/TaskForm.tsx",
+          "purpose": "Componente de formulário de tarefas",
+          "criticality": "Core"
+        },
+        {
+          "path": "src/infrastructure/ui/routes/index.tsx",
+          "purpose": "Definição de rotas da aplicação",
+          "criticality": "Core"
+        },
+        {
+          "path": "src/main.tsx",
+          "purpose": "Composition root e bootstrap da aplicação",
+          "criticality": "Core"
+        },
+        {
+          "path": "tests/unit/domain/entities/Task.test.ts",
+          "purpose": "Teste unitário da entidade Task",
+          "criticality": "Core"
+        },
+        {
+          "path": "tests/unit/application/use-cases/CreateTaskUseCase.test.ts",
+          "purpose": "Teste unitário do caso de uso de criação de tarefas",
+          "criticality": "Core"
+        },
+        {
+          "path": "tests/integration/infrastructure/storage/LocalStorageTaskRepository.test.ts",
+          "purpose": "Teste de integração do repositório localStorage",
+          "criticality": "Core"
+        },
+        {
+          "path": "tests/e2e/taskManagement.test.ts",
+          "purpose": "Teste E2E do fluxo de gestão de tarefas",
+          "criticality": "Core"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Dependências e scripts do projeto",
+          "criticality": "Core"
+        },
+        {
+          "path": "README.md",
+          "purpose": "Documentação do projeto",
+          "criticality": "Core"
+        },
+        {
+          "path": "tsconfig.json",
+          "purpose": "Configuração do TypeScript",
+          "criticality": "Core"
+        },
+        {
+          "path": ".eslintrc.js",
+          "purpose": "Configuração do ESLint",
+          "criticality": "Core"
+        },
+        {
+          "path": ".env.example",
+          "purpose": "Exemplo de variáveis de ambiente",
+          "criticality": "Core"
+        }
+      ]
+    }
+  },
+  "280cdd3f603821b66e3de491087035c524e85cf4ed595eeda8e55013b857da62": {
+    "timestamp": 1765060972565,
+    "data": {
+      "path": "docker/Dockerfile.web",
+      "code": "FROM node:20-alpine\n\n# Set working directory\nWORKDIR /app\n\n# Copy package.json and package-lock.json\nCOPY package.json package-lock.json ./\n\n# Install dependencies\nRUN npm install\n\n# Copy the rest of the application code\nCOPY . .\n\n# Build the application\nRUN npm run build\n\n# Expose the port the app runs on\nEXPOSE 3000\n\n# Start the application\nCMD [\"npm\", \"start\"]",
+      "explanation": "Este Dockerfile utiliza a imagem base do Node.js 20 LTS em Alpine para garantir uma imagem leve. Ele define o diretório de trabalho, copia os arquivos de dependências, instala as dependências, copia o restante do código da aplicação, executa o build e expõe a porta 3000, que é a porta padrão para aplicações React. Finalmente, inicia a aplicação com o comando 'npm start'."
+    }
+  },
+  "64cc2337479db40c5e56d8ae5fa5ff25d9e157470b9745fe6a0b9ac2aacd5798": {
+    "timestamp": 1765060972592,
+    "data": {
+      "path": "docker/docker-compose.yml",
+      "code": "version: '3.8'\n\nservices:\n  app:\n    image: node:20\n    working_dir: /usr/src/app\n    volumes:\n      - .:/usr/src/app\n    ports:\n      - '3000:3000'\n    command: sh -c 'npm install && npm run start'\n    environment:\n      - NODE_ENV=development\n    depends_on:\n      - storybook\n\n  storybook:\n    image: node:20\n    working_dir: /usr/src/app\n    volumes:\n      - .:/usr/src/app\n    ports:\n      - '6006:6006'\n    command: sh -c 'npm install && npm run storybook'\n    environment:\n      - NODE_ENV=development",
+      "explanation": "O arquivo docker-compose.yml define dois serviços: 'app' para a aplicação React e 'storybook' para a documentação de componentes. Ambos usam a imagem Node.js 20 e compartilham o diretório de trabalho. As portas 3000 e 6006 são expostas para desenvolvimento local. O uso de 'depends_on' garante que o Storybook esteja disponível quando a aplicação for iniciada."
+    }
+  },
+  "c45c23845f40d014fcfa088f8c92d94b1e18d953505fa5dbc656ce48ac3cfe3c": {
+    "timestamp": 1765060973448,
+    "data": {
+      "path": ".github/workflows/ci.yml",
+      "code": "name: CI\n\non:\n  push:\n    branches:\n      - main\n  pull_request:\n    branches:\n      - main\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n\n    strategy:\n      matrix:\n        node-version: [20.x]\n\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v3\n\n      - name: Setup Node.js\n        uses: actions/setup-node@v3\n        with:\n          node-version: ${{ matrix.node-version }}\n          cache: 'npm'\n\n      - name: Install dependencies\n        run: npm install\n\n      - name: Run TypeScript check\n        run: npm run type-check\n\n      - name: Run tests\n        run: npm test\n\n      - name: Build project\n        run: npm run build\n\n      - name: Run Storybook\n        run: npm run storybook:build\n\n      - name: Upload Storybook artifacts\n        uses: actions/upload-artifact@v3\n        with:\n          name: storybook-static\n          path: storybook-static",
+      "explanation": "Este workflow de CI para GitHub Actions é configurado para ser executado em pushes e pull requests na branch 'main'. Ele utiliza Node.js 20.x e inclui etapas para verificar o código TypeScript, executar testes com Jest, construir o projeto e gerar a documentação com Storybook. O uso de cache para dependências npm acelera o processo de build."
+    }
+  },
+  "6f53da75d240ff3d2b7075e5f8b7116f07894b923088688ab239a9228cef4fe7": {
+    "timestamp": 1765060975601,
+    "data": {
+      "path": "src/config/env.ts",
+      "code": "export const ENV = {\n  APP_NAME: 'SimpleTodoList',\n  STORAGE_KEY: 'simple_todo_list',\n  VERSION: '1.0.0',\n};",
+      "explanation": "Configuração de variáveis de ambiente para a aplicação TodoList. Define o nome da aplicação, a chave de armazenamento no localStorage e a versão da aplicação. Isso facilita a manutenção e evita hardcoding de strings em múltiplos locais do código."
+    }
+  },
+  "bffbc0248420086b7c0bb1202e35753c1b340b543315c9794a1aef48f13f50ea": {
+    "timestamp": 1765060977349,
+    "data": {
+      "path": "src/domain/repositories/ITaskRepository.ts",
+      "code": "export interface ITaskRepository {\n  /**\n   * Save a task to the repository.\n   * @param task - The task to be saved.\n   * @returns A promise that resolves when the task is saved.\n   */\n  save(task: Task): Promise<void>;\n\n  /**\n   * Retrieve a task by its ID.\n   * @param id - The ID of the task to retrieve.\n   * @returns A promise that resolves with the task, or undefined if not found.\n   */\n  getById(id: string): Promise<Task | undefined>;\n\n  /**\n   * Retrieve all tasks.\n   * @returns A promise that resolves with an array of all tasks.\n   */\n  getAll(): Promise<Task[]>;\n\n  /**\n   * Delete a task by its ID.\n   * @param id - The ID of the task to delete.\n   * @returns A promise that resolves when the task is deleted.\n   */\n  deleteById(id: string): Promise<void>;\n\n  /**\n   * Retrieve tasks by category.\n   * @param category - The category to filter tasks by.\n   * @returns A promise that resolves with an array of tasks in the specified category.\n   */\n  getByCategory(category: string): Promise<Task[]>;\n}",
+      "explanation": "A interface ITaskRepository define os métodos necessários para manipular tarefas no repositório, incluindo salvar, recuperar por ID, recuperar todas, deletar por ID e filtrar por categoria. Isso permite uma implementação flexível e testável, especialmente ao usar localStorage como backend."
+    }
+  },
+  "fad913f07a6f75d604ed2a33b1e4f41a797e1651ec12dba9e35f771fe76c7e18": {
+    "timestamp": 1765060977635,
+    "data": {
+      "path": "src/domain/entities/Task.ts",
+      "code": "export class Task {\n  constructor(\n    public readonly id: string,\n    public readonly title: string,\n    public readonly category: string,\n    public readonly completed: boolean = false\n  ) {\n    this.validate();\n  }\n\n  private validate(): void {\n    if (!this.title || this.title.trim().length === 0) {\n      throw new Error('Task title cannot be empty');\n    }\n    if (!this.category || this.category.trim().length === 0) {\n      throw new Error('Task category cannot be empty');\n    }\n  }\n\n  public toggleCompletion(): Task {\n    return new Task(this.id, this.title, this.category, !this.completed);\n  }\n\n  public static create(props: { title: string; category: string }): Task {\n    return new Task(\n      crypto.randomUUID(),\n      props.title,\n      props.category\n    );\n  }\n}",
+      "explanation": "A entidade Task é imutável e possui métodos para validação e alteração de estado. A validação garante que o título e a categoria não sejam vazios. O método toggleCompletion permite alternar o estado de conclusão da tarefa, retornando uma nova instância. A criação de tarefas é feita através de um método estático que gera um UUID único para cada tarefa."
+    }
+  },
+  "ea5dc73801423b40dd40f1e04616f985c209eae12f39d177242789c68772bfdd": {
+    "timestamp": 1765060981747,
+    "data": {
+      "path": "src/application/use-cases/CreateTaskUseCase.ts",
+      "code": "import { Task } from '../domain/entities/Task';\nimport { Category } from '../domain/entities/Category';\nimport { LocalStorageRepository } from '../repositories/LocalStorageRepository';\nimport { CreateTaskDTO } from '../dtos/CreateTaskDTO';\nimport { UseCaseError } from '../errors/UseCaseError';\n\nexport class CreateTaskUseCase {\n  constructor(private repository: LocalStorageRepository) {}\n\n  public execute(dto: CreateTaskDTO): Task {\n    this.validate(dto);\n    const category = this.repository.findCategoryById(dto.categoryId);\n    if (!category) {\n      throw new UseCaseError('Category not found');\n    }\n    const task = Task.create({\n      id: crypto.randomUUID(),\n      title: dto.title,\n      description: dto.description,\n      category: category\n    });\n    this.repository.saveTask(task);\n    return task;\n  }\n\n  private validate(dto: CreateTaskDTO): void {\n    if (!dto.title || dto.title.trim().length === 0) {\n      throw new UseCaseError('Title is required');\n    }\n    if (!dto.categoryId) {\n      throw new UseCaseError('Category ID is required');\n    }\n  }\n}",
+      "explanation": "O CreateTaskUseCase é responsável por criar uma nova tarefa, validando os dados de entrada e garantindo que a categoria exista. Ele utiliza um repositório para interagir com o localStorage, seguindo o padrão de repositório para isolar a lógica de persistência. Erros são tratados com contexto claro através de UseCaseError."
+    }
+  },
+  "6b9c543c516053809fb568e8c4eef963eed362484ea6e4e7c259b609dee4cadb": {
+    "timestamp": 1765060982056,
+    "data": {
+      "path": "src/infrastructure/storage/LocalStorageTaskRepository.ts",
+      "code": "type Task = {\n  id: string;\n  title: string;\n  completed: boolean;\n  category: string;\n};\n\nclass LocalStorageTaskRepository {\n  private readonly storageKey = 'tasks';\n\n  public getAllTasks(): Task[] {\n    const tasksJson = localStorage.getItem(this.storageKey);\n    if (!tasksJson) return [];\n    try {\n      return JSON.parse(tasksJson) as Task[];\n    } catch (error) {\n      console.error('Failed to parse tasks from localStorage', error);\n      return [];\n    }\n  }\n\n  public saveTask(task: Task): void {\n    const tasks = this.getAllTasks();\n    const taskIndex = tasks.findIndex(t => t.id === task.id);\n    if (taskIndex > -1) {\n      tasks[taskIndex] = task;\n    } else {\n      tasks.push(task);\n    }\n    localStorage.setItem(this.storageKey, JSON.stringify(tasks));\n  }\n\n  public deleteTask(taskId: string): void {\n    const tasks = this.getAllTasks();\n    const updatedTasks = tasks.filter(task => task.id !== taskId);\n    localStorage.setItem(this.storageKey, JSON.stringify(updatedTasks));\n  }\n\n  public getTasksByCategory(category: string): Task[] {\n    return this.getAllTasks().filter(task => task.category === category);\n  }\n}\n\nexport { LocalStorageTaskRepository, Task };",
+      "explanation": "O repositório LocalStorageTaskRepository gerencia tarefas no localStorage, permitindo operações CRUD básicas. Ele inclui métodos para obter todas as tarefas, salvar uma tarefa, deletar uma tarefa e filtrar tarefas por categoria. A tipagem explícita de Task garante segurança de tipo, e o tratamento de erros ao parsear JSON evita falhas silenciosas."
+    }
+  },
+  "6a5035a0a17d9d2cde716bef08cc4d1c225e45e67a3e8b413704fe4376c0ead4": {
+    "timestamp": 1765060983873,
+    "data": {
+      "path": "src/infrastructure/ui/components/TaskList.tsx",
+      "code": "import React, { useState, useEffect } from 'react';\n\ninterface Task {\n  id: string;\n  title: string;\n  category: string;\n  completed: boolean;\n}\n\nconst TaskList: React.FC = () => {\n  const [tasks, setTasks] = useState<Task[]>([]);\n  const [newTaskTitle, setNewTaskTitle] = useState<string>('');\n  const [newTaskCategory, setNewTaskCategory] = useState<string>('');\n\n  useEffect(() => {\n    const storedTasks = localStorage.getItem('tasks');\n    if (storedTasks) {\n      setTasks(JSON.parse(storedTasks));\n    }\n  }, []);\n\n  const addTask = () => {\n    if (!newTaskTitle || !newTaskCategory) return;\n    const newTask: Task = {\n      id: crypto.randomUUID(),\n      title: newTaskTitle,\n      category: newTaskCategory,\n      completed: false\n    };\n    const updatedTasks = [...tasks, newTask];\n    setTasks(updatedTasks);\n    localStorage.setItem('tasks', JSON.stringify(updatedTasks));\n    setNewTaskTitle('');\n    setNewTaskCategory('');\n  };\n\n  const toggleTaskCompletion = (taskId: string) => {\n    const updatedTasks = tasks.map(task =>\n      task.id === taskId ? { ...task, completed: !task.completed } : task\n    );\n    setTasks(updatedTasks);\n    localStorage.setItem('tasks', JSON.stringify(updatedTasks));\n  };\n\n  return (\n    <div>\n      <h1>Task List</h1>\n      <input\n        type=\"text\"\n        placeholder=\"Task Title\"\n        value={newTaskTitle}\n        onChange={(e) => setNewTaskTitle(e.target.value)}\n      />\n      <input\n        type=\"text\"\n        placeholder=\"Category\"\n        value={newTaskCategory}\n        onChange={(e) => setNewTaskCategory(e.target.value)}\n      />\n      <button onClick={addTask}>Add Task</button>\n      <ul>\n        {tasks.map(task => (\n          <li key={task.id}>\n            <span style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>\n              {task.title} ({task.category})\n            </span>\n            <button onClick={() => toggleTaskCompletion(task.id)}>\n              {task.completed ? 'Undo' : 'Complete'}\n            </button>\n          </li>\n        ))}\n      </ul>\n    </div>\n  );\n};\n\nexport default TaskList;",
+      "explanation": "Este componente React implementa um gerenciador de tarefas simples que permite adicionar, listar e marcar tarefas como concluídas. As tarefas são agrupadas por categoria e persistidas no localStorage para manter o estado entre recarregamentos de página. O uso de hooks como useState e useEffect garante que o estado do componente seja gerenciado de forma eficiente e que as tarefas sejam carregadas do localStorage ao inicializar."
+    }
+  },
+  "08b59e785004532e6ce4cd69b2cb836fadc81123ea8441cc7d7565f34b2aa1e5": {
+    "timestamp": 1765060988587,
+    "data": {
+      "path": "src/infrastructure/ui/components/TaskForm.tsx",
+      "code": "import React, { useState, FormEvent } from 'react';\n\ninterface TaskFormProps {\n  onAddTask: (task: Task) => void;\n}\n\ninterface Task {\n  id: string;\n  title: string;\n  category: string;\n}\n\nconst TaskForm: React.FC<TaskFormProps> = ({ onAddTask }) => {\n  const [title, setTitle] = useState<string>('');\n  const [category, setCategory] = useState<string>('');\n\n  const handleSubmit = (event: FormEvent) => {\n    event.preventDefault();\n    if (!title || !category) {\n      alert('Title and category are required');\n      return;\n    }\n    const newTask: Task = {\n      id: crypto.randomUUID(),\n      title,\n      category\n    };\n    onAddTask(newTask);\n    setTitle('');\n    setCategory('');\n  };\n\n  return (\n    <form onSubmit={handleSubmit}>\n      <div>\n        <label htmlFor=\"title\">Title:</label>\n        <input\n          type=\"text\"\n          id=\"title\"\n          value={title}\n          onChange={(e) => setTitle(e.target.value)}\n          required\n        />\n      </div>\n      <div>\n        <label htmlFor=\"category\">Category:</label>\n        <input\n          type=\"text\"\n          id=\"category\"\n          value={category}\n          onChange={(e) => setCategory(e.target.value)}\n          required\n        />\n      </div>\n      <button type=\"submit\">Add Task</button>\n    </form>\n  );\n};\n\nexport default TaskForm;",
+      "explanation": "O componente TaskForm é um formulário controlado que permite ao usuário adicionar tarefas com título e categoria. Ele utiliza o hook useState para gerenciar o estado dos inputs e valida se ambos os campos estão preenchidos antes de criar uma nova tarefa. A função onAddTask é chamada com a nova tarefa, que inclui um ID gerado por UUID, garantindo unicidade. O formulário é resetado após o envio bem-sucedido."
+    }
+  },
+  "a8eeda59d3463aa7d1fda1b329fe13d06cbaf28a8df6c96634a2891ac35baffb": {
+    "timestamp": 1765060989369,
+    "data": {
+      "path": "src/main.tsx",
+      "code": "import React, { useState, useEffect } from 'react';\nimport ReactDOM from 'react-dom';\n\ninterface Task {\n  id: string;\n  title: string;\n  category: string;\n  completed: boolean;\n}\n\nconst App: React.FC = () => {\n  const [tasks, setTasks] = useState<Task[]>([]);\n  const [newTaskTitle, setNewTaskTitle] = useState<string>('');\n  const [newTaskCategory, setNewTaskCategory] = useState<string>('');\n\n  useEffect(() => {\n    const storedTasks = localStorage.getItem('tasks');\n    if (storedTasks) {\n      setTasks(JSON.parse(storedTasks));\n    }\n  }, []);\n\n  useEffect(() => {\n    localStorage.setItem('tasks', JSON.stringify(tasks));\n  }, [tasks]);\n\n  const addTask = () => {\n    if (!newTaskTitle || !newTaskCategory) return;\n    const newTask: Task = {\n      id: crypto.randomUUID(),\n      title: newTaskTitle,\n      category: newTaskCategory,\n      completed: false\n    };\n    setTasks([...tasks, newTask]);\n    setNewTaskTitle('');\n    setNewTaskCategory('');\n  };\n\n  const toggleTaskCompletion = (taskId: string) => {\n    setTasks(tasks.map(task => task.id === taskId ? { ...task, completed: !task.completed } : task));\n  };\n\n  return (\n    <div>\n      <h1>Todo List</h1>\n      <input\n        type=\"text\"\n        placeholder=\"Task Title\"\n        value={newTaskTitle}\n        onChange={(e) => setNewTaskTitle(e.target.value)}\n      />\n      <input\n        type=\"text\"\n        placeholder=\"Category\"\n        value={newTaskCategory}\n        onChange={(e) => setNewTaskCategory(e.target.value)}\n      />\n      <button onClick={addTask}>Add Task</button>\n      <ul>\n        {tasks.map(task => (\n          <li key={task.id}>\n            <span style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>\n              {task.title} ({task.category})\n            </span>\n            <button onClick={() => toggleTaskCompletion(task.id)}>\n              {task.completed ? 'Undo' : 'Complete'}\n            </button>\n          </li>\n        ))}\n      </ul>\n    </div>\n  );\n};\n\nReactDOM.render(<App />, document.getElementById('root'));",
+      "explanation": "Este código implementa um gerenciador de tarefas simples usando React, permitindo adicionar, listar e marcar tarefas como concluídas. As tarefas são persistidas no localStorage, garantindo que os dados sejam mantidos entre sessões. A aplicação utiliza hooks do React para gerenciar o estado e efeitos colaterais, como a leitura e escrita no localStorage."
+    }
+  },
+  "a5c6ddb94c29082a66e423a7695329f7f3b4cce42022604b3a99f3d04342975c": {
+    "timestamp": 1765060989917,
+    "data": {
+      "path": "src/infrastructure/ui/routes/index.tsx",
+      "code": "import React, { useState, useEffect } from 'react';\n\ninterface Task {\n  id: string;\n  title: string;\n  category: string;\n  completed: boolean;\n}\n\nconst TaskManager: React.FC = () => {\n  const [tasks, setTasks] = useState<Task[]>([]);\n  const [newTaskTitle, setNewTaskTitle] = useState<string>('');\n  const [newTaskCategory, setNewTaskCategory] = useState<string>('');\n\n  useEffect(() => {\n    const storedTasks = localStorage.getItem('tasks');\n    if (storedTasks) {\n      setTasks(JSON.parse(storedTasks));\n    }\n  }, []);\n\n  const addTask = () => {\n    if (!newTaskTitle || !newTaskCategory) return;\n    const newTask: Task = {\n      id: crypto.randomUUID(),\n      title: newTaskTitle,\n      category: newTaskCategory,\n      completed: false\n    };\n    const updatedTasks = [...tasks, newTask];\n    setTasks(updatedTasks);\n    localStorage.setItem('tasks', JSON.stringify(updatedTasks));\n    setNewTaskTitle('');\n    setNewTaskCategory('');\n  };\n\n  const toggleTaskCompletion = (taskId: string) => {\n    const updatedTasks = tasks.map(task =>\n      task.id === taskId ? { ...task, completed: !task.completed } : task\n    );\n    setTasks(updatedTasks);\n    localStorage.setItem('tasks', JSON.stringify(updatedTasks));\n  };\n\n  return (\n    <div>\n      <h1>Task Manager</h1>\n      <input\n        type=\"text\"\n        placeholder=\"Task Title\"\n        value={newTaskTitle}\n        onChange={(e) => setNewTaskTitle(e.target.value)}\n      />\n      <input\n        type=\"text\"\n        placeholder=\"Category\"\n        value={newTaskCategory}\n        onChange={(e) => setNewTaskCategory(e.target.value)}\n      />\n      <button onClick={addTask}>Add Task</button>\n      <ul>\n        {tasks.map(task => (\n          <li key={task.id}>\n            <span style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>\n              {task.title} ({task.category})\n            </span>\n            <button onClick={() => toggleTaskCompletion(task.id)}>\n              {task.completed ? 'Undo' : 'Complete'}\n            </button>\n          </li>\n        ))}\n      </ul>\n    </div>\n  );\n};\n\nexport default TaskManager;",
+      "explanation": "Este componente React implementa um gerenciador de tarefas simples que permite adicionar, listar e marcar tarefas como concluídas. As tarefas são agrupadas por categoria e persistidas no localStorage para garantir que os dados sejam mantidos entre sessões. O uso de hooks como useState e useEffect garante que o estado do componente seja gerenciado de forma eficiente e que as tarefas sejam carregadas do localStorage ao inicializar."
+    }
+  },
+  "79c7d4b4080890ad714a9f0c20d739c90c78a61b0da8facd43558ad1882e9b83": {
+    "timestamp": 1765060991255,
+    "data": {
+      "path": "tests/integration/infrastructure/storage/LocalStorageTaskRepository.test.ts",
+      "code": "import { LocalStorageTaskRepository } from '../../../../src/infrastructure/storage/LocalStorageTaskRepository';\nimport { Task } from '../../../../src/domain/entities/Task';\nimport { describe, it, expect, beforeEach } from '@jest/globals';\n\nconst TASKS_KEY = 'tasks';\n\nconst mockTask: Task = {\n  id: '1',\n  title: 'Test Task',\n  category: 'Test Category',\n  completed: false\n};\n\nconst clearLocalStorage = () => {\n  localStorage.removeItem(TASKS_KEY);\n};\n\ndescribe('LocalStorageTaskRepository', () => {\n  let repository: LocalStorageTaskRepository;\n\n  beforeEach(() => {\n    clearLocalStorage();\n    repository = new LocalStorageTaskRepository();\n  });\n\n  it('should save a task to localStorage', () => {\n    repository.save(mockTask);\n    const storedTasks = JSON.parse(localStorage.getItem(TASKS_KEY) || '[]');\n    expect(storedTasks).toHaveLength(1);\n    expect(storedTasks[0]).toEqual(mockTask);\n  });\n\n  it('should retrieve tasks from localStorage', () => {\n    localStorage.setItem(TASKS_KEY, JSON.stringify([mockTask]));\n    const tasks = repository.getAll();\n    expect(tasks).toHaveLength(1);\n    expect(tasks[0]).toEqual(mockTask);\n  });\n\n  it('should remove a task from localStorage', () => {\n    repository.save(mockTask);\n    repository.remove(mockTask.id);\n    const storedTasks = JSON.parse(localStorage.getItem(TASKS_KEY) || '[]');\n    expect(storedTasks).toHaveLength(0);\n  });\n});",
+      "explanation": "Este teste de integração verifica a funcionalidade do LocalStorageTaskRepository, garantindo que as operações de salvar, recuperar e remover tarefas no localStorage funcionem corretamente. Utiliza Jest para estruturar os testes e limpar o localStorage antes de cada execução para evitar interferências entre os testes."
+    }
+  },
+  "9226fddebd068adc910b644a211eac11ceb33d1010b69322012694a02787ea65": {
+    "timestamp": 1765060991767,
+    "data": {
+      "path": "tests/unit/application/use-cases/CreateTaskUseCase.test.ts",
+      "code": "import { describe, it, expect } from '@jest/globals';\nimport { CreateTaskUseCase } from '../../../src/application/use-cases/CreateTaskUseCase';\nimport { TaskRepository } from '../../../src/infrastructure/repositories/TaskRepository';\nimport { Task } from '../../../src/domain/entities/Task';\n\njest.mock('../../../src/infrastructure/repositories/TaskRepository');\n\nconst mockTaskRepository = new TaskRepository();\n\nconst createTaskUseCase = new CreateTaskUseCase(mockTaskRepository);\n\nconst validTaskData = {\n  title: 'New Task',\n  category: 'Work',\n  description: 'Complete the project',\n};\n\ndescribe('CreateTaskUseCase', () => {\n  it('should create a task successfully', async () => {\n    mockTaskRepository.save = jest.fn().mockResolvedValueOnce(new Task('1', validTaskData.title, validTaskData.category, validTaskData.description));\n\n    const task = await createTaskUseCase.execute(validTaskData);\n\n    expect(task).toBeDefined();\n    expect(task.title).toBe(validTaskData.title);\n    expect(task.category).toBe(validTaskData.category);\n    expect(task.description).toBe(validTaskData.description);\n    expect(mockTaskRepository.save).toHaveBeenCalledWith(expect.any(Task));\n  });\n\n  it('should throw an error if task data is invalid', async () => {\n    const invalidTaskData = { ...validTaskData, title: '' };\n\n    await expect(createTaskUseCase.execute(invalidTaskData)).rejects.toThrow('Invalid task data');\n  });\n});",
+      "explanation": "Os testes unitários para o CreateTaskUseCase verificam se uma tarefa é criada corretamente e se um erro é lançado quando os dados da tarefa são inválidos. O repositório de tarefas é mockado para isolar o teste da lógica de persistência. O uso de jest.mock permite simular o comportamento do repositório, garantindo que o teste seja focado na lógica do caso de uso."
+    }
+  },
+  "d464702a4cb49388ed8575e4afdab36dbeed12776650d6a741f5b8c15966849f": {
+    "timestamp": 1765060991989,
+    "data": {
+      "path": "tests/unit/domain/entities/Task.test.ts",
+      "code": "import { describe, it, expect } from '@jest/globals';\nimport { Task } from '../../../../src/domain/entities/Task';\n\ninterface CreateTaskProps {\n  id: string;\n  title: string;\n  category: string;\n  completed: boolean;\n}\n\ndescribe('Task Entity', () => {\n  it('should create a valid task', () => {\n    const taskProps: CreateTaskProps = {\n      id: '1',\n      title: 'Buy groceries',\n      category: 'Shopping',\n      completed: false\n    };\n    const task = Task.create(taskProps);\n    expect(task).toBeDefined();\n    expect(task.title).toBe('Buy groceries');\n    expect(task.category).toBe('Shopping');\n    expect(task.completed).toBe(false);\n  });\n\n  it('should throw an error if title is too short', () => {\n    const taskProps: CreateTaskProps = {\n      id: '2',\n      title: 'A',\n      category: 'Misc',\n      completed: false\n    };\n    expect(() => Task.create(taskProps)).toThrow('Title too short');\n  });\n\n  it('should toggle task completion status', () => {\n    const taskProps: CreateTaskProps = {\n      id: '3',\n      title: 'Read a book',\n      category: 'Leisure',\n      completed: false\n    };\n    const task = Task.create(taskProps);\n    task.toggleCompletion();\n    expect(task.completed).toBe(true);\n    task.toggleCompletion();\n    expect(task.completed).toBe(false);\n  });\n});",
+      "explanation": "Os testes unitários para a entidade Task verificam a criação de uma tarefa válida, a validação de título curto e a funcionalidade de alternar o status de conclusão da tarefa. Utilizamos Jest para garantir que a entidade se comporte conforme esperado, incluindo a verificação de erros ao criar tarefas com títulos inválidos."
+    }
+  },
+  "03f6dc1097401f52479d4e4e58958b549145b24770fe3cddd710fc36397510f1": {
+    "timestamp": 1765060994567,
+    "data": {
+      "path": "src/domain/entities/Task.ts",
+      "code": "export class Task {\n  constructor(\n    public readonly id: string,\n    public readonly title: string,\n    public readonly completed: boolean = false,\n    public readonly categoryId: string\n  ) {\n    this.validate();\n  }\n\n  private validate(): void {\n    if (this.title.trim().length === 0) {\n      throw new Error('Task title cannot be empty');\n    }\n  }\n}",
+      "explanation": "Entidade Task criada para representar uma tarefa, com validação para garantir que o título não seja vazio. A entidade é imutável e possui um identificador único, um título, um estado de conclusão e uma referência à categoria."
+    }
+  },
+  "a2c1292874692bf96a4a2c840417abc00d8fd2e7385f66e6a62383967a86788c": {
+    "timestamp": 1765060998511,
+    "data": {
+      "path": "tests/e2e/taskManagement.test.ts",
+      "code": "import { render, screen, fireEvent } from '@testing-library/react';\nimport '@testing-library/jest-dom';\nimport React from 'react';\nimport { TaskManager } from '../../src/components/TaskManager';\n\n// Mock localStorage\nconst localStorageMock = (() => {\n  let store: Record<string, string> = {};\n  return {\n    getItem(key: string) {\n      return store[key] || null;\n    },\n    setItem(key: string, value: string) {\n      store[key] = value;\n    },\n    clear() {\n      store = {};\n    },\n    removeItem(key: string) {\n      delete store[key];\n    }\n  };\n})();\n\nObject.defineProperty(window, 'localStorage', { value: localStorageMock });\n\ndescribe('TaskManager Component', () => {\n  beforeEach(() => {\n    localStorage.clear();\n  });\n\n  it('should add a new task to the list', () => {\n    render(<TaskManager />);\n    const input = screen.getByPlaceholderText('Add new task');\n    const addButton = screen.getByText('Add Task');\n\n    fireEvent.change(input, { target: { value: 'New Task' } });\n    fireEvent.click(addButton);\n\n    expect(screen.getByText('New Task')).toBeInTheDocument();\n  });\n\n  it('should group tasks by category', () => {\n    render(<TaskManager />);\n    const input = screen.getByPlaceholderText('Add new task');\n    const categoryInput = screen.getByPlaceholderText('Category');\n    const addButton = screen.getByText('Add Task');\n\n    fireEvent.change(input, { target: { value: 'Task 1' } });\n    fireEvent.change(categoryInput, { target: { value: 'Work' } });\n    fireEvent.click(addButton);\n\n    fireEvent.change(input, { target: { value: 'Task 2' } });\n    fireEvent.change(categoryInput, { target: { value: 'Personal' } });\n    fireEvent.click(addButton);\n\n    expect(screen.getByText('Work')).toBeInTheDocument();\n    expect(screen.getByText('Personal')).toBeInTheDocument();\n  });\n\n  it('should save tasks to localStorage', () => {\n    render(<TaskManager />);\n    const input = screen.getByPlaceholderText('Add new task');\n    const addButton = screen.getByText('Add Task');\n\n    fireEvent.change(input, { target: { value: 'Persistent Task' } });\n    fireEvent.click(addButton);\n\n    expect(localStorage.getItem('tasks')).toContain('Persistent Task');\n  });\n});",
+      "explanation": "Este teste end-to-end para o componente TaskManager verifica a adição de tarefas, agrupamento por categoria e persistência no localStorage. Utiliza React Testing Library para simular interações do usuário e um mock de localStorage para validar a persistência de dados. Cada teste é isolado com beforeEach para garantir um estado limpo."
+    }
+  },
+  "8a220bee227024c85ec90681030e7601b895bf3fe5f01e23b23e31cc228b3c04": {
+    "timestamp": 1765060999487,
+    "data": {
+      "path": "README.md",
+      "code": "# TodoList Application\n\n## Descrição\n\nEste projeto é um gerenciador de tarefas simples que permite aos usuários criar, visualizar e organizar tarefas em categorias. As tarefas e categorias são armazenadas no `localStorage` do navegador, garantindo que os dados persistam entre as sessões.\n\n## Tecnologias Utilizadas\n\n- **Node.js 20 LTS**: Ambiente de execução para desenvolvimento e build.\n- **TypeScript 5.x (strict mode)**: Linguagem de programação utilizada para garantir tipagem estática e segurança no desenvolvimento.\n- **React 18.x**: Biblioteca para construção da interface de usuário.\n- **localStorage**: Utilizado como armazenamento persistente para tarefas e categorias.\n- **Jest + React Testing Library**: Ferramentas para testes unitários e de integração.\n- **Storybook**: Utilizado para documentação e visualização de componentes isolados.\n\n## Funcionalidades\n\n- **Adicionar Tarefas**: Permite criar novas tarefas com título e descrição.\n- **Agrupar por Categorias**: Organize tarefas em categorias definidas pelo usuário.\n- **Persistência de Dados**: As tarefas e categorias são salvas no `localStorage`.\n- **Interface Intuitiva**: Interface amigável construída com React.\n\n## Como Executar o Projeto\n\n1. **Clone o repositório**:\n   ```bash\n   git clone <URL_DO_REPOSITORIO>\n   cd <NOME_DO_DIRETORIO>\n   ```\n\n2. **Instale as dependências**:\n   ```bash\n   npm install\n   ```\n\n3. **Execute o projeto**:\n   ```bash\n   npm start\n   ```\n\n4. **Abra o navegador** e acesse `http://localhost:3000` para visualizar a aplicação.\n\n## Testes\n\nPara executar os testes, utilize o comando:\n```bash\nnpm test\n```\n\n## Documentação de Componentes\n\nPara visualizar a documentação dos componentes com o Storybook, execute:\n```bash\nnpm run storybook\n```\n\n## Contribuição\n\nContribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests para melhorias e correções.\n\n## Licença\n\nEste projeto está licenciado sob a Licença MIT.",
+      "explanation": "O README.md fornece uma visão geral do projeto TodoList, incluindo tecnologias utilizadas, funcionalidades principais, instruções de execução, testes e documentação. Ele segue boas práticas de documentação, facilitando a compreensão e contribuição para o projeto."
+    }
+  },
+  "40ef4454323d46f7a7e4b426946576a11c84aba4e327d2b86585b4342ce391a9": {
+    "timestamp": 1765061001452,
+    "data": {
+      "path": ".env.example",
+      "code": "REACT_APP_API_URL=http://localhost:3000\nREACT_APP_ENV=development\nREACT_APP_STORAGE_KEY=todoListApp",
+      "explanation": "O arquivo .env.example define variáveis de ambiente para a aplicação React. 'REACT_APP_API_URL' é a URL base para chamadas de API, 'REACT_APP_ENV' define o ambiente de execução, e 'REACT_APP_STORAGE_KEY' é a chave usada para armazenar dados no localStorage, garantindo que a aplicação acesse o armazenamento correto."
+    }
+  },
+  "c18a081ae01608eb66088a66665f0776d5415f555b1f64b01824fb4115b66ae7": {
+    "timestamp": 1765061003331,
+    "data": {
+      "path": "tsconfig.json",
+      "code": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2020\",\n    \"module\": \"ESNext\",\n    \"lib\": [\"DOM\", \"ES2020\"],\n    \"jsx\": \"react-jsx\",\n    \"strict\": true,\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true,\n    \"forceConsistentCasingInFileNames\": true,\n    \"moduleResolution\": \"node\",\n    \"resolveJsonModule\": true,\n    \"isolatedModules\": true,\n    \"noEmit\": true,\n    \"allowSyntheticDefaultImports\": true\n  },\n  \"include\": [\"src\"],\n  \"exclude\": [\"node_modules\", \"build\"]\n}",
+      "explanation": "Configuração do TypeScript para um projeto React com Node.js 20 LTS. O 'strict mode' está ativado para garantir a segurança e a qualidade do código. O 'jsx' está configurado para 'react-jsx' para suportar a sintaxe JSX do React 18. As opções de módulo e alvo são definidas para compatibilidade com ES2020 e ESNext, garantindo que o código seja moderno e eficiente."
+    }
+  },
+  "2d9274e674997c06f045832b87a35e2a0f851d0611012d3a7c12a6890b0e0e67": {
+    "timestamp": 1765061003756,
+    "data": {
+      "path": ".eslintrc.js",
+      "code": "module.exports = {\n  root: true,\n  parser: '@typescript-eslint/parser',\n  parserOptions: {\n    ecmaVersion: 2020,\n    sourceType: 'module',\n    ecmaFeatures: {\n      jsx: true\n    }\n  },\n  settings: {\n    react: {\n      version: 'detect'\n    }\n  },\n  env: {\n    browser: true,\n    es2021: true,\n    node: true\n  },\n  extends: [\n    'eslint:recommended',\n    'plugin:react/recommended',\n    'plugin:@typescript-eslint/recommended',\n    'plugin:react-hooks/recommended',\n    'plugin:prettier/recommended'\n  ],\n  plugins: ['react', '@typescript-eslint'],\n  rules: {\n    'react/prop-types': 'off',\n    '@typescript-eslint/explicit-module-boundary-types': 'off',\n    '@typescript-eslint/no-explicit-any': 'error',\n    'prettier/prettier': ['error', { endOfLine: 'auto' }]\n  }\n};",
+      "explanation": "Configuração ESLint para um projeto React com TypeScript, garantindo boas práticas de codificação. Inclui plugins para React, TypeScript e Prettier, e desativa regras desnecessárias como 'react/prop-types' devido ao uso de TypeScript. A regra 'no-explicit-any' está ativada para evitar o uso de 'any'."
+    }
+  },
+  "05bcc73d0009abdcf553fa76a83f47824297cea1ee07b56319944f1530681122": {
+    "timestamp": 1765061012870,
+    "data": {
+      "userStories": [
+        {
+          "id": "US-006",
+          "title": "Criar nova tarefa",
+          "priority": "P0",
+          "role": "usuário",
+          "action": "realizar ação",
+          "benefit": "obter valor",
+          "acceptanceCriteria": [],
+          "functionalRequirements": [
+            "Requisito pendente"
+          ],
+          "securityRequirements": [
+            "Requisito de segurança padrão"
+          ],
+          "businessContext": "Contexto de negócio"
+        },
+        {
+          "id": "US-007",
+          "title": "Editar tarefa existente",
+          "priority": "P1",
+          "role": "usuário",
+          "action": "realizar ação",
+          "benefit": "obter valor",
+          "acceptanceCriteria": [],
+          "functionalRequirements": [
+            "Requisito pendente"
+          ],
+          "securityRequirements": [
+            "Requisito de segurança padrão"
+          ],
+          "businessContext": "Contexto de negócio"
+        },
+        {
+          "id": "US-008",
+          "title": "Excluir tarefa",
+          "priority": "P1",
+          "role": "usuário",
+          "action": "realizar ação",
+          "benefit": "obter valor",
+          "acceptanceCriteria": [],
+          "functionalRequirements": [
+            "Requisito pendente"
+          ],
+          "securityRequirements": [
+            "Requisito de segurança padrão"
+          ],
+          "businessContext": "Contexto de negócio"
+        }
+      ]
+    }
+  },
+  "aa009bd103a3c189095c105f995a8c92681ec636074a2567b0a6b8c94b3d47a4": {
+    "timestamp": 1765072023673,
+    "data": {
+      "summary": "Calculadora simples que realiza as quatro operações básicas (adição, subtração, multiplicação e divisão) e calcula percentuais.",
+      "complexity": {
+        "level": "LOW",
+        "score": 3,
+        "justification": "CRUD simples com operações matemáticas básicas. Não há integrações externas ou regras de negócio complexas."
+      },
+      "coreEntities": [
+        "Operação",
+        "Número",
+        "Resultado"
+      ],
+      "implicitRequirements": [
+        "Interface de usuário para entrada de dados e exibição de resultados.",
+        "Tratamento de erros para divisões por zero.",
+        "Histórico de operações realizadas durante a sessão."
+      ],
+      "assumptions": [
+        "A calculadora deve aceitar números inteiros e decimais.",
+        "As operações devem ser realizadas em ordem de entrada, sem precedência.",
+        "O cálculo de percentual deve ser feito em relação a um número base fornecido pelo usuário.",
+        "Resultados devem ser exibidos com duas casas decimais."
+      ]
+    }
+  },
+  "58e69ff86848c3c06a17795c1909508303f0d7a6de318c924bc3c12e62b4a9f7": {
+    "timestamp": 1765072041634,
+    "data": {
+      "productVision": "Calculadora simples que permite realizar operações matemáticas básicas e calcular percentuais de forma intuitiva e rápida, com interface amigável e tratamento de erros.",
+      "epics": [
+        {
+          "id": "EPIC-001",
+          "title": "Operações Básicas",
+          "category": "CORE",
+          "context": "As operações básicas (adição, subtração, multiplicação e divisão) são essenciais para a funcionalidade da calculadora.",
+          "requirements": [
+            "Implementar adição de dois números.",
+            "Implementar subtração de dois números.",
+            "Implementar multiplicação de dois números.",
+            "Implementar divisão de dois números com tratamento de erro para divisão por zero."
+          ],
+          "acceptanceCriteria": [
+            "A calculadora realiza adição e retorna resultado com duas casas decimais.",
+            "A calculadora realiza subtração e retorna resultado com duas casas decimais.",
+            "A calculadora realiza multiplicação e retorna resultado com duas casas decimais.",
+            "A calculadora realiza divisão e retorna erro se divisor for zero."
+          ],
+          "priority": "P0",
+          "estimatedComplexity": "LOW"
+        },
+        {
+          "id": "EPIC-002",
+          "title": "Cálculo de Percentual",
+          "category": "CORE",
+          "context": "O cálculo de percentual é uma funcionalidade importante que permite ao usuário entender proporções em relação a um número base.",
+          "requirements": [
+            "Permitir que o usuário insira um número base para o cálculo percentual.",
+            "Calcular percentual em relação ao número base fornecido.",
+            "Exibir resultado do percentual com duas casas decimais."
+          ],
+          "acceptanceCriteria": [
+            "A calculadora calcula e exibe o percentual corretamente com duas casas decimais.",
+            "O usuário consegue inserir um número base e um percentual para o cálculo."
+          ],
+          "priority": "P0",
+          "estimatedComplexity": "LOW"
+        },
+        {
+          "id": "EPIC-003",
+          "title": "Interface de Usuário",
+          "category": "CORE",
+          "context": "Uma interface amigável é crucial para a usabilidade da calculadora, permitindo fácil entrada de dados e visualização de resultados.",
+          "requirements": [
+            "Criar uma interface gráfica para entrada de números e seleção de operações.",
+            "Exibir resultados de forma clara e legível.",
+            "Incluir um botão para limpar a entrada e resultados."
+          ],
+          "acceptanceCriteria": [
+            "A interface permite entrada de números inteiros e decimais.",
+            "Os resultados são exibidos com duas casas decimais.",
+            "O botão de limpar funciona corretamente."
+          ],
+          "priority": "P1",
+          "estimatedComplexity": "LOW"
+        },
+        {
+          "id": "EPIC-004",
+          "title": "Histórico de Operações",
+          "category": "CORE",
+          "context": "Manter um histórico das operações realizadas durante a sessão ajuda o usuário a acompanhar seus cálculos.",
+          "requirements": [
+            "Registrar cada operação realizada durante a sessão.",
+            "Exibir o histórico de operações na interface.",
+            "Permitir que o usuário limpe o histórico se desejar."
+          ],
+          "acceptanceCriteria": [
+            "O histórico exibe todas as operações realizadas na sessão.",
+            "O usuário pode limpar o histórico a qualquer momento."
+          ],
+          "priority": "P1",
+          "estimatedComplexity": "LOW"
+        },
+        {
+          "id": "EPIC-005",
+          "title": "Tratamento de Erros",
+          "category": "ADMIN",
+          "context": "O tratamento de erros é fundamental para garantir que a calculadora funcione de forma robusta e amigável.",
+          "requirements": [
+            "Implementar mensagens de erro para entradas inválidas.",
+            "Tratar erros de divisão por zero com uma mensagem amigável ao usuário.",
+            "Garantir que a calculadora não quebre em caso de entradas inesperadas."
+          ],
+          "acceptanceCriteria": [
+            "Mensagens de erro são exibidas de forma clara e compreensível.",
+            "A calculadora não falha em caso de entradas inválidas."
+          ],
+          "priority": "P0",
+          "estimatedComplexity": "LOW"
+        }
+      ],
+      "outOfScope": [
+        "Integração com serviços externos para cálculos avançados.",
+        "Funcionalidades de armazenamento de histórico em nuvem.",
+        "Suporte a múltiplos usuários ou sessões simultâneas."
+      ],
+      "risks": [
+        {
+          "description": "Erros de entrada do usuário podem causar confusão.",
+          "mitigation": "Implementar validações e mensagens de erro claras."
+        },
+        {
+          "description": "Divisão por zero pode causar falhas na aplicação.",
+          "mitigation": "Adicionar tratamento de erro específico para divisão por zero."
+        }
+      ]
+    }
+  },
+  "63f277ad9044913219001aa1c26c14c64fd02bcb5bbb2b7e7399a7448f7113d0": {
+    "timestamp": 1765072067524,
+    "data": {
+      "architectureStyle": "Clean Architecture com Modular Monolith",
+      "stack": {
+        "runtime": "Node.js 20 LTS",
+        "language": "TypeScript 5.x (strict mode)",
+        "framework": "Fastify 4.x",
+        "testing": "Vitest + Supertest",
+        "documentation": "OpenAPI/Swagger",
+        "orm": "Prisma 5.x",
+        "database": "SQLite 3",
+        "cache": "N/A",
+        "queue": "N/A"
+      },
+      "diagram": "graph TD; Client-->API[Fastify API]; API-->App[Application Layer]; App-->Domain[Domain Layer]; App-->Infra[Infrastructure]; Infra-->DB[(SQLite)];",
+      "manifest": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "purpose": "Pipeline de CI",
+          "criticality": "HIGH",
+          "category": "DEVOPS"
+        },
+        {
+          "path": "docker/Dockerfile.api",
+          "purpose": "Build otimizado",
+          "criticality": "HIGH",
+          "category": "DEVOPS"
+        },
+        {
+          "path": "docker/docker-compose.yml",
+          "purpose": "Ambiente local",
+          "criticality": "MEDIUM",
+          "category": "DEVOPS"
+        },
+        {
+          "path": "src/config/env.ts",
+          "purpose": "Validação de env vars com Zod",
+          "criticality": "HIGH",
+          "category": "CONFIG"
+        },
+        {
+          "path": "src/domain/entities/Operation.ts",
+          "purpose": "Entidade Operation com regras",
+          "criticality": "HIGH",
+          "category": "DOMAIN"
+        },
+        {
+          "path": "src/domain/entities/Number.ts",
+          "purpose": "Entidade Number com regras",
+          "criticality": "HIGH",
+          "category": "DOMAIN"
+        },
+        {
+          "path": "src/domain/entities/Result.ts",
+          "purpose": "Entidade Result com regras",
+          "criticality": "HIGH",
+          "category": "DOMAIN"
+        },
+        {
+          "path": "src/domain/repositories/IOperationRepository.ts",
+          "purpose": "Port para persistência do histórico",
+          "criticality": "HIGH",
+          "category": "DOMAIN"
+        },
+        {
+          "path": "src/application/use-cases/BasicOperationsUseCase.ts",
+          "purpose": "Orquestração das operações básicas",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/application/use-cases/CalculatePercentageUseCase.ts",
+          "purpose": "Orquestração do cálculo percentual",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/application/use-cases/GetOperationHistoryUseCase.ts",
+          "purpose": "Recuperação do histórico de operações",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/infrastructure/database/repositories/SQLiteOperationRepository.ts",
+          "purpose": "Impl do repositório para histórico",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "src/infrastructure/http/controllers/CalculatorController.ts",
+          "purpose": "Controller REST para operações",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "src/infrastructure/http/routes/index.ts",
+          "purpose": "Rotas da API",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Composition root e bootstrap",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "tests/unit/domain/entities/Operation.test.ts",
+          "purpose": "Teste unitário de entidade Operation",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "tests/unit/application/use-cases/BasicOperationsUseCase.test.ts",
+          "purpose": "Teste unitário de operações básicas",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "tests/unit/application/use-cases/CalculatePercentageUseCase.test.ts",
+          "purpose": "Teste unitário de cálculo percentual",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "tests/unit/infrastructure/database/repositories/SQLiteOperationRepository.test.ts",
+          "purpose": "Teste unitário do repositório",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "tests/e2e/calculator.test.ts",
+          "purpose": "Teste E2E do fluxo da calculadora",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Dependências",
+          "criticality": "HIGH",
+          "category": "CONFIG"
+        },
+        {
+          "path": "README.md",
+          "purpose": "Documentação",
+          "criticality": "MEDIUM",
+          "category": "DOCS"
+        },
+        {
+          "path": "src/config/zodSchemas.ts",
+          "purpose": "Schemas de validação de entrada com Zod",
+          "criticality": "HIGH",
+          "category": "CONFIG"
+        },
+        {
+          "path": "src/infrastructure/http/middlewares/errorHandler.ts",
+          "purpose": "Middleware para tratamento de erros",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        }
+      ],
+      "keyDecisions": [
+        {
+          "decision": "Fastify over Express",
+          "rationale": "3x mais rápido, schema validation nativo"
+        },
+        {
+          "decision": "SQLite over PostgreSQL",
+          "rationale": "Simplicidade para um projeto de baixa complexidade"
+        }
+      ],
+      "securityConsiderations": [
+        "Validação de entrada do usuário",
+        "Tratamento de erro para divisão por zero"
+      ],
+      "scalabilityPath": [
+        "Monolito modular -> Microservices se necessário"
+      ]
+    }
+  },
+  "b7948b67c5c51de1a9279297a10ac1dd9aeaaedaeb67fd963a464338b8ca1942": {
+    "timestamp": 1765072098644,
+    "data": {
+      "epicId": "EPIC-001",
+      "epicTitle": "Operações Básicas",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Adicionar dois números",
+          "description": "Como usuário, quero adicionar dois números, para que eu possa obter a soma deles.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Adição de números válidos",
+              "given": "Que eu tenho os números 5 e 3",
+              "when": "Eu realizo a operação de adição",
+              "then": "O sistema retorna 8.00 como resultado"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Adição de números negativos",
+              "given": "Que eu tenho os números -2 e -3",
+              "when": "Eu realizo a operação de adição",
+              "then": "O sistema retorna -5.00 como resultado"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Adição de zero",
+              "given": "Que eu tenho os números 0 e 10",
+              "when": "Eu realizo a operação de adição",
+              "then": "O sistema retorna 10.00 como resultado"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar função add(a, b) que retorna parseFloat((a + b).toFixed(2))"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 2,
+          "priority": "P0"
+        },
+        {
+          "id": "US-002",
+          "title": "Subtrair dois números",
+          "description": "Como usuário, quero subtrair dois números, para que eu possa obter a diferença entre eles.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Subtração de números válidos",
+              "given": "Que eu tenho os números 10 e 4",
+              "when": "Eu realizo a operação de subtração",
+              "then": "O sistema retorna 6.00 como resultado"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Subtração resultando em número negativo",
+              "given": "Que eu tenho os números 3 e 5",
+              "when": "Eu realizo a operação de subtração",
+              "then": "O sistema retorna -2.00 como resultado"
+            },
+            {
+              "id": "AC-002-03",
+              "scenario": "Subtração de zero",
+              "given": "Que eu tenho os números 0 e 7",
+              "when": "Eu realizo a operação de subtração",
+              "then": "O sistema retorna -7.00 como resultado"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar função subtract(a, b) que retorna parseFloat((a - b).toFixed(2))"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 2,
+          "priority": "P0"
+        },
+        {
+          "id": "US-003",
+          "title": "Multiplicar dois números",
+          "description": "Como usuário, quero multiplicar dois números, para que eu possa obter o produto deles.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-003-01",
+              "scenario": "Multiplicação de números válidos",
+              "given": "Que eu tenho os números 4 e 5",
+              "when": "Eu realizo a operação de multiplicação",
+              "then": "O sistema retorna 20.00 como resultado"
+            },
+            {
+              "id": "AC-003-02",
+              "scenario": "Multiplicação por zero",
+              "given": "Que eu tenho os números 0 e 10",
+              "when": "Eu realizo a operação de multiplicação",
+              "then": "O sistema retorna 0.00 como resultado"
+            },
+            {
+              "id": "AC-003-03",
+              "scenario": "Multiplicação de números negativos",
+              "given": "Que eu tenho os números -3 e 6",
+              "when": "Eu realizo a operação de multiplicação",
+              "then": "O sistema retorna -18.00 como resultado"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar função multiply(a, b) que retorna parseFloat((a * b).toFixed(2))"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 2,
+          "priority": "P0"
+        },
+        {
+          "id": "US-004",
+          "title": "Dividir dois números",
+          "description": "Como usuário, quero dividir dois números, para que eu possa obter o quociente deles.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-004-01",
+              "scenario": "Divisão de números válidos",
+              "given": "Que eu tenho os números 10 e 2",
+              "when": "Eu realizo a operação de divisão",
+              "then": "O sistema retorna 5.00 como resultado"
+            },
+            {
+              "id": "AC-004-02",
+              "scenario": "Divisão por zero",
+              "given": "Que eu tenho os números 10 e 0",
+              "when": "Eu realizo a operação de divisão",
+              "then": "O sistema retorna erro 'Divisão por zero' e não realiza a operação"
+            },
+            {
+              "id": "AC-004-03",
+              "scenario": "Divisão resultando em número decimal",
+              "given": "Que eu tenho os números 7 e 4",
+              "when": "Eu realizo a operação de divisão",
+              "then": "O sistema retorna 1.75 como resultado"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar função divide(a, b) que retorna b !== 0 ? parseFloat((a / b).toFixed(2)) : 'Divisão por zero'"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        }
+      ],
+      "summary": {
+        "totalStories": 4,
+        "totalPoints": 9,
+        "p0Count": 4,
+        "p1Count": 0,
+        "p2Count": 0
+      }
+    }
+  },
+  "fee111c5a0c254b3e516c65b5968818bd25b122f0f83044b93b20b8e16071572": {
+    "timestamp": 1765072124541,
+    "data": {
+      "epicId": "EPIC-002",
+      "epicTitle": "Cálculo de Percentual",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Inserir número base para cálculo percentual",
+          "description": "Como usuário, quero inserir um número base, para que eu possa calcular percentuais em relação a esse número.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Inserção de número base válido",
+              "given": "Que estou na tela de cálculo percentual",
+              "when": "Insiro o número base 200 e clico em 'Confirmar'",
+              "then": "O sistema armazena o número base como 200 e exibe mensagem 'Número base definido com sucesso'"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Inserção de número base inválido",
+              "given": "Que estou na tela de cálculo percentual",
+              "when": "Insiro um número base negativo (-50) e clico em 'Confirmar'",
+              "then": "O sistema exibe erro 'Número base deve ser positivo'"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Inserção de número base vazio",
+              "given": "Que estou na tela de cálculo percentual",
+              "when": "Clico em 'Confirmar' sem inserir número base",
+              "then": "O sistema exibe erro 'Campo número base é obrigatório'"
+            }
+          ],
+          "technicalNotes": [
+            "Campo de input deve aceitar apenas números positivos",
+            "Validar input no frontend e backend",
+            "Armazenar número base em estado local até o cálculo ser realizado"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        },
+        {
+          "id": "US-002",
+          "title": "Calcular percentual em relação ao número base",
+          "description": "Como usuário, quero calcular o percentual em relação ao número base, para entender a proporção desejada.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Cálculo de percentual válido",
+              "given": "Que o número base é 200",
+              "when": "Insiro 25 como percentual e clico em 'Calcular'",
+              "then": "O sistema exibe o resultado '25% de 200 é 50.00'"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Cálculo de percentual inválido",
+              "given": "Que o número base é 200",
+              "when": "Insiro um percentual negativo (-10) e clico em 'Calcular'",
+              "then": "O sistema exibe erro 'Percentual deve ser um número positivo'"
+            },
+            {
+              "id": "AC-002-03",
+              "scenario": "Cálculo com percentual vazio",
+              "given": "Que o número base é 200",
+              "when": "Clico em 'Calcular' sem inserir percentual",
+              "then": "O sistema exibe erro 'Campo percentual é obrigatório'"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar lógica de cálculo: resultado = (percentual / 100) * número base",
+            "Exibir resultado formatado com duas casas decimais",
+            "Validar input no frontend e backend"
+          ],
+          "dependencies": [
+            "US-001: Inserir número base para cálculo percentual"
+          ],
+          "estimatedPoints": 5,
+          "priority": "P0"
+        },
+        {
+          "id": "US-003",
+          "title": "Exibir resultado do cálculo percentual",
+          "description": "Como usuário, quero ver o resultado do cálculo percentual com duas casas decimais, para que eu possa entender melhor o valor calculado.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-003-01",
+              "scenario": "Exibição correta do resultado",
+              "given": "Que o cálculo foi realizado com número base 200 e percentual 25",
+              "when": "O resultado é calculado",
+              "then": "O sistema exibe '25% de 200 é 50.00' na tela"
+            },
+            {
+              "id": "AC-003-02",
+              "scenario": "Exibição de resultado com percentual zero",
+              "given": "Que o número base é 200",
+              "when": "Insiro 0 como percentual e clico em 'Calcular'",
+              "then": "O sistema exibe '0% de 200 é 0.00'"
+            },
+            {
+              "id": "AC-003-03",
+              "scenario": "Exibição de resultado com número base zero",
+              "given": "Que o número base é 0",
+              "when": "Insiro 25 como percentual e clico em 'Calcular'",
+              "then": "O sistema exibe '25% de 0 é 0.00'"
+            }
+          ],
+          "technicalNotes": [
+            "Formatar resultado para duas casas decimais usando toFixed(2)",
+            "Garantir que a exibição do resultado seja clara e intuitiva"
+          ],
+          "dependencies": [
+            "US-001: Inserir número base para cálculo percentual",
+            "US-002: Calcular percentual em relação ao número base"
+          ],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        }
+      ],
+      "summary": {
+        "totalStories": 3,
+        "totalPoints": 11,
+        "p0Count": 3,
+        "p1Count": 0,
+        "p2Count": 0
+      }
+    }
+  },
+  "25634f5e26fbba9d58de1d91823dfc9a13b541866f79c45121f2bfe1337f1365": {
+    "timestamp": 1765072148576,
+    "data": {
+      "epicId": "EPIC-003",
+      "epicTitle": "Interface de Usuário",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Criar interface gráfica para entrada de números",
+          "description": "Como usuário, quero uma interface gráfica que me permita inserir números e selecionar operações, para que eu possa realizar cálculos de forma intuitiva.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Entrada de número inteiro",
+              "given": "Que estou na interface da calculadora",
+              "when": "Insiro o número inteiro 10 e seleciono a operação de adição",
+              "then": "O sistema aceita a entrada e permite prosseguir com a operação"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Entrada de número decimal",
+              "given": "Que estou na interface da calculadora",
+              "when": "Insiro o número decimal 10.5 e seleciono a operação de subtração",
+              "then": "O sistema aceita a entrada e permite prosseguir com a operação"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Entrada de caracteres inválidos",
+              "given": "Que estou na interface da calculadora",
+              "when": "Tento inserir o caractere 'A'",
+              "then": "O sistema exibe erro 'Entrada inválida, insira apenas números'"
+            }
+          ],
+          "technicalNotes": [
+            "Utilizar input type='number' para entrada de números",
+            "Implementar validação de entrada no frontend",
+            "Exibir mensagens de erro de forma clara"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-002",
+          "title": "Exibir resultados de forma clara",
+          "description": "Como usuário, quero que os resultados sejam exibidos com duas casas decimais, para que eu possa entender facilmente o resultado dos cálculos.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Resultado de operação com número inteiro",
+              "given": "Que realizei a operação 10 + 5",
+              "when": "O resultado é exibido",
+              "then": "O sistema mostra '15.00' como resultado"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Resultado de operação com número decimal",
+              "given": "Que realizei a operação 10.5 * 2",
+              "when": "O resultado é exibido",
+              "then": "O sistema mostra '21.00' como resultado"
+            },
+            {
+              "id": "AC-002-03",
+              "scenario": "Resultado de operação com casas decimais",
+              "given": "Que realizei a operação 10.123 + 0.877",
+              "when": "O resultado é exibido",
+              "then": "O sistema mostra '11.00' como resultado"
+            }
+          ],
+          "technicalNotes": [
+            "Formatar resultados usando toFixed(2) no JavaScript",
+            "Garantir que a exibição seja em um elemento separado da entrada"
+          ],
+          "dependencies": [
+            "US-001: Criar interface gráfica para entrada de números"
+          ],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-003",
+          "title": "Incluir botão para limpar a entrada e resultados",
+          "description": "Como usuário, quero um botão que limpe a entrada e os resultados, para que eu possa começar um novo cálculo facilmente.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-003-01",
+              "scenario": "Limpar entrada e resultado",
+              "given": "Que estou na interface da calculadora com números e resultados exibidos",
+              "when": "Clico no botão 'Limpar'",
+              "then": "O sistema limpa todos os campos de entrada e resultados"
+            },
+            {
+              "id": "AC-003-02",
+              "scenario": "Verificação após limpar",
+              "given": "Que cliquei no botão 'Limpar'",
+              "when": "Tento realizar uma nova operação",
+              "then": "O sistema permite nova entrada sem erros"
+            },
+            {
+              "id": "AC-003-03",
+              "scenario": "Botão de limpar visível",
+              "given": "Que estou na interface da calculadora",
+              "when": "Visualizo a interface",
+              "then": "O botão 'Limpar' está visível e acessível"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar evento de clique no botão 'Limpar'",
+            "Resetar estados da aplicação para valores iniciais"
+          ],
+          "dependencies": [
+            "US-001: Criar interface gráfica para entrada de números",
+            "US-002: Exibir resultados de forma clara"
+          ],
+          "estimatedPoints": 2,
+          "priority": "P1"
+        }
+      ],
+      "summary": {
+        "totalStories": 3,
+        "totalPoints": 8,
+        "p0Count": 0,
+        "p1Count": 3,
+        "p2Count": 0
+      }
+    }
+  },
+  "a59e8ae404fa676fccf8c1ca7579ded6da49e9faec54d54c43bc491877f4fcd6": {
+    "timestamp": 1765072174146,
+    "data": {
+      "epicId": "EPIC-004",
+      "epicTitle": "Histórico de Operações",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Registrar operação realizada na sessão",
+          "description": "Como usuário, quero que cada operação realizada durante a sessão seja registrada, para que eu possa acompanhar meu histórico de cálculos.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Operação registrada com sucesso",
+              "given": "Que realizei uma operação de soma (5 + 3)",
+              "when": "A operação é executada",
+              "then": "O sistema registra a operação '5 + 3 = 8' no histórico"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Registrar múltiplas operações",
+              "given": "Que realizei operações de soma e subtração",
+              "when": "Executo as operações (5 + 3) e (10 - 2)",
+              "then": "O sistema registra ambas as operações no histórico: '5 + 3 = 8' e '10 - 2 = 8'"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Operação com números negativos",
+              "given": "Que realizei uma operação de subtração com números negativos",
+              "when": "Executo a operação (-5 + 3)",
+              "then": "O sistema registra a operação '-5 + 3 = -2' no histórico"
+            }
+          ],
+          "technicalNotes": [
+            "Endpoint: POST /api/v1/operations",
+            "Armazenar operações em um array na sessão do usuário",
+            "Cada operação deve incluir: tipo, operandos, resultado e timestamp"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-002",
+          "title": "Exibir histórico de operações na interface",
+          "description": "Como usuário, quero visualizar o histórico de operações realizadas, para que eu possa revisar meus cálculos.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Histórico exibido corretamente",
+              "given": "Que realizei operações durante a sessão",
+              "when": "Acesso a aba 'Histórico'",
+              "then": "O sistema exibe todas as operações realizadas com seus resultados"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Histórico vazio",
+              "given": "Que não realizei nenhuma operação",
+              "when": "Acesso a aba 'Histórico'",
+              "then": "O sistema exibe mensagem 'Nenhuma operação registrada' com ilustração empty-state"
+            },
+            {
+              "id": "AC-002-03",
+              "scenario": "Histórico com operações",
+              "given": "Que realizei operações de soma e subtração",
+              "when": "Acesso a aba 'Histórico'",
+              "then": "O sistema exibe as operações na ordem em que foram realizadas"
+            }
+          ],
+          "technicalNotes": [
+            "Endpoint: GET /api/v1/operations",
+            "Implementar paginacao se o histórico exceder 20 operações",
+            "Utilizar cache para melhorar performance na exibição"
+          ],
+          "dependencies": [
+            "US-001: Registrar operação realizada na sessão"
+          ],
+          "estimatedPoints": 5,
+          "priority": "P1"
+        },
+        {
+          "id": "US-003",
+          "title": "Limpar histórico de operações",
+          "description": "Como usuário, quero poder limpar o histórico de operações, para que eu possa reiniciar meus cálculos sem registros anteriores.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-003-01",
+              "scenario": "Limpar histórico com sucesso",
+              "given": "Que estou na aba 'Histórico' com operações registradas",
+              "when": "Clico no botão 'Limpar histórico' e confirmo a ação",
+              "then": "O sistema remove todas as operações do histórico e exibe mensagem 'Histórico limpo com sucesso'"
+            },
+            {
+              "id": "AC-003-02",
+              "scenario": "Cancelar limpeza do histórico",
+              "given": "Que estou na aba 'Histórico' com operações registradas",
+              "when": "Clico no botão 'Limpar histórico' e cancelo a ação",
+              "then": "O sistema mantém todas as operações no histórico e exibe mensagem 'Ação cancelada'"
+            },
+            {
+              "id": "AC-003-03",
+              "scenario": "Limpar histórico vazio",
+              "given": "Que não há operações registradas",
+              "when": "Clico no botão 'Limpar histórico'",
+              "then": "O sistema exibe mensagem 'Histórico já está vazio'"
+            }
+          ],
+          "technicalNotes": [
+            "Endpoint: DELETE /api/v1/operations",
+            "Implementar confirmação de ação antes de limpar",
+            "Verificar se o histórico está vazio antes de permitir a limpeza"
+          ],
+          "dependencies": [
+            "US-002: Exibir histórico de operações na interface"
+          ],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        }
+      ],
+      "summary": {
+        "totalStories": 3,
+        "totalPoints": 11,
+        "p0Count": 0,
+        "p1Count": 3,
+        "p2Count": 0
+      }
+    }
+  },
+  "a88c3868aed898d6b3fda81428d66547bbcad363e67cab6d97ad5a7925d36f77": {
+    "timestamp": 1765072194928,
+    "data": {
+      "epicId": "EPIC-005",
+      "epicTitle": "Tratamento de Erros",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Exibir mensagem de erro para entradas inválidas",
+          "description": "Como usuário, quero que a calculadora exiba mensagens de erro claras quando eu inserir dados inválidos, para que eu possa corrigir rapidamente o que foi digitado.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Entrada não numérica",
+              "given": "Que estou na tela da calculadora",
+              "when": "Insiro um valor não numérico (ex: 'abc') e clico em Calcular",
+              "then": "O sistema exibe a mensagem 'Entrada inválida. Por favor, insira um número.'"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Entrada vazia",
+              "given": "Que estou na tela da calculadora",
+              "when": "Deixo o campo de entrada vazio e clico em Calcular",
+              "then": "O sistema exibe a mensagem 'Campo obrigatório. Por favor, insira um número.'"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Número fora do intervalo permitido",
+              "given": "Que estou na tela da calculadora",
+              "when": "Insiro um número muito grande (ex: 1e+100) e clico em Calcular",
+              "then": "O sistema exibe a mensagem 'Número fora do intervalo permitido. Por favor, insira um número menor.'"
+            }
+          ],
+          "technicalNotes": [
+            "Validar entradas no frontend e backend.",
+            "Utilizar mensagens de erro padronizadas para consistência."
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        },
+        {
+          "id": "US-002",
+          "title": "Tratar erro de divisão por zero",
+          "description": "Como usuário, quero que a calculadora trate a divisão por zero de forma amigável, para que eu não fique confuso com erros inesperados.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Divisão por zero",
+              "given": "Que estou na tela da calculadora",
+              "when": "Insiro um número (ex: 10) e zero como divisor (ex: 0) e clico em Calcular",
+              "then": "O sistema exibe a mensagem 'Erro: Divisão por zero não é permitida.'"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Divisão por zero com entrada inválida",
+              "given": "Que estou na tela da calculadora",
+              "when": "Insiro um número não numérico como divisor (ex: 'abc') e clico em Calcular",
+              "then": "O sistema exibe a mensagem 'Entrada inválida. Por favor, insira um número.'"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar tratamento de exceção para divisão por zero.",
+            "As mensagens de erro devem ser exibidas em um modal ou área de erro visível."
+          ],
+          "dependencies": [
+            "US-001: Exibir mensagem de erro para entradas inválidas"
+          ],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        },
+        {
+          "id": "US-003",
+          "title": "Garantir que a calculadora não quebre com entradas inesperadas",
+          "description": "Como usuário, quero que a calculadora continue funcionando mesmo se eu inserir dados inesperados, para que eu não perca a experiência de uso.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-003-01",
+              "scenario": "Entrada inesperada",
+              "given": "Que estou na tela da calculadora",
+              "when": "Insiro um valor inesperado (ex: null) e clico em Calcular",
+              "then": "O sistema não falha e exibe a mensagem 'Entrada inválida. Por favor, insira um número.'"
+            },
+            {
+              "id": "AC-003-02",
+              "scenario": "Erro de sistema",
+              "given": "Que estou na tela da calculadora",
+              "when": "Ocorre um erro inesperado no sistema durante o cálculo",
+              "then": "O sistema exibe a mensagem 'Ocorreu um erro inesperado. Tente novamente mais tarde.'"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar um mecanismo de captura de erros (try-catch) para evitar falhas.",
+            "Registrar erros em um log para análise posterior."
+          ],
+          "dependencies": [
+            "US-001: Exibir mensagem de erro para entradas inválidas"
+          ],
+          "estimatedPoints": 5,
+          "priority": "P0"
+        }
+      ],
+      "summary": {
+        "totalStories": 3,
+        "totalPoints": 11,
+        "p0Count": 3,
+        "p1Count": 0,
+        "p2Count": 0
+      }
+    }
+  },
+  "ec4fd876cd53bc78926f3eb2f0e97d56c60b5aa063c178e858a5c7319f4a7a16": {
+    "timestamp": 1765073657929,
+    "data": {
+      "summary": "Calculadora simples que realiza as quatro operações básicas (adição, subtração, multiplicação e divisão) e calcula percentuais.",
+      "complexity": {
+        "level": "LOW",
+        "score": 3,
+        "justification": "CRUD simples para operações matemáticas básicas, sem integrações externas ou regras de negócio complexas. Funcionalidade direta e fácil de implementar."
+      },
+      "coreEntities": [
+        "Calculadora",
+        "Operação",
+        "Resultado"
+      ],
+      "implicitRequirements": [
+        "Validação de entradas para evitar erros de cálculo.",
+        "Histórico de operações realizadas pelo usuário.",
+        "Possibilidade de reiniciar a calculadora sem necessidade de recarregar a página."
+      ],
+      "assumptions": [
+        "A calculadora deve aceitar entradas numéricas válidas.",
+        "Divisão por zero deve ser tratada com uma mensagem de erro.",
+        "Os percentuais devem ser calculados em relação a um valor base fornecido pelo usuário.",
+        "Interface deve ser amigável e intuitiva para o usuário."
+      ]
+    }
+  },
+  "b4ac8b05756b83f79828a855b0abdb37810d51d4b7faa946d49c2e8e700b554b": {
+    "timestamp": 1765073678935,
+    "data": {
+      "productVision": "Uma calculadora simples e intuitiva que permite aos usuários realizar operações matemáticas básicas e calcular percentuais de forma rápida e eficiente.",
+      "epics": [
+        {
+          "id": "EPIC-001",
+          "title": "Operações Básicas",
+          "category": "CORE",
+          "context": "As operações básicas (adição, subtração, multiplicação e divisão) são essenciais para a funcionalidade da calculadora.",
+          "requirements": [
+            "Implementar funções para adição, subtração, multiplicação e divisão.",
+            "Validar entradas para garantir que sejam números válidos.",
+            "Exibir resultados de forma clara e legível."
+          ],
+          "acceptanceCriteria": [
+            "Usuário consegue realizar operações básicas com dois números.",
+            "Resultados são exibidos corretamente para cada operação.",
+            "Divisão por zero retorna uma mensagem de erro apropriada."
+          ],
+          "priority": "P0",
+          "estimatedComplexity": "LOW"
+        },
+        {
+          "id": "EPIC-002",
+          "title": "Cálculo de Percentuais",
+          "category": "CORE",
+          "context": "O cálculo de percentuais é uma funcionalidade importante que permite aos usuários entender proporções em relação a um valor base.",
+          "requirements": [
+            "Implementar função para calcular percentuais com base em um valor fornecido.",
+            "Permitir que o usuário insira um valor base e um percentual a ser calculado.",
+            "Exibir o resultado do cálculo de forma clara."
+          ],
+          "acceptanceCriteria": [
+            "Usuário consegue calcular percentuais a partir de um valor base.",
+            "Resultados de percentuais são exibidos corretamente.",
+            "Validações garantem que entradas não numéricas sejam tratadas com erro."
+          ],
+          "priority": "P0",
+          "estimatedComplexity": "LOW"
+        },
+        {
+          "id": "EPIC-003",
+          "title": "Histórico de Operações",
+          "category": "CORE",
+          "context": "Manter um histórico das operações realizadas permite que os usuários revisitem cálculos anteriores.",
+          "requirements": [
+            "Implementar funcionalidade para armazenar e exibir histórico de operações.",
+            "Permitir que o usuário visualize as operações realizadas em uma sessão.",
+            "Oferecer opção para limpar o histórico."
+          ],
+          "acceptanceCriteria": [
+            "Histórico exibe todas as operações realizadas na sessão atual.",
+            "Usuário consegue limpar o histórico com um botão.",
+            "Histórico é mantido enquanto a página não for recarregada."
+          ],
+          "priority": "P1",
+          "estimatedComplexity": "LOW"
+        },
+        {
+          "id": "EPIC-004",
+          "title": "Interface do Usuário",
+          "category": "ADMIN",
+          "context": "Uma interface amigável e intuitiva é crucial para a experiência do usuário ao utilizar a calculadora.",
+          "requirements": [
+            "Desenvolver uma interface gráfica simples e responsiva.",
+            "Incluir botões para cada operação e campo de entrada para números.",
+            "Garantir que a interface seja acessível e fácil de usar."
+          ],
+          "acceptanceCriteria": [
+            "Interface carrega rapidamente e é responsiva em dispositivos móveis.",
+            "Usuário consegue realizar operações sem dificuldades na interface.",
+            "Elementos da interface são claramente rotulados e intuitivos."
+          ],
+          "priority": "P1",
+          "estimatedComplexity": "LOW"
+        },
+        {
+          "id": "EPIC-005",
+          "title": "Validação de Entradas",
+          "category": "AUTH & SECURITY",
+          "context": "A validação de entradas é essencial para evitar erros de cálculo e garantir a integridade dos dados.",
+          "requirements": [
+            "Implementar validações para entradas numéricas.",
+            "Exibir mensagens de erro claras para entradas inválidas.",
+            "Garantir que a calculadora não execute operações com entradas inválidas."
+          ],
+          "acceptanceCriteria": [
+            "Mensagens de erro são exibidas para entradas não numéricas.",
+            "Operações não são realizadas se as entradas forem inválidas.",
+            "Validações são testadas e funcionam conforme esperado."
+          ],
+          "priority": "P0",
+          "estimatedComplexity": "LOW"
+        }
+      ],
+      "outOfScope": [
+        "Integração com serviços externos para cálculos avançados.",
+        "Funcionalidades de compartilhamento de resultados.",
+        "Armazenamento persistente do histórico entre sessões."
+      ],
+      "risks": [
+        {
+          "description": "Entradas inválidas podem causar erros de cálculo.",
+          "mitigation": "Implementar validações rigorosas para todas as entradas."
+        },
+        {
+          "description": "A interface pode não ser intuitiva para todos os usuários.",
+          "mitigation": "Realizar testes de usabilidade com usuários reais antes do lançamento."
+        }
+      ]
+    }
+  },
+  "9949701b80c573066c6de27ff56415f5e9dd33c927282080079a75a896217b23": {
+    "timestamp": 1765073702820,
+    "data": {
+      "architectureStyle": "Clean Architecture com Modular Monolith",
+      "stack": {
+        "runtime": "Node.js 20 LTS",
+        "language": "TypeScript 5.x (strict mode)",
+        "framework": "Fastify 4.x",
+        "testing": "Vitest + Supertest",
+        "documentation": "OpenAPI/Swagger",
+        "orm": "Prisma 5.x",
+        "database": "SQLite 3",
+        "cache": "Redis 7",
+        "queue": "BullMQ"
+      },
+      "diagram": "graph TD; Client-->API[Fastify API]; API-->App[Application Layer]; App-->Domain[Domain Layer]; App-->Infra[Infrastructure]; Infra-->DB[(SQLite)]; Infra-->Redis; Infra-->Queue;",
+      "manifest": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "purpose": "Pipeline de CI",
+          "criticality": "HIGH",
+          "category": "DEVOPS"
+        },
+        {
+          "path": "docker/Dockerfile.api",
+          "purpose": "Build otimizado",
+          "criticality": "HIGH",
+          "category": "DEVOPS"
+        },
+        {
+          "path": "docker/docker-compose.yml",
+          "purpose": "Ambiente local",
+          "criticality": "MEDIUM",
+          "category": "DEVOPS"
+        },
+        {
+          "path": "src/config/env.ts",
+          "purpose": "Validação de env vars com Zod",
+          "criticality": "HIGH",
+          "category": "CONFIG"
+        },
+        {
+          "path": "src/domain/entities/Calculator.ts",
+          "purpose": "Entidade Calculator com regras",
+          "criticality": "HIGH",
+          "category": "DOMAIN"
+        },
+        {
+          "path": "src/domain/entities/Operation.ts",
+          "purpose": "Entidade Operation para operações matemáticas",
+          "criticality": "HIGH",
+          "category": "DOMAIN"
+        },
+        {
+          "path": "src/domain/entities/Result.ts",
+          "purpose": "Entidade Result para armazenar resultados",
+          "criticality": "HIGH",
+          "category": "DOMAIN"
+        },
+        {
+          "path": "src/domain/repositories/IOperationRepository.ts",
+          "purpose": "Port para persistência do histórico",
+          "criticality": "HIGH",
+          "category": "DOMAIN"
+        },
+        {
+          "path": "src/application/use-cases/CalculateOperationUseCase.ts",
+          "purpose": "Orquestração do cálculo de operações",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/application/use-cases/CalculatePercentageUseCase.ts",
+          "purpose": "Orquestração do cálculo de percentual",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/application/use-cases/GetOperationHistoryUseCase.ts",
+          "purpose": "Recuperação do histórico de operações",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/infrastructure/database/repositories/SQLiteOperationRepository.ts",
+          "purpose": "Impl do repositório para histórico",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "src/infrastructure/http/controllers/CalculatorController.ts",
+          "purpose": "Controller REST para operações da calculadora",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "src/infrastructure/http/routes/index.ts",
+          "purpose": "Rotas da API da calculadora",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Composition root e bootstrap",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "tests/unit/domain/entities/Calculator.test.ts",
+          "purpose": "Teste unitário da entidade Calculator",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "tests/unit/application/use-cases/CalculateOperationUseCase.test.ts",
+          "purpose": "Teste unitário do caso de uso de cálculo de operações",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "tests/unit/application/use-cases/CalculatePercentageUseCase.test.ts",
+          "purpose": "Teste unitário do caso de uso de cálculo de percentual",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "tests/unit/application/use-cases/GetOperationHistoryUseCase.test.ts",
+          "purpose": "Teste unitário do caso de uso de recuperação do histórico",
+          "criticality": "MEDIUM",
+          "category": "TESTS"
+        },
+        {
+          "path": "tests/e2e/calculator.test.ts",
+          "purpose": "Teste E2E do fluxo da calculadora",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Dependências",
+          "criticality": "HIGH",
+          "category": "CONFIG"
+        },
+        {
+          "path": "README.md",
+          "purpose": "Documentação",
+          "criticality": "MEDIUM",
+          "category": "DOCS"
+        },
+        {
+          "path": ".env.example",
+          "purpose": "Exemplo de variáveis de ambiente",
+          "criticality": "MEDIUM",
+          "category": "CONFIG"
+        },
+        {
+          "path": "tsconfig.json",
+          "purpose": "Configuração do TypeScript",
+          "criticality": "HIGH",
+          "category": "CONFIG"
+        },
+        {
+          "path": ".eslintrc.json",
+          "purpose": "Configuração do ESLint",
+          "criticality": "HIGH",
+          "category": "CONFIG"
+        }
+      ],
+      "keyDecisions": [
+        {
+          "decision": "Fastify over Express",
+          "rationale": "3x mais rápido, schema validation nativo"
+        },
+        {
+          "decision": "SQLite over PostgreSQL",
+          "rationale": "Simplicidade para um projeto de baixa complexidade"
+        }
+      ],
+      "securityConsiderations": [
+        "Validação rigorosa de entradas",
+        "Tratamento de erros para entradas inválidas"
+      ],
+      "scalabilityPath": [
+        "Monolito modular -> Microservices se necessário"
+      ]
+    }
+  },
+  "af41901ec6bf023f8d76947844b1a9a430349dc68ccdf1e7345b7234d1b1a4f2": {
+    "timestamp": 1765073734351,
+    "data": {
+      "epicId": "EPIC-001",
+      "epicTitle": "Operações Básicas",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Implementar função de adição",
+          "description": "Como usuário, quero realizar a operação de adição, para que eu possa somar dois números e obter o resultado.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Adição de dois números válidos",
+              "given": "Que eu tenho os números 5 e 3",
+              "when": "Eu realizo a operação de adição",
+              "then": "O sistema exibe o resultado '8' de forma clara"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Adição com entrada inválida",
+              "given": "Que eu informo um número inválido (ex: 'abc')",
+              "when": "Eu tento realizar a operação de adição",
+              "then": "O sistema exibe mensagem de erro 'Entrada inválida. Por favor, insira números válidos.'"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Adição de números negativos",
+              "given": "Que eu tenho os números -5 e -3",
+              "when": "Eu realizo a operação de adição",
+              "then": "O sistema exibe o resultado '-8' de forma clara"
+            }
+          ],
+          "technicalNotes": [
+            "Função: add(a, b) que retorna a + b",
+            "Validar se a e b são números antes de realizar a operação"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        },
+        {
+          "id": "US-002",
+          "title": "Implementar função de subtração",
+          "description": "Como usuário, quero realizar a operação de subtração, para que eu possa subtrair um número de outro e obter o resultado.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Subtração de dois números válidos",
+              "given": "Que eu tenho os números 10 e 4",
+              "when": "Eu realizo a operação de subtração",
+              "then": "O sistema exibe o resultado '6' de forma clara"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Subtração com entrada inválida",
+              "given": "Que eu informo um número inválido (ex: 'xyz')",
+              "when": "Eu tento realizar a operação de subtração",
+              "then": "O sistema exibe mensagem de erro 'Entrada inválida. Por favor, insira números válidos.'"
+            },
+            {
+              "id": "AC-002-03",
+              "scenario": "Subtração resultando em número negativo",
+              "given": "Que eu tenho os números 3 e 5",
+              "when": "Eu realizo a operação de subtração",
+              "then": "O sistema exibe o resultado '-2' de forma clara"
+            }
+          ],
+          "technicalNotes": [
+            "Função: subtract(a, b) que retorna a - b",
+            "Validar se a e b são números antes de realizar a operação"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        },
+        {
+          "id": "US-003",
+          "title": "Implementar função de multiplicação",
+          "description": "Como usuário, quero realizar a operação de multiplicação, para que eu possa multiplicar dois números e obter o resultado.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-003-01",
+              "scenario": "Multiplicação de dois números válidos",
+              "given": "Que eu tenho os números 4 e 5",
+              "when": "Eu realizo a operação de multiplicação",
+              "then": "O sistema exibe o resultado '20' de forma clara"
+            },
+            {
+              "id": "AC-003-02",
+              "scenario": "Multiplicação com entrada inválida",
+              "given": "Que eu informo um número inválido (ex: '123abc')",
+              "when": "Eu tento realizar a operação de multiplicação",
+              "then": "O sistema exibe mensagem de erro 'Entrada inválida. Por favor, insira números válidos.'"
+            },
+            {
+              "id": "AC-003-03",
+              "scenario": "Multiplicação por zero",
+              "given": "Que eu tenho os números 0 e 10",
+              "when": "Eu realizo a operação de multiplicação",
+              "then": "O sistema exibe o resultado '0' de forma clara"
+            }
+          ],
+          "technicalNotes": [
+            "Função: multiply(a, b) que retorna a * b",
+            "Validar se a e b são números antes de realizar a operação"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        },
+        {
+          "id": "US-004",
+          "title": "Implementar função de divisão",
+          "description": "Como usuário, quero realizar a operação de divisão, para que eu possa dividir um número por outro e obter o resultado.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-004-01",
+              "scenario": "Divisão de dois números válidos",
+              "given": "Que eu tenho os números 10 e 2",
+              "when": "Eu realizo a operação de divisão",
+              "then": "O sistema exibe o resultado '5' de forma clara"
+            },
+            {
+              "id": "AC-004-02",
+              "scenario": "Divisão por zero",
+              "given": "Que eu tenho o número 10 e 0",
+              "when": "Eu realizo a operação de divisão",
+              "then": "O sistema exibe mensagem de erro 'Divisão por zero não é permitida.'"
+            },
+            {
+              "id": "AC-004-03",
+              "scenario": "Divisão com entrada inválida",
+              "given": "Que eu informo um número inválido (ex: 'abc')",
+              "when": "Eu tento realizar a operação de divisão",
+              "then": "O sistema exibe mensagem de erro 'Entrada inválida. Por favor, insira números válidos.'"
+            }
+          ],
+          "technicalNotes": [
+            "Função: divide(a, b) que retorna a / b",
+            "Validar se a e b são números antes de realizar a operação",
+            "Tratar caso de divisão por zero"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 5,
+          "priority": "P0"
+        }
+      ],
+      "summary": {
+        "totalStories": 4,
+        "totalPoints": 14,
+        "p0Count": 4,
+        "p1Count": 0,
+        "p2Count": 0
+      }
+    }
+  },
+  "49695f90c788cf0b38640c621ef6e90db188889f760d5baf17cc56310c83cce8": {
+    "timestamp": 1765073751638,
+    "data": {
+      "epicId": "EPIC-002",
+      "epicTitle": "Cálculo de Percentuais",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Calcular percentual a partir de valor base",
+          "description": "Como usuário, quero calcular um percentual a partir de um valor base, para entender a proporção em relação a esse valor.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Cálculo com valores válidos",
+              "given": "Que estou na tela de cálculo de percentuais",
+              "when": "Insiro um valor base de 200 e um percentual de 25",
+              "then": "O sistema exibe o resultado '50', que é 25% de 200"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Entrada não numérica no valor base",
+              "given": "Que estou na tela de cálculo de percentuais",
+              "when": "Insiro 'duzentos' como valor base e um percentual de 25",
+              "then": "O sistema exibe erro 'Valor base deve ser numérico'"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Entrada não numérica no percentual",
+              "given": "Que estou na tela de cálculo de percentuais",
+              "when": "Insiro um valor base de 200 e 'vinte e cinco' como percentual",
+              "then": "O sistema exibe erro 'Percentual deve ser numérico'"
+            },
+            {
+              "id": "AC-001-04",
+              "scenario": "Cálculo com percentual zero",
+              "given": "Que estou na tela de cálculo de percentuais",
+              "when": "Insiro um valor base de 200 e um percentual de 0",
+              "then": "O sistema exibe o resultado '0', que é 0% de 200"
+            },
+            {
+              "id": "AC-001-05",
+              "scenario": "Cálculo com percentual acima de 100%",
+              "given": "Que estou na tela de cálculo de percentuais",
+              "when": "Insiro um valor base de 200 e um percentual de 150",
+              "then": "O sistema exibe o resultado '300', que é 150% de 200"
+            }
+          ],
+          "technicalNotes": [
+            "Função: calcularPercentual(valorBase, percentual)",
+            "Validar entradas para garantir que sejam numéricas",
+            "Exibir resultados em um formato claro e legível"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        },
+        {
+          "id": "US-002",
+          "title": "Exibir resultado do cálculo de percentual",
+          "description": "Como usuário, quero que o resultado do cálculo de percentual seja exibido de forma clara, para que eu possa entender facilmente o resultado.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Exibição de resultado após cálculo",
+              "given": "Que calculei 25% de 200",
+              "when": "O cálculo é realizado",
+              "then": "O sistema exibe 'O resultado de 25% de 200 é 50'"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Exibição de erro em caso de entrada inválida",
+              "given": "Que insiro um valor não numérico",
+              "when": "Tento calcular o percentual",
+              "then": "O sistema exibe 'Erro: Valor base deve ser numérico'"
+            }
+          ],
+          "technicalNotes": [
+            "Utilizar componentes de UI para exibir resultados e erros",
+            "Formatar resultados com duas casas decimais"
+          ],
+          "dependencies": [
+            "US-001: Calcular percentual a partir de valor base"
+          ],
+          "estimatedPoints": 2,
+          "priority": "P1"
+        }
+      ],
+      "summary": {
+        "totalStories": 2,
+        "totalPoints": 5,
+        "p0Count": 1,
+        "p1Count": 1,
+        "p2Count": 0
+      }
+    }
+  },
+  "2abfc90fe26802f031261039db9d8e71a5627a32ec48aac0ff1390b879c0f597": {
+    "timestamp": 1765073773625,
+    "data": {
+      "epicId": "EPIC-003",
+      "epicTitle": "Histórico de Operações",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Armazenar operações realizadas na sessão",
+          "description": "Como usuário, quero que as operações realizadas sejam armazenadas durante a sessão, para que eu possa revisitar os cálculos feitos.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Armazenar operação válida",
+              "given": "Que realizei uma operação de soma (5 + 3)",
+              "when": "A operação é concluída",
+              "then": "O sistema armazena a operação no histórico com os valores e o resultado"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Visualizar histórico após várias operações",
+              "given": "Que realizei as operações 5 + 3 e 10 - 2",
+              "when": "Acesso o histórico de operações",
+              "then": "O sistema exibe as operações: '5 + 3 = 8' e '10 - 2 = 8'"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Histórico vazio ao iniciar a sessão",
+              "given": "Que estou na página da calculadora sem realizar operações",
+              "when": "Acesso o histórico de operações",
+              "then": "O sistema exibe mensagem 'Nenhuma operação realizada ainda'"
+            }
+          ],
+          "technicalNotes": [
+            "Utilizar um array em memória para armazenar as operações durante a sessão",
+            "Cada operação deve incluir: tipo, operandos e resultado"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-002",
+          "title": "Exibir histórico de operações",
+          "description": "Como usuário, quero visualizar o histórico das operações realizadas, para que eu possa revisar os cálculos feitos.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Exibir histórico com operações realizadas",
+              "given": "Que realizei operações de soma e subtração",
+              "when": "Acesso a aba de histórico",
+              "then": "O sistema exibe todas as operações realizadas na sessão atual"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Histórico exibe operações em ordem cronológica",
+              "given": "Que realizei as operações 5 + 3 e 10 - 2",
+              "when": "Acesso o histórico",
+              "then": "O sistema exibe as operações na ordem em que foram realizadas"
+            },
+            {
+              "id": "AC-002-03",
+              "scenario": "Histórico não é perdido ao mudar de aba",
+              "given": "Que realizei operações e estou na aba de histórico",
+              "when": "Mudo para a aba de calculadora e volto para a aba de histórico",
+              "then": "O sistema mantém o histórico das operações realizadas"
+            }
+          ],
+          "technicalNotes": [
+            "Renderizar o histórico em uma lista na interface do usuário",
+            "Utilizar um componente reativo para atualizar o histórico em tempo real"
+          ],
+          "dependencies": [
+            "US-001: Armazenar operações realizadas na sessão"
+          ],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-003",
+          "title": "Limpar histórico de operações",
+          "description": "Como usuário, quero ter a opção de limpar o histórico de operações, para que eu possa reiniciar os cálculos sem registros anteriores.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-003-01",
+              "scenario": "Limpar histórico com botão",
+              "given": "Que estou na aba de histórico com operações registradas",
+              "when": "Clico no botão 'Limpar histórico'",
+              "then": "O sistema remove todas as operações do histórico e exibe mensagem 'Histórico limpo'"
+            },
+            {
+              "id": "AC-003-02",
+              "scenario": "Confirmação antes de limpar histórico",
+              "given": "Que estou na aba de histórico",
+              "when": "Clico no botão 'Limpar histórico'",
+              "then": "O sistema exibe um modal de confirmação antes de limpar"
+            },
+            {
+              "id": "AC-003-03",
+              "scenario": "Histórico permanece após cancelamento",
+              "given": "Que estou na aba de histórico",
+              "when": "Clico em 'Limpar histórico' e cancelo a confirmação",
+              "then": "O sistema mantém todas as operações no histórico"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar um botão que chama uma função para limpar o array de operações",
+            "Adicionar modal de confirmação utilizando biblioteca de UI"
+          ],
+          "dependencies": [
+            "US-001: Armazenar operações realizadas na sessão",
+            "US-002: Exibir histórico de operações"
+          ],
+          "estimatedPoints": 2,
+          "priority": "P1"
+        }
+      ],
+      "summary": {
+        "totalStories": 3,
+        "totalPoints": 8,
+        "p0Count": 0,
+        "p1Count": 3,
+        "p2Count": 0
+      }
+    }
+  },
+  "28115ac2c9e7d6a56d8454f5035f7a3d32fef25daf534c64d5ff0f770e35c4c7": {
+    "timestamp": 1765073800798,
+    "data": {
+      "epicId": "EPIC-004",
+      "epicTitle": "Interface do Usuário",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Desenvolver interface gráfica responsiva para a calculadora",
+          "description": "Como desenvolvedor, quero criar uma interface gráfica responsiva para a calculadora, para que os usuários possam utilizá-la em diferentes dispositivos sem problemas.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Interface carrega rapidamente em desktop",
+              "given": "Que estou acessando a calculadora em um desktop",
+              "when": "A página da calculadora é carregada",
+              "then": "A interface deve ser exibida em menos de 2 segundos"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Interface carrega rapidamente em dispositivos móveis",
+              "given": "Que estou acessando a calculadora em um dispositivo móvel",
+              "when": "A página da calculadora é carregada",
+              "then": "A interface deve ser exibida em menos de 2 segundos"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Interface é responsiva",
+              "given": "Que estou utilizando a calculadora em diferentes tamanhos de tela",
+              "when": "Redimensiono a janela do navegador ou mudo a orientação do dispositivo",
+              "then": "A interface deve se ajustar corretamente sem perda de funcionalidade"
+            }
+          ],
+          "technicalNotes": [
+            "Utilizar CSS Flexbox ou Grid para layout responsivo",
+            "Testar em diferentes navegadores e dispositivos",
+            "Incluir media queries para ajustes específicos"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-002",
+          "title": "Adicionar botões para operações da calculadora",
+          "description": "Como usuário, quero ter botões para cada operação da calculadora, para que eu possa realizar cálculos facilmente.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Botões de operações visíveis",
+              "given": "Que estou na interface da calculadora",
+              "when": "A interface é carregada",
+              "then": "Todos os botões de operações (adição, subtração, multiplicação, divisão) devem estar visíveis e acessíveis"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Botões funcionam corretamente",
+              "given": "Que estou na interface da calculadora",
+              "when": "Clico no botão de adição e insiro números",
+              "then": "A operação de adição deve ser realizada corretamente e o resultado exibido"
+            },
+            {
+              "id": "AC-002-03",
+              "scenario": "Botões são claramente rotulados",
+              "given": "Que estou na interface da calculadora",
+              "when": "Visualizo os botões",
+              "then": "Todos os botões devem ter rótulos claros e intuitivos"
+            }
+          ],
+          "technicalNotes": [
+            "Utilizar eventos de clique para cada botão",
+            "Implementar lógica de operações no backend",
+            "Garantir que os botões sejam acessíveis via teclado"
+          ],
+          "dependencies": [
+            "US-001: Desenvolver interface gráfica responsiva"
+          ],
+          "estimatedPoints": 5,
+          "priority": "P1"
+        },
+        {
+          "id": "US-003",
+          "title": "Criar campo de entrada para números",
+          "description": "Como usuário, quero ter um campo de entrada para inserir números, para que eu possa realizar cálculos na calculadora.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-003-01",
+              "scenario": "Campo de entrada visível",
+              "given": "Que estou na interface da calculadora",
+              "when": "A interface é carregada",
+              "then": "O campo de entrada para números deve estar visível e acessível"
+            },
+            {
+              "id": "AC-003-02",
+              "scenario": "Campo aceita apenas números",
+              "given": "Que estou na interface da calculadora",
+              "when": "Tento inserir texto no campo de entrada",
+              "then": "O sistema deve rejeitar a entrada e não permitir caracteres não numéricos"
+            },
+            {
+              "id": "AC-003-03",
+              "scenario": "Campo de entrada é acessível",
+              "given": "Que estou na interface da calculadora",
+              "when": "Utilizo o teclado para navegar",
+              "then": "Devo conseguir focar e inserir números no campo de entrada usando apenas o teclado"
+            }
+          ],
+          "technicalNotes": [
+            "Utilizar input type='number' para o campo de entrada",
+            "Implementar validação de entrada no frontend",
+            "Adicionar placeholders para instruções de uso"
+          ],
+          "dependencies": [
+            "US-001: Desenvolver interface gráfica responsiva"
+          ],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-004",
+          "title": "Garantir acessibilidade da interface da calculadora",
+          "description": "Como desenvolvedor, quero garantir que a interface da calculadora seja acessível, para que todos os usuários possam utilizá-la sem dificuldades.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-004-01",
+              "scenario": "Interface atende diretrizes de acessibilidade",
+              "given": "Que estou na interface da calculadora",
+              "when": "Utilizo ferramentas de acessibilidade",
+              "then": "A interface deve atender ao WCAG 2.1 nível AA"
+            },
+            {
+              "id": "AC-004-02",
+              "scenario": "Elementos interativos têm rótulos acessíveis",
+              "given": "Que estou na interface da calculadora",
+              "when": "Visualizo os botões e campos",
+              "then": "Todos os elementos interativos devem ter rótulos acessíveis para leitores de tela"
+            },
+            {
+              "id": "AC-004-03",
+              "scenario": "Navegação por teclado é funcional",
+              "given": "Que estou na interface da calculadora",
+              "when": "Utilizo apenas o teclado para navegar",
+              "then": "Devo conseguir acessar todos os elementos interativos sem usar o mouse"
+            }
+          ],
+          "technicalNotes": [
+            "Utilizar ARIA roles e labels onde necessário",
+            "Testar com leitores de tela",
+            "Garantir contraste adequado entre texto e fundo"
+          ],
+          "dependencies": [
+            "US-001: Desenvolver interface gráfica responsiva"
+          ],
+          "estimatedPoints": 5,
+          "priority": "P1"
+        }
+      ],
+      "summary": {
+        "totalStories": 4,
+        "totalPoints": 16,
+        "p0Count": 0,
+        "p1Count": 4,
+        "p2Count": 0
+      }
+    }
+  },
+  "d724484d11fa44e323c7128f06c0285e858cc0cb536f5947fd2d89444a596581": {
+    "timestamp": 1765073825006,
+    "data": {
+      "epicId": "EPIC-005",
+      "epicTitle": "Validação de Entradas",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Validar entrada numérica na calculadora",
+          "description": "Como usuário, quero que a calculadora valide se a entrada é numérica, para evitar erros de cálculo.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Entrada válida",
+              "given": "Que estou na tela da calculadora",
+              "when": "Insiro o número 10",
+              "then": "O sistema aceita a entrada e permite prosseguir com a operação"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Entrada não numérica",
+              "given": "Que estou na tela da calculadora",
+              "when": "Insiro o texto 'dez'",
+              "then": "O sistema exibe mensagem de erro 'Entrada inválida. Por favor, insira um número.'"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Entrada vazia",
+              "given": "Que estou na tela da calculadora",
+              "when": "Deixo o campo de entrada vazio",
+              "then": "O sistema exibe mensagem de erro 'Campo obrigatório. Por favor, insira um número.'"
+            },
+            {
+              "id": "AC-001-04",
+              "scenario": "Entrada com caracteres especiais",
+              "given": "Que estou na tela da calculadora",
+              "when": "Insiro o texto '10@'",
+              "then": "O sistema exibe mensagem de erro 'Entrada inválida. Por favor, insira um número.'"
+            }
+          ],
+          "technicalNotes": [
+            "Validar entrada usando regex para permitir apenas números e ponto decimal",
+            "Exibir mensagens de erro em um componente de alerta na interface"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        },
+        {
+          "id": "US-002",
+          "title": "Impedir operações com entradas inválidas",
+          "description": "Como usuário, quero que a calculadora não execute operações se as entradas forem inválidas, para garantir resultados corretos.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Tentativa de operação com entrada inválida",
+              "given": "Que estou na tela da calculadora",
+              "when": "Insiro 'dez' e clico em 'Somar'",
+              "then": "O sistema não realiza a operação e exibe mensagem 'Entrada inválida. Por favor, insira um número.'"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Tentativa de operação com entrada vazia",
+              "given": "Que estou na tela da calculadora",
+              "when": "Deixo o campo de entrada vazio e clico em 'Subtrair'",
+              "then": "O sistema não realiza a operação e exibe mensagem 'Campo obrigatório. Por favor, insira um número.'"
+            }
+          ],
+          "technicalNotes": [
+            "Adicionar lógica de verificação antes de executar qualquer operação",
+            "Utilizar um estado para controlar se a entrada é válida ou não"
+          ],
+          "dependencies": [
+            "US-001: Validar entrada numérica na calculadora"
+          ],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        },
+        {
+          "id": "US-003",
+          "title": "Exibir mensagens de erro claras para entradas inválidas",
+          "description": "Como usuário, quero ver mensagens de erro claras quando insiro dados inválidos, para entender o que está errado.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-003-01",
+              "scenario": "Mensagem de erro para entrada não numérica",
+              "given": "Que estou na tela da calculadora",
+              "when": "Insiro 'abc'",
+              "then": "O sistema exibe mensagem de erro 'Entrada inválida. Por favor, insira um número.'"
+            },
+            {
+              "id": "AC-003-02",
+              "scenario": "Mensagem de erro para entrada vazia",
+              "given": "Que estou na tela da calculadora",
+              "when": "Deixo o campo vazio",
+              "then": "O sistema exibe mensagem de erro 'Campo obrigatório. Por favor, insira um número.'"
+            },
+            {
+              "id": "AC-003-03",
+              "scenario": "Mensagem de erro para caracteres especiais",
+              "given": "Que estou na tela da calculadora",
+              "when": "Insiro '10@'",
+              "then": "O sistema exibe mensagem de erro 'Entrada inválida. Por favor, insira um número.'"
+            }
+          ],
+          "technicalNotes": [
+            "Utilizar um componente de alerta para exibir mensagens de erro",
+            "As mensagens devem ser localizáveis para suportar múltiplos idiomas"
+          ],
+          "dependencies": [
+            "US-001: Validar entrada numérica na calculadora"
+          ],
+          "estimatedPoints": 2,
+          "priority": "P0"
+        }
+      ],
+      "summary": {
+        "totalStories": 3,
+        "totalPoints": 8,
+        "p0Count": 3,
+        "p1Count": 0,
+        "p2Count": 0
+      }
+    }
+  },
+  "fe29cc554d278294f595cac9db6b6a63d19c9d46fafb4aa34a536fff32ca16c5": {
+    "timestamp": 1765145231748,
+    "data": {
+      "summary": "Aplicação web interativa para simulação e visualização de operações em estruturas de dados, visando facilitar o aprendizado de estudantes de programação. A ferramenta resolve a dificuldade dos alunos em compreender o funcionamento interno das estruturas de dados, permitindo que visualizem cada passo das operações de forma didática e animada.",
+      "complexity": {
+        "level": "HIGH",
+        "score": 9,
+        "justification": "A aplicação envolve múltiplas estruturas de dados com animações complexas e interatividade, além de integração de lógica de simulação e visualização. A necessidade de animações fluidas e responsivas, juntamente com a implementação de diversos métodos para cada estrutura, aumenta a complexidade do projeto."
+      },
+      "coreEntities": [
+        "Vetor",
+        "Lista Ligada Simples",
+        "Lista Duplamente Ligada",
+        "Árvore Binária de Busca",
+        "Grafo"
+      ],
+      "implicitRequirements": [
+        "Sistema de autenticação para salvar progresso do usuário (opcional).",
+        "Feedback visual para erros de entrada e operações inválidas.",
+        "Documentação clara e acessível para cada estrutura de dados e suas operações.",
+        "Possibilidade de exportar o histórico de operações para estudo posterior."
+      ],
+      "assumptions": [
+        "Os usuários têm conhecimento básico de programação e estruturas de dados.",
+        "A aplicação deve ser responsiva e funcionar em dispositivos móveis.",
+        "As animações devem ser intuitivas e não sobrecarregar o usuário com informações.",
+        "Os dados de entrada devem ser validados antes de serem processados."
+      ]
+    }
+  },
+  "e5292ee75cd4347771f44a0cac67cd012a376c49c74acf274d32dffc4b672426": {
+    "timestamp": 1765145254141,
+    "data": {
+      "productVision": "Uma aplicação web interativa que permite a estudantes visualizar e entender o funcionamento interno de estruturas de dados através de simulações animadas e didáticas.",
+      "epics": [
+        {
+          "id": "EPIC-001",
+          "title": "Simulação de Estruturas de Dados",
+          "category": "CORE",
+          "context": "A aplicação deve permitir que os usuários visualizem operações em diferentes estruturas de dados de forma interativa e animada.",
+          "requirements": [
+            "Implementar simulações passo a passo para cada estrutura de dados.",
+            "Permitir que o usuário controle a animação (play, pause, voltar, avançar).",
+            "Incluir um controle de velocidade da animação.",
+            "Registrar um histórico de operações realizadas durante a simulação.",
+            "Sincronizar a visualização de pseudocódigo com a animação."
+          ],
+          "acceptanceCriteria": [
+            "Usuário consegue iniciar, pausar e reiniciar a simulação facilmente.",
+            "A animação é fluida e responsiva em diferentes dispositivos.",
+            "O histórico de operações é exibido corretamente após cada ação."
+          ],
+          "priority": "P0",
+          "estimatedComplexity": "HIGH"
+        },
+        {
+          "id": "EPIC-002",
+          "title": "Implementação de Estruturas de Dados",
+          "category": "CORE",
+          "context": "A aplicação deve suportar múltiplas estruturas de dados, cada uma com suas operações específicas.",
+          "requirements": [
+            "Implementar Vetor (Array) com operações como inserir, remover, buscar, atualizar, limpar, obter tamanho, percorrer, inverter, ordenar e concatenação.",
+            "Implementar Lista Ligada Simples com operações como inserir, remover, buscar, atualizar, limpar, obter tamanho, percorrer, inverter e concatenar.",
+            "Implementar Lista Duplamente Ligada com operações semelhantes às listas simples, além de percursos em ambas as direções.",
+            "Implementar Árvores (ex: Árvore Binária de Busca) com operações como inserção, remoção, busca, percurso em ordem, e balanceamento.",
+            "Implementar Grafos com operações como BFS, DFS, Dijkstra, Prim, e manipulação de arestas."
+          ],
+          "acceptanceCriteria": [
+            "Cada estrutura de dados deve ser testada com casos típicos e de borda.",
+            "As operações devem ser executadas corretamente e refletidas na visualização.",
+            "A interface deve permitir a seleção da estrutura de dados e operação desejada."
+          ],
+          "priority": "P0",
+          "estimatedComplexity": "HIGH"
+        },
+        {
+          "id": "EPIC-003",
+          "title": "Interface e Experiência do Usuário",
+          "category": "CORE",
+          "context": "A interface deve ser intuitiva e didática, facilitando o aprendizado dos usuários.",
+          "requirements": [
+            "Organizar a UI em abas ou seções para cada estrutura de dados.",
+            "Incluir área de visualização com animação, controles para operações, painel de pseudocódigo e log de operações.",
+            "Garantir que a interface seja responsiva e amigável em diferentes tamanhos de tela.",
+            "Utilizar cores consistentes e feedback visual para erros e sucessos."
+          ],
+          "acceptanceCriteria": [
+            "A interface deve ser navegável e intuitiva para novos usuários.",
+            "As animações devem ser claras e não sobrecarregar o usuário com informações.",
+            "O layout deve se adaptar a diferentes dispositivos sem perda de funcionalidade."
+          ],
+          "priority": "P1",
+          "estimatedComplexity": "HIGH"
+        },
+        {
+          "id": "EPIC-004",
+          "title": "Animações e Visualização",
+          "category": "OBSERVABILITY",
+          "context": "As animações devem ser fluidas e didáticas, ajudando os usuários a entenderem as operações.",
+          "requirements": [
+            "Utilizar bibliotecas como Framer Motion ou GSAP para animações.",
+            "Destacar nós e arestas durante as operações com animações visuais.",
+            "Sincronizar animações com a execução do pseudocódigo."
+          ],
+          "acceptanceCriteria": [
+            "As animações devem ser suaves e responsivas.",
+            "Os elementos destacados devem ser claramente visíveis durante as operações.",
+            "A sincronização entre animação e pseudocódigo deve ser precisa."
+          ],
+          "priority": "P1",
+          "estimatedComplexity": "HIGH"
+        },
+        {
+          "id": "EPIC-005",
+          "title": "Testes e Qualidade de Código",
+          "category": "INFRASTRUCTURE",
+          "context": "Garantir que a aplicação seja robusta e livre de bugs através de testes adequados.",
+          "requirements": [
+            "Incluir testes unitários para a lógica das estruturas de dados usando Vitest ou Jest.",
+            "Cobrir casos típicos e de borda nas operações das estruturas.",
+            "Implementar testes de interação simples para componentes de UI."
+          ],
+          "acceptanceCriteria": [
+            "Todos os testes devem passar sem falhas.",
+            "A cobertura de testes deve ser documentada e mantida.",
+            "Os testes de UI devem garantir que a interface funcione como esperado."
+          ],
+          "priority": "P0",
+          "estimatedComplexity": "MEDIUM"
+        }
+      ],
+      "outOfScope": [
+        "Sistema de autenticação para salvar progresso do usuário - fase 2.",
+        "Exportação do histórico de operações para estudo posterior - fase 2."
+      ],
+      "risks": [
+        {
+          "description": "Animações complexas podem impactar a performance em dispositivos mais fracos.",
+          "mitigation": "Testar a aplicação em diferentes dispositivos e otimizar animações conforme necessário."
+        },
+        {
+          "description": "Dificuldade em manter a sincronização entre animações e pseudocódigo.",
+          "mitigation": "Implementar uma lógica clara para a sincronização e realizar testes rigorosos."
+        }
+      ]
+    }
+  },
+  "b86f26c70e731146b81c8a2ed57b8a80d75a1220cb39e015f64893b9f236e6bc": {
+    "timestamp": 1765145280829,
+    "data": {
+      "architectureStyle": "Aplicação Web Interativa com React e TypeScript",
+      "stack": {
+        "runtime": "Node.js 20 LTS",
+        "language": "TypeScript 5.x (strict mode)",
+        "framework": "React 18+ com Vite",
+        "testing": "Vitest",
+        "documentation": "Markdown",
+        "orm": "N/A",
+        "database": "N/A",
+        "cache": "N/A",
+        "queue": "N/A"
+      },
+      "diagram": "graph TD; User-->UI[Interface do Usuário]; UI-->Control[Controles]; UI-->Visual[Área de Visualização]; Control-->Data[Data Structures]; Data-->Operations[Operações]; Operations-->Animation[Animações]; Animation-->Visual;",
+      "manifest": [
+        {
+          "path": "src/components/ArrayVisualizer.tsx",
+          "purpose": "Componente para visualização de Vetor",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "src/components/LinkedListVisualizer.tsx",
+          "purpose": "Componente para visualização de Lista Ligada Simples",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "src/components/DoublyLinkedListVisualizer.tsx",
+          "purpose": "Componente para visualização de Lista Duplamente Ligada",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "src/components/BinaryTreeVisualizer.tsx",
+          "purpose": "Componente para visualização de Árvore Binária de Busca",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "src/components/GraphVisualizer.tsx",
+          "purpose": "Componente para visualização de Grafos",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "src/data-structures/Array.ts",
+          "purpose": "Implementação da lógica do Vetor",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/data-structures/LinkedList.ts",
+          "purpose": "Implementação da lógica da Lista Ligada Simples",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/data-structures/DoublyLinkedList.ts",
+          "purpose": "Implementação da lógica da Lista Duplamente Ligada",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/data-structures/BinaryTree.ts",
+          "purpose": "Implementação da lógica da Árvore Binária de Busca",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/data-structures/Graph.ts",
+          "purpose": "Implementação da lógica do Grafo",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/hooks/useAnimation.ts",
+          "purpose": "Hook personalizado para controle de animações",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/hooks/useSimulation.ts",
+          "purpose": "Hook para gerenciar a simulação",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/styles/tailwind.config.js",
+          "purpose": "Configuração do Tailwind CSS",
+          "criticality": "HIGH",
+          "category": "CONFIG"
+        },
+        {
+          "path": "src/tests/Array.test.ts",
+          "purpose": "Teste unitário para a lógica do Vetor",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "src/tests/LinkedList.test.ts",
+          "purpose": "Teste unitário para a lógica da Lista Ligada Simples",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "src/tests/DoublyLinkedList.test.ts",
+          "purpose": "Teste unitário para a lógica da Lista Duplamente Ligada",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "src/tests/BinaryTree.test.ts",
+          "purpose": "Teste unitário para a lógica da Árvore Binária de Busca",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "src/tests/Graph.test.ts",
+          "purpose": "Teste unitário para a lógica do Grafo",
+          "criticality": "HIGH",
+          "category": "TESTS"
+        },
+        {
+          "path": "src/App.tsx",
+          "purpose": "Componente principal da aplicação",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "src/index.tsx",
+          "purpose": "Ponto de entrada da aplicação",
+          "criticality": "HIGH",
+          "category": "INFRASTRUCTURE"
+        },
+        {
+          "path": "README.md",
+          "purpose": "Documentação da aplicação",
+          "criticality": "HIGH",
+          "category": "DOCS"
+        }
+      ],
+      "keyDecisions": [
+        {
+          "decision": "React over Vue",
+          "rationale": "Maior comunidade e suporte para animações."
+        },
+        {
+          "decision": "Framer Motion for animations",
+          "rationale": "Facilidade de uso e integração com React."
+        },
+        {
+          "decision": "D3.js for data visualization",
+          "rationale": "Flexibilidade e poder para criar visualizações complexas."
+        }
+      ],
+      "securityConsiderations": [
+        "Validação de entrada do usuário",
+        "Tratamento de erros",
+        "Feedback visual para operações inválidas"
+      ],
+      "scalabilityPath": [
+        "Adicionar mais estruturas de dados e operações",
+        "Implementar sistema de autenticação na fase 2"
+      ]
+    }
+  },
+  "6e9dccf1a3fe09843de5121d5c7bccf182072f8a2fd7f660242359c7f5423753": {
+    "timestamp": 1765145325875,
+    "data": {
+      "epicId": "EPIC-001",
+      "epicTitle": "Simulação de Estruturas de Dados",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Implementar simulação de vetor",
+          "description": "Como usuário, quero visualizar a simulação de operações em um vetor, para entender como funciona essa estrutura de dados.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Iniciar simulação de vetor",
+              "given": "Que estou na tela de simulação de vetor",
+              "when": "Clico em 'Iniciar'",
+              "then": "A simulação começa e as operações são exibidas passo a passo"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Pausar simulação de vetor",
+              "given": "Que a simulação de vetor está em andamento",
+              "when": "Clico em 'Pausar'",
+              "then": "A simulação é pausada e o botão muda para 'Continuar'"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Reiniciar simulação de vetor",
+              "given": "Que a simulação de vetor foi pausada",
+              "when": "Clico em 'Reiniciar'",
+              "then": "A simulação reinicia desde o início"
+            },
+            {
+              "id": "AC-001-04",
+              "scenario": "Controlar velocidade da animação",
+              "given": "Que estou na simulação de vetor",
+              "when": "Ajusto o controle de velocidade para 'Rápido'",
+              "then": "A animação acelera e as operações são exibidas mais rapidamente"
+            },
+            {
+              "id": "AC-001-05",
+              "scenario": "Exibir histórico de operações",
+              "given": "Que a simulação de vetor foi realizada",
+              "when": "Acesso o histórico de operações",
+              "then": "O histórico exibe todas as operações realizadas durante a simulação"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar animação usando Canvas ou SVG",
+            "Utilizar WebSockets para sincronização em tempo real",
+            "Armazenar histórico em um array e exibir em um componente separado"
+          ],
+          "dependencies": [
+            "US-000: Setup inicial do projeto com estrutura de simulação",
+            "Componente de animação configurado"
+          ],
+          "estimatedPoints": 8,
+          "priority": "P0"
+        },
+        {
+          "id": "US-002",
+          "title": "Implementar simulação de lista ligada simples",
+          "description": "Como usuário, quero visualizar a simulação de operações em uma lista ligada simples, para entender como funciona essa estrutura de dados.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Iniciar simulação de lista ligada simples",
+              "given": "Que estou na tela de simulação de lista ligada simples",
+              "when": "Clico em 'Iniciar'",
+              "then": "A simulação começa e as operações são exibidas passo a passo"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Pausar simulação de lista ligada simples",
+              "given": "Que a simulação de lista ligada simples está em andamento",
+              "when": "Clico em 'Pausar'",
+              "then": "A simulação é pausada e o botão muda para 'Continuar'"
+            },
+            {
+              "id": "AC-002-03",
+              "scenario": "Reiniciar simulação de lista ligada simples",
+              "given": "Que a simulação de lista ligada simples foi pausada",
+              "when": "Clico em 'Reiniciar'",
+              "then": "A simulação reinicia desde o início"
+            },
+            {
+              "id": "AC-002-04",
+              "scenario": "Controlar velocidade da animação",
+              "given": "Que estou na simulação de lista ligada simples",
+              "when": "Ajusto o controle de velocidade para 'Lento'",
+              "then": "A animação desacelera e as operações são exibidas mais lentamente"
+            },
+            {
+              "id": "AC-002-05",
+              "scenario": "Exibir histórico de operações",
+              "given": "Que a simulação de lista ligada simples foi realizada",
+              "when": "Acesso o histórico de operações",
+              "then": "O histórico exibe todas as operações realizadas durante a simulação"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar animação usando Canvas ou SVG",
+            "Utilizar WebSockets para sincronização em tempo real",
+            "Armazenar histórico em um array e exibir em um componente separado"
+          ],
+          "dependencies": [
+            "US-001: Implementar simulação de vetor"
+          ],
+          "estimatedPoints": 8,
+          "priority": "P0"
+        },
+        {
+          "id": "US-003",
+          "title": "Implementar simulação de árvore binária de busca",
+          "description": "Como usuário, quero visualizar a simulação de operações em uma árvore binária de busca, para entender como funciona essa estrutura de dados.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-003-01",
+              "scenario": "Iniciar simulação de árvore binária de busca",
+              "given": "Que estou na tela de simulação de árvore binária de busca",
+              "when": "Clico em 'Iniciar'",
+              "then": "A simulação começa e as operações são exibidas passo a passo"
+            },
+            {
+              "id": "AC-003-02",
+              "scenario": "Pausar simulação de árvore binária de busca",
+              "given": "Que a simulação de árvore binária de busca está em andamento",
+              "when": "Clico em 'Pausar'",
+              "then": "A simulação é pausada e o botão muda para 'Continuar'"
+            },
+            {
+              "id": "AC-003-03",
+              "scenario": "Reiniciar simulação de árvore binária de busca",
+              "given": "Que a simulação de árvore binária de busca foi pausada",
+              "when": "Clico em 'Reiniciar'",
+              "then": "A simulação reinicia desde o início"
+            },
+            {
+              "id": "AC-003-04",
+              "scenario": "Controlar velocidade da animação",
+              "given": "Que estou na simulação de árvore binária de busca",
+              "when": "Ajusto o controle de velocidade para 'Médio'",
+              "then": "A animação ajusta a velocidade de exibição das operações"
+            },
+            {
+              "id": "AC-003-05",
+              "scenario": "Exibir histórico de operações",
+              "given": "Que a simulação de árvore binária de busca foi realizada",
+              "when": "Acesso o histórico de operações",
+              "then": "O histórico exibe todas as operações realizadas durante a simulação"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar animação usando Canvas ou SVG",
+            "Utilizar WebSockets para sincronização em tempo real",
+            "Armazenar histórico em um array e exibir em um componente separado"
+          ],
+          "dependencies": [
+            "US-002: Implementar simulação de lista ligada simples"
+          ],
+          "estimatedPoints": 8,
+          "priority": "P0"
+        },
+        {
+          "id": "US-004",
+          "title": "Implementar simulação de grafo",
+          "description": "Como usuário, quero visualizar a simulação de operações em um grafo, para entender como funciona essa estrutura de dados.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-004-01",
+              "scenario": "Iniciar simulação de grafo",
+              "given": "Que estou na tela de simulação de grafo",
+              "when": "Clico em 'Iniciar'",
+              "then": "A simulação começa e as operações são exibidas passo a passo"
+            },
+            {
+              "id": "AC-004-02",
+              "scenario": "Pausar simulação de grafo",
+              "given": "Que a simulação de grafo está em andamento",
+              "when": "Clico em 'Pausar'",
+              "then": "A simulação é pausada e o botão muda para 'Continuar'"
+            },
+            {
+              "id": "AC-004-03",
+              "scenario": "Reiniciar simulação de grafo",
+              "given": "Que a simulação de grafo foi pausada",
+              "when": "Clico em 'Reiniciar'",
+              "then": "A simulação reinicia desde o início"
+            },
+            {
+              "id": "AC-004-04",
+              "scenario": "Controlar velocidade da animação",
+              "given": "Que estou na simulação de grafo",
+              "when": "Ajusto o controle de velocidade para 'Rápido'",
+              "then": "A animação acelera e as operações são exibidas mais rapidamente"
+            },
+            {
+              "id": "AC-004-05",
+              "scenario": "Exibir histórico de operações",
+              "given": "Que a simulação de grafo foi realizada",
+              "when": "Acesso o histórico de operações",
+              "then": "O histórico exibe todas as operações realizadas durante a simulação"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar animação usando Canvas ou SVG",
+            "Utilizar WebSockets para sincronização em tempo real",
+            "Armazenar histórico em um array e exibir em um componente separado"
+          ],
+          "dependencies": [
+            "US-003: Implementar simulação de árvore binária de busca"
+          ],
+          "estimatedPoints": 8,
+          "priority": "P0"
+        }
+      ],
+      "summary": {
+        "totalStories": 4,
+        "totalPoints": 32,
+        "p0Count": 4,
+        "p1Count": 0,
+        "p2Count": 0
+      }
+    }
+  },
+  "73fff635c8e71f2e88a78b6aa0c4685645b24a159b7d6b455fe4543ff966ca4f": {
+    "timestamp": 1765145653600,
+    "data": {
+      "epicId": "EPIC-002",
+      "epicTitle": "Implementação de Estruturas de Dados",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Implementar operações em Vetor (Array)",
+          "description": "Como desenvolvedor, quero implementar operações em Vetor, para que a aplicação suporte manipulação eficiente de dados.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Inserir elemento no vetor",
+              "given": "Que o vetor está vazio",
+              "when": "Insiro o elemento 10",
+              "then": "O vetor contém o elemento 10 e seu tamanho é 1"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Remover elemento do vetor",
+              "given": "Que o vetor contém os elementos [10, 20, 30]",
+              "when": "Removo o elemento 20",
+              "then": "O vetor contém os elementos [10, 30] e seu tamanho é 2"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Buscar elemento no vetor",
+              "given": "Que o vetor contém os elementos [10, 20, 30]",
+              "when": "Busco o elemento 20",
+              "then": "O sistema retorna a posição 1"
+            },
+            {
+              "id": "AC-001-04",
+              "scenario": "Ordenar vetor",
+              "given": "Que o vetor contém os elementos [30, 10, 20]",
+              "when": "Ordeno o vetor",
+              "then": "O vetor é [10, 20, 30]"
+            },
+            {
+              "id": "AC-001-05",
+              "scenario": "Concatenar dois vetores",
+              "given": "Que o vetor A contém [1, 2] e o vetor B contém [3, 4]",
+              "when": "Concateno A e B",
+              "then": "O vetor resultante é [1, 2, 3, 4]"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar classe Array com métodos: insert(), remove(), search(), update(), clear(), size(), traverse(), reverse(), sort(), concat()",
+            "Utilizar testes unitários para cada operação"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 5,
+          "priority": "P0"
+        },
+        {
+          "id": "US-002",
+          "title": "Implementar operações em Lista Ligada Simples",
+          "description": "Como desenvolvedor, quero implementar operações em Lista Ligada Simples, para que a aplicação suporte manipulação de dados encadeados.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Inserir elemento na lista",
+              "given": "Que a lista está vazia",
+              "when": "Insiro o elemento 5",
+              "then": "A lista contém o elemento 5"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Remover elemento da lista",
+              "given": "Que a lista contém os elementos [5, 10, 15]",
+              "when": "Removo o elemento 10",
+              "then": "A lista contém os elementos [5, 15]"
+            },
+            {
+              "id": "AC-002-03",
+              "scenario": "Buscar elemento na lista",
+              "given": "Que a lista contém os elementos [5, 10, 15]",
+              "when": "Busco o elemento 15",
+              "then": "O sistema retorna a posição 2"
+            },
+            {
+              "id": "AC-002-04",
+              "scenario": "Inverter a lista",
+              "given": "Que a lista contém os elementos [5, 10, 15]",
+              "when": "Inverto a lista",
+              "then": "A lista é [15, 10, 5]"
+            },
+            {
+              "id": "AC-002-05",
+              "scenario": "Concatenar duas listas",
+              "given": "Que a lista A contém [1, 2] e a lista B contém [3, 4]",
+              "when": "Concateno A e B",
+              "then": "A lista resultante é [1, 2, 3, 4]"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar classe SinglyLinkedList com métodos: insert(), remove(), search(), update(), clear(), size(), traverse(), reverse(), concat()",
+            "Utilizar testes unitários para cada operação"
+          ],
+          "dependencies": [
+            "US-001: Implementar operações em Vetor"
+          ],
+          "estimatedPoints": 5,
+          "priority": "P0"
+        },
+        {
+          "id": "US-003",
+          "title": "Implementar operações em Lista Duplamente Ligada",
+          "description": "Como desenvolvedor, quero implementar operações em Lista Duplamente Ligada, para que a aplicação suporte manipulação de dados em ambas as direções.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-003-01",
+              "scenario": "Inserir elemento na lista duplamente ligada",
+              "given": "Que a lista está vazia",
+              "when": "Insiro o elemento 20",
+              "then": "A lista contém o elemento 20"
+            },
+            {
+              "id": "AC-003-02",
+              "scenario": "Remover elemento da lista duplamente ligada",
+              "given": "Que a lista contém os elementos [20, 30, 40]",
+              "when": "Removo o elemento 30",
+              "then": "A lista contém os elementos [20, 40]"
+            },
+            {
+              "id": "AC-003-03",
+              "scenario": "Percorrer a lista em ambas as direções",
+              "given": "Que a lista contém os elementos [20, 30, 40]",
+              "when": "Percorro a lista do início ao fim e do fim ao início",
+              "then": "O sistema retorna [20, 30, 40] e [40, 30, 20]"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar classe DoublyLinkedList com métodos: insert(), remove(), search(), update(), clear(), size(), traverseForward(), traverseBackward()",
+            "Utilizar testes unitários para cada operação"
+          ],
+          "dependencies": [
+            "US-002: Implementar operações em Lista Ligada Simples"
+          ],
+          "estimatedPoints": 5,
+          "priority": "P0"
+        },
+        {
+          "id": "US-004",
+          "title": "Implementar operações em Árvore Binária de Busca",
+          "description": "Como desenvolvedor, quero implementar operações em Árvore Binária de Busca, para que a aplicação suporte manipulação de dados hierárquicos.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-004-01",
+              "scenario": "Inserir elemento na árvore",
+              "given": "Que a árvore está vazia",
+              "when": "Insiro o elemento 25",
+              "then": "A árvore contém o elemento 25"
+            },
+            {
+              "id": "AC-004-02",
+              "scenario": "Remover elemento da árvore",
+              "given": "Que a árvore contém os elementos [15, 25, 35]",
+              "when": "Removo o elemento 25",
+              "then": "A árvore contém os elementos [15, 35]"
+            },
+            {
+              "id": "AC-004-03",
+              "scenario": "Percorrer a árvore em ordem",
+              "given": "Que a árvore contém os elementos [15, 25, 35]",
+              "when": "Percorro a árvore em ordem",
+              "then": "O sistema retorna [15, 25, 35]"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar classe BinarySearchTree com métodos: insert(), remove(), search(), traverseInOrder()",
+            "Utilizar testes unitários para cada operação"
+          ],
+          "dependencies": [
+            "US-003: Implementar operações em Lista Duplamente Ligada"
+          ],
+          "estimatedPoints": 8,
+          "priority": "P0"
+        },
+        {
+          "id": "US-005",
+          "title": "Implementar operações em Grafos",
+          "description": "Como desenvolvedor, quero implementar operações em Grafos, para que a aplicação suporte manipulação de dados complexos.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-005-01",
+              "scenario": "Executar busca em largura (BFS)",
+              "given": "Que o grafo contém vértices conectados",
+              "when": "Executo BFS a partir do vértice A",
+              "then": "O sistema retorna a ordem de visita dos vértices"
+            },
+            {
+              "id": "AC-005-02",
+              "scenario": "Executar busca em profundidade (DFS)",
+              "given": "Que o grafo contém vértices conectados",
+              "when": "Executo DFS a partir do vértice A",
+              "then": "O sistema retorna a ordem de visita dos vértices"
+            },
+            {
+              "id": "AC-005-03",
+              "scenario": "Executar algoritmo de Dijkstra",
+              "given": "Que o grafo contém arestas com pesos",
+              "when": "Executo Dijkstra a partir do vértice A",
+              "then": "O sistema retorna o caminho mais curto para todos os vértices"
+            }
+          ],
+          "technicalNotes": [
+            "Implementar classe Graph com métodos: addVertex(), addEdge(), bfs(), dfs(), dijkstra()",
+            "Utilizar testes unitários para cada operação"
+          ],
+          "dependencies": [
+            "US-004: Implementar operações em Árvore Binária de Busca"
+          ],
+          "estimatedPoints": 8,
+          "priority": "P0"
+        }
+      ],
+      "summary": {
+        "totalStories": 5,
+        "totalPoints": 31,
+        "p0Count": 5,
+        "p1Count": 0,
+        "p2Count": 0
+      }
+    }
+  },
+  "0fc3ce07503ae94147f9e578311510be39f623dacb609e45535c705907aa90d4": {
+    "timestamp": 1765145687175,
+    "data": {
+      "epicId": "EPIC-003",
+      "epicTitle": "Interface e Experiência do Usuário",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Organizar a UI em abas para estruturas de dados",
+          "description": "Como usuário, quero que a interface seja organizada em abas para cada estrutura de dados, para que eu possa navegar facilmente entre elas.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-001-01",
+              "scenario": "Navegação entre abas",
+              "given": "Que estou na interface principal",
+              "when": "Clico na aba 'Lista Ligada Simples'",
+              "then": "A aba 'Lista Ligada Simples' é exibida com seus dados e controles correspondentes"
+            },
+            {
+              "id": "AC-001-02",
+              "scenario": "Persistência da aba selecionada",
+              "given": "Que estou na interface e selecionei a aba 'Árvore Binária de Busca'",
+              "when": "Atualizo a página",
+              "then": "A aba 'Árvore Binária de Busca' permanece selecionada após a atualização"
+            },
+            {
+              "id": "AC-001-03",
+              "scenario": "Exibição de conteúdo vazio",
+              "given": "Que estou na aba 'Grafo' sem dados",
+              "when": "Acesso a aba",
+              "then": "O sistema exibe mensagem 'Nenhum dado disponível' com opção para adicionar dados"
+            }
+          ],
+          "technicalNotes": [
+            "Utilizar React Router para gerenciar as rotas das abas",
+            "Persistir a aba selecionada no localStorage",
+            "Implementar um componente de loading para transições"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 5,
+          "priority": "P1"
+        },
+        {
+          "id": "US-002",
+          "title": "Incluir área de visualização com animação",
+          "description": "Como usuário, quero uma área de visualização com animações, para que eu possa entender melhor as operações realizadas nas estruturas de dados.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-002-01",
+              "scenario": "Visualização de operações em vetor",
+              "given": "Que estou na aba 'Vetor'",
+              "when": "Adiciono um novo elemento ao vetor",
+              "then": "O sistema anima a inserção do elemento na visualização do vetor"
+            },
+            {
+              "id": "AC-002-02",
+              "scenario": "Animação de remoção de elemento",
+              "given": "Que estou na aba 'Lista Duplamente Ligada'",
+              "when": "Removo um elemento da lista",
+              "then": "O sistema anima a remoção do elemento da visualização"
+            },
+            {
+              "id": "AC-002-03",
+              "scenario": "Animação clara e não intrusiva",
+              "given": "Que estou realizando operações na interface",
+              "when": "Uma animação é exibida",
+              "then": "A animação é clara e não sobrecarrega a visualização com informações"
+            }
+          ],
+          "technicalNotes": [
+            "Utilizar a biblioteca Framer Motion para animações",
+            "Definir durações e easing para animações de forma a não sobrecarregar o usuário",
+            "Implementar um sistema de feedback visual para operações"
+          ],
+          "dependencies": [
+            "US-001: Organizar a UI em abas para estruturas de dados"
+          ],
+          "estimatedPoints": 8,
+          "priority": "P1"
+        },
+        {
+          "id": "US-003",
+          "title": "Garantir responsividade da interface",
+          "description": "Como usuário, quero que a interface seja responsiva, para que eu possa utilizá-la em diferentes tamanhos de tela sem perda de funcionalidade.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-003-01",
+              "scenario": "Interface em tela pequena",
+              "given": "Que estou utilizando um dispositivo móvel",
+              "when": "Acesso a interface",
+              "then": "A interface se adapta e exibe todos os elementos de forma legível"
+            },
+            {
+              "id": "AC-003-02",
+              "scenario": "Mudança de layout em diferentes tamanhos",
+              "given": "Que estou em uma tela de tablet",
+              "when": "Redimensiono a janela do navegador",
+              "then": "Os elementos da interface se reorganizam para se ajustarem ao novo tamanho"
+            },
+            {
+              "id": "AC-003-03",
+              "scenario": "Verificação de funcionalidade em diferentes dispositivos",
+              "given": "Que estou em um desktop e em um dispositivo móvel",
+              "when": "Acesso a mesma funcionalidade",
+              "then": "A funcionalidade deve ser idêntica em ambos os dispositivos"
+            }
+          ],
+          "technicalNotes": [
+            "Utilizar CSS Grid e Flexbox para layout responsivo",
+            "Testar em diferentes dispositivos e tamanhos de tela",
+            "Implementar media queries para ajustes específicos"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 5,
+          "priority": "P1"
+        },
+        {
+          "id": "US-004",
+          "title": "Utilizar cores consistentes e feedback visual",
+          "description": "Como usuário, quero que a interface utilize cores consistentes e forneça feedback visual para erros e sucessos, para que eu possa entender rapidamente o estado das operações.",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-004-01",
+              "scenario": "Feedback visual para sucesso",
+              "given": "Que realizo uma operação bem-sucedida",
+              "when": "A operação é concluída",
+              "then": "O sistema exibe uma mensagem de sucesso em verde"
+            },
+            {
+              "id": "AC-004-02",
+              "scenario": "Feedback visual para erro",
+              "given": "Que realizo uma operação com erro",
+              "when": "A operação falha",
+              "then": "O sistema exibe uma mensagem de erro em vermelho"
+            },
+            {
+              "id": "AC-004-03",
+              "scenario": "Consistência nas cores",
+              "given": "Que estou navegando pela interface",
+              "when": "Visualizo diferentes seções",
+              "then": "As cores utilizadas são consistentes em toda a interface"
+            }
+          ],
+          "technicalNotes": [
+            "Definir uma paleta de cores e aplicar em toda a interface",
+            "Utilizar bibliotecas de design como Material-UI ou Tailwind CSS",
+            "Implementar um sistema de mensagens de feedback"
+          ],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        }
+      ],
+      "summary": {
+        "totalStories": 4,
+        "totalPoints": 21,
+        "p0Count": 0,
+        "p1Count": 4,
+        "p2Count": 0
+      }
+    }
   }
 }

@@ -22,10 +22,17 @@ if (DEFAULT_API_KEY) {
 const AnalyzeRequestSchema = z.object({
   text: z.string().min(1),
   maxLen: z.number().optional(),
-  currentContext: z.object({
-    files: z.array(z.object({ path: z.string(), purpose: z.string().optional() })),
-    summary: z.string().optional()
-  }).optional()
+  currentContext: z
+    .object({
+      files: z.array(
+        z.object({
+          path: z.string(),
+          purpose: z.string().optional()
+        })
+      ),
+      summary: z.string().optional()
+    })
+    .optional()
 });
 
 const app: FastifyInstance = Fastify({
@@ -101,13 +108,14 @@ const start = async (): Promise<void> => {
       });
     }
 
-    const { text, currentContext } = parseResult.data;
+    const { text } = parseResult.data;
 
     // Extrai API key do header Authorization
     const authHeader = request.headers["authorization"];
-    const apiKey = (authHeader && authHeader.startsWith("Bearer "))
-      ? authHeader.substring(7)
-      : DEFAULT_API_KEY;
+    const apiKey =
+      authHeader && authHeader.startsWith("Bearer ")
+        ? authHeader.substring(7)
+        : DEFAULT_API_KEY;
 
     if (!apiKey) {
       return reply.status(401).send({
@@ -130,7 +138,7 @@ const start = async (): Promise<void> => {
         request.log.info("Creating New AnalysisAgent Instance (Custom Key)");
       }
 
-      const result = await agent.analyze(text, currentContext);
+      const result = await agent.analyze(text);
       return reply.send(result);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);

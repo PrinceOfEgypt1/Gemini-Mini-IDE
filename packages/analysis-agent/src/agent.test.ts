@@ -73,9 +73,9 @@ describe('AnalysisAgent', () => {
     const result = await agent.analyze('Criar um projeto de teste');
     
     expect(result).toHaveProperty('analysis');
-    expect(result.product.userStories).toHaveLength(1);
+    expect(result.userStories).toHaveLength(1);
     expect(result.engine.files.length).toBeGreaterThan(0);
     // Verifica se a complexidade foi sanitizada corretamente
-    expect(['Baixa', 'Média']).toContain(result.analysis.complexity);
+    expect(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).toContain(result.analysis.complexity.level);
   });
 });

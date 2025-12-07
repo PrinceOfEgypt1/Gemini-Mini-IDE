@@ -1086,5 +1086,118 @@
         }
       ]
     }
+  },
+  "deb324f7cb1022b0d2c40755c3046f36d149a22dcc2b7035d5e771ab4e17140a": {
+    "timestamp": 1765071874704,
+    "data": {
+      "summary": "Test Project",
+      "complexity": {
+        "level": "MEDIUM",
+        "score": 5,
+        "justification": "Padronizado por fallback"
+      },
+      "coreEntities": [],
+      "implicitRequirements": [],
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "4c090441947d1cce592b5ba8fe40cd1ba618f4020f27ef69a94034aad302043f": {
+    "timestamp": 1765071874706,
+    "data": {
+      "productVision": "Visão do produto não definida",
+      "epics": [
+        {
+          "id": "EPIC-001",
+          "title": "Epic 1",
+          "category": "CORE",
+          "context": "Ctx",
+          "requirements": [
+            "Req1"
+          ],
+          "acceptanceCriteria": [],
+          "priority": "P1",
+          "estimatedComplexity": "MEDIUM"
+        }
+      ],
+      "outOfScope": [],
+      "risks": []
+    }
+  },
+  "c1b22bbbded2e3bc2e622c0e79d8ce58f46061a7b1a9024e8cec3aca5f9642e0": {
+    "timestamp": 1765071874707,
+    "data": {
+      "architectureStyle": "Modular Monolith",
+      "stack": {
+        "runtime": "Node.js",
+        "language": "TypeScript",
+        "framework": "React",
+        "testing": "Vitest",
+        "documentation": "README.md",
+        "orm": "N/A",
+        "database": "N/A",
+        "cache": "N/A",
+        "queue": "N/A"
+      },
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Config",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Core",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        }
+      ],
+      "keyDecisions": [],
+      "securityConsiderations": [],
+      "scalabilityPath": []
+    }
+  },
+  "e1d65b5fd9ebab0c9c18a8cd4b2b533b056ba32eca6d55a1e2a75202e93073bf": {
+    "timestamp": 1765071874708,
+    "data": {
+      "epicId": "EPIC-000",
+      "epicTitle": "Épico",
+      "userStories": [
+        {
+          "id": "HU-1",
+          "title": "Story 1",
+          "description": "No description",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-1",
+              "scenario": "Cenário 1",
+              "given": "Dado que",
+              "when": "Quando",
+              "then": "Então"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        }
+      ],
+      "summary": {
+        "totalStories": 1,
+        "totalPoints": 3,
+        "p0Count": 1,
+        "p1Count": 0,
+        "p2Count": 0
+      }
+    }
   }
 }
