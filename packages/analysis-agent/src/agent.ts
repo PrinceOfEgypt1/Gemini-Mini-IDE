@@ -7,11 +7,12 @@ import { globalAnalysisCache } from "./services/cache.service.js";
 export type Complexity = "Baixa" | "Média" | "Alta" | "Crítica";
 export type Priority = "P0" | "P1" | "P2" | "P3";
 export type Criticality = "Core" | "Support" | "Config";
+export type FileCategory = "DOMAIN" | "APPLICATION" | "INFRASTRUCTURE" | "DEVOPS" | "CONFIG" | "TESTS" | "DOCS";
 
 export interface Analysis { summary: string; complexity: Complexity; assumptions: string[]; }
 export interface Epic { title: string; context: string; requirements: string[]; }
 export interface ProductPlan { epics: Epic[]; }
-export interface ManifestItem { path: string; purpose: string; criticality: Criticality; }
+export interface ManifestItem { path: string; purpose: string; criticality: Criticality; category?: FileCategory; }
 export interface Architecture { stack: string; diagram?: string; manifest: ManifestItem[]; }
 export interface FileContent { path: string; code: string; explanation?: string; }
 export interface GeneratedFile { path: string; content: string; language: string; }
@@ -27,7 +28,12 @@ export interface AgentResult { summary: string; requestId: string; timestamp: st
 const AnalysisSchema = z.object({ summary: z.string(), complexity: z.enum(["Baixa", "Média", "Alta", "Crítica"]), assumptions: z.array(z.string()) });
 const EpicSchema = z.object({ title: z.string(), context: z.string(), requirements: z.array(z.string()) });
 const ProductPlanSchema = z.object({ epics: z.array(EpicSchema) });
-const ManifestItemSchema = z.object({ path: z.string(), purpose: z.string(), criticality: z.enum(["Core", "Support", "Config"]) });
+const ManifestItemSchema = z.object({
+  path: z.string(),
+  purpose: z.string(),
+  criticality: z.enum(["Core", "Support", "Config"]),
+  category: z.enum(["DOMAIN", "APPLICATION", "INFRASTRUCTURE", "DEVOPS", "CONFIG", "TESTS", "DOCS"]).optional()
+});
 
 // CORREÇÃO AQUI: Stack agora é simplesmente z.string() porque o sanitizer roda antes.
 const ArchitectureSchema = z.object({ 
@@ -46,37 +52,83 @@ const PRIORITY_MAP: Record<string, Priority> = { "p0": "P0", "critical": "P0", "
 const COMPLEXITY_MAP: Record<string, Complexity> = { "baixa": "Baixa", "low": "Baixa", "média": "Média", "media": "Média", "medium": "Média", "alta": "Alta", "high": "Alta", "crítica": "Crítica", "critica": "Crítica", "critical": "Crítica" };
 const CRITICALITY_MAP: Record<string, Criticality> = { "core": "Core", "main": "Core", "support": "Support", "utils": "Support", "config": "Config", "settings": "Config" };
 
+const CATEGORY_MAP: Record<string, FileCategory> = {
+  // Domain
+  "domain": "DOMAIN", "entity": "DOMAIN", "entities": "DOMAIN", "value-object": "DOMAIN", "value-objects": "DOMAIN", "aggregate": "DOMAIN",
+  // Application
+  "application": "APPLICATION", "use-case": "APPLICATION", "use-cases": "APPLICATION", "usecase": "APPLICATION", "usecases": "APPLICATION", "dto": "APPLICATION", "dtos": "APPLICATION",
+  // Infrastructure
+  "infrastructure": "INFRASTRUCTURE", "infra": "INFRASTRUCTURE", "controller": "INFRASTRUCTURE", "controllers": "INFRASTRUCTURE", "repository": "INFRASTRUCTURE", "repositories": "INFRASTRUCTURE", "adapter": "INFRASTRUCTURE", "adapters": "INFRASTRUCTURE", "external": "INFRASTRUCTURE", "http": "INFRASTRUCTURE", "api": "INFRASTRUCTURE",
+  // DevOps
+  "devops": "DEVOPS", "ci": "DEVOPS", "cd": "DEVOPS", "pipeline": "DEVOPS", "docker": "DEVOPS", "deploy": "DEVOPS", "deployment": "DEVOPS",
+  // Config
+  "config": "CONFIG", "configuration": "CONFIG", "settings": "CONFIG", "env": "CONFIG", "environment": "CONFIG",
+  // Tests
+  "test": "TESTS", "tests": "TESTS", "testing": "TESTS", "spec": "TESTS", "e2e": "TESTS", "integration": "TESTS", "unit": "TESTS",
+  // Docs
+  "docs": "DOCS", "doc": "DOCS", "documentation": "DOCS", "readme": "DOCS", "md": "DOCS",
+  // Common mismatches (LLM alucinações - mapeamento inteligente)
+  "hooks": "APPLICATION", "hook": "APPLICATION", "utils": "APPLICATION", "util": "APPLICATION", "utilities": "APPLICATION", "helpers": "APPLICATION", "helper": "APPLICATION",
+  "data-structures": "DOMAIN", "data": "DOMAIN", "models": "DOMAIN", "model": "DOMAIN",
+  "components": "INFRASTRUCTURE", "component": "INFRASTRUCTURE", "services": "APPLICATION", "service": "APPLICATION"
+};
+
 function normalizePath(rawPath: unknown): string { if (typeof rawPath !== "string") return "unknown.file"; return rawPath.trim().replace(/^(\.\/|\/)+/, ""); }
 function sanitizePriority(value: unknown): Priority { if (typeof value !== "string") return "P2"; const normalized = PRIORITY_MAP[value.trim().toLowerCase()]; return normalized || "P2"; }
 function sanitizeComplexity(value: unknown): Complexity { if (typeof value !== "string") return "Média"; return COMPLEXITY_MAP[value.trim().toLowerCase()] ?? "Média"; }
 function sanitizeCriticality(value: unknown): Criticality { if (typeof value !== "string") return "Core"; return CRITICALITY_MAP[value.trim().toLowerCase()] ?? "Core"; }
+
+function sanitizeCategory(value: unknown): FileCategory {
+  if (typeof value !== "string") return "APPLICATION";
+
+  // Normalizar: remover espaços, converter para minúsculas, remover _ e -
+  const normalized = value.trim().toLowerCase().replace(/[_-]/g, "");
+  const mapped = CATEGORY_MAP[normalized];
+
+  if (mapped) return mapped;
+
+  // Fallback inteligente baseado em path
+  const pathStr = String(value);
+  if (pathStr.includes("domain")) return "DOMAIN";
+  if (pathStr.includes("application")) return "APPLICATION";
+  if (pathStr.includes("infrastructure") || pathStr.includes("infra")) return "INFRASTRUCTURE";
+  if (pathStr.includes("test")) return "TESTS";
+  if (pathStr.includes("config")) return "CONFIG";
+  if (pathStr.includes(".md")) return "DOCS";
+  if (pathStr.includes("docker") || pathStr.includes("ci") || pathStr.includes("cd")) return "DEVOPS";
+
+  // Último recurso
+  console.warn(`[Sanitizer] Categoria desconhecida: "${value}" - usando APPLICATION como fallback`);
+  return "APPLICATION";
+}
 function ensureString(value: unknown, fallback: string): string { return (typeof value === "string" && value.trim().length > 0) ? value.trim() : fallback; }
 function ensureStringArray(value: unknown, defaultText?: string): string[] { if (!Array.isArray(value)) return defaultText ? [defaultText] : []; return value.filter((item): item is string => typeof item === "string").map(s => s.trim()).filter(s => s.length > 0); }
 function sanitizeUserStory(raw: unknown, index: number): UserStory { const story = (raw && typeof raw === "object") ? raw as Record<string, unknown> : {}; return { id: ensureString(story["id"], `HU-${String(index + 1).padStart(3, "0")}`), title: ensureString(story["title"], `História de Usuário ${index + 1}`), priority: sanitizePriority(story["priority"]), role: ensureString(story["role"], "usuário"), action: ensureString(story["action"], "realizar ação"), benefit: ensureString(story["benefit"], "obter valor"), acceptanceCriteria: ensureStringArray(story["acceptanceCriteria"], "Critério pendente"), functionalRequirements: ensureStringArray(story["functionalRequirements"], "Requisito pendente"), securityRequirements: ensureStringArray(story["securityRequirements"], "Requisito de segurança padrão"), businessContext: ensureString(story["businessContext"], "Contexto de negócio") }; }
 function sanitizeAnalysis(raw: unknown): Analysis { const data = (raw && typeof raw === "object") ? raw as Record<string, unknown> : {}; return { summary: ensureString(data["summary"], "N/A"), complexity: sanitizeComplexity(data["complexity"]), assumptions: ensureStringArray(data["assumptions"]) }; }
 function sanitizeProductPlan(raw: unknown): ProductPlan { const data = (raw && typeof raw === "object") ? raw as Record<string, unknown> : {}; const rawEpics = Array.isArray(data["epics"]) ? data["epics"] : []; return { epics: rawEpics.map((e: unknown, i: number) => { const epic = (e && typeof e === "object") ? e as Record<string, unknown> : {}; return { title: ensureString(epic["title"], `Epic ${i}`), context: ensureString(epic["context"], ""), requirements: ensureStringArray(epic["requirements"]) }; }) }; }
 
-function sanitizeArchitecture(raw: unknown): Architecture { 
-  const data = (raw && typeof raw === "object") ? raw as Record<string, unknown> : {}; 
-  const rawManifest = Array.isArray(data["manifest"]) ? data["manifest"] : []; 
-  
+function sanitizeArchitecture(raw: unknown): Architecture {
+  const data = (raw && typeof raw === "object") ? raw as Record<string, unknown> : {};
+  const rawManifest = Array.isArray(data["manifest"]) ? data["manifest"] : [];
+
   // O Sanitizer normaliza 'stack' para string ANTES do Zod validar
   let stackStr = "Unknown Stack";
   if (typeof data["stack"] === "string") stackStr = data["stack"];
   else if (typeof data["stack"] === "object") stackStr = JSON.stringify(data["stack"], null, 2);
 
-  return { 
-    stack: stackStr, 
-    diagram: typeof data["diagram"] === "string" ? data["diagram"] : undefined, 
-    manifest: rawManifest.map((m: unknown) => { 
-      const item = (m && typeof m === "object") ? m as Record<string, unknown> : {}; 
-      return { 
-        path: normalizePath(item["path"]), 
-        purpose: ensureString(item["purpose"], "Code"), 
-        criticality: sanitizeCriticality(item["criticality"]) 
-      }; 
-    }).filter(m => m.path !== "unknown.file") 
-  }; 
+  return {
+    stack: stackStr,
+    diagram: typeof data["diagram"] === "string" ? data["diagram"] : undefined,
+    manifest: rawManifest.map((m: unknown) => {
+      const item = (m && typeof m === "object") ? m as Record<string, unknown> : {};
+      return {
+        path: normalizePath(item["path"]),
+        purpose: ensureString(item["purpose"], "Code"),
+        criticality: sanitizeCriticality(item["criticality"]),
+        category: sanitizeCategory(item["category"])  // NEW: Sanitização de categoria
+      };
+    }).filter(m => m.path !== "unknown.file")
+  };
 }
 
 function sanitizeFileContent(raw: unknown, path: string): FileContent { const data = (raw && typeof raw === "object") ? raw as Record<string, unknown> : {}; return { path: normalizePath(data["path"] ?? path), code: ensureString(data["code"], "// Error generating code"), explanation: typeof data["explanation"] === "string" ? data["explanation"] : undefined }; }
@@ -220,26 +272,53 @@ export class AnalysisAgent {
       return cached;
     }
 
-    let attempt = 0;
-    while (attempt < 3) {
+    const maxRetries = 3;
+    const baseDelay = 2000; // 2 segundos
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
+        // Timeout dinâmico: 180s para HUs/Arquitetura, 120s para demais
+        const timeoutMs = ctx.includes("HUs") || ctx.includes("Architecture") ? 180000 : 120000;
+
+        // eslint-disable-next-line no-console
+        console.info(`[Agent][LLM Call] ${ctx} (attempt ${attempt + 1}/${maxRetries}, timeout: ${timeoutMs}ms)`);
+
         const completion = await this.client.chat.completions.create({
           model: this.model,
           messages: [{ role: "system", content: sys }, { role: "user", content: usr }],
           response_format: { type: "json_object" },
           temperature: 0.0,
           seed: 42
-        }, { timeout: 60000 });
+        }, { timeout: timeoutMs });
 
         const rawContent = completion.choices[0]?.message?.content || "{}";
         const result = sch.parse(san(JSON.parse(cleanJsonString(rawContent))));
         globalAnalysisCache.set(cacheKey, result);
         return result;
       } catch (e) {
-        attempt++;
-        await new Promise(r => setTimeout(r, 1000));
+        const isLastAttempt = attempt === maxRetries - 1;
+        const error = e instanceof Error ? e : new Error(String(e));
+
+        // eslint-disable-next-line no-console
+        console.error(`[Agent][LLM Error] ${ctx} - Attempt ${attempt + 1} failed: ${error.message}`);
+
+        if (isLastAttempt) {
+          // eslint-disable-next-line no-console
+          console.error(`[Agent][LLM Fatal] ${ctx} - Todas as tentativas falharam`);
+          throw error;
+        }
+
+        // Backoff exponencial: 2s, 4s, 8s
+        const delay = baseDelay * Math.pow(2, attempt);
+        // eslint-disable-next-line no-console
+        console.warn(`[Agent][Retry] ${ctx} - Aguardando ${delay}ms antes de retry...`);
+        await new Promise(r => setTimeout(r, delay));
       }
     }
+
+    // Fallback final (nunca deve chegar aqui devido ao throw acima)
+    // eslint-disable-next-line no-console
+    console.error(`[Agent][Fallback] ${ctx} - Usando dados vazios como último recurso`);
     return sch.parse(san({}));
   }
 

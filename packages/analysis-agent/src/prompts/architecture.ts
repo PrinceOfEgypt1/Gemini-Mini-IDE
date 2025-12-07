@@ -65,6 +65,30 @@ project-root/
 \`\`\`
 
 ───────────────────────────────────────────────────────────────────────────────
+## ⚠️ CATEGORIAS PERMITIDAS - OBRIGATÓRIO SEGUIR
+───────────────────────────────────────────────────────────────────────────────
+
+**ATENÇÃO CRÍTICA:** Cada arquivo no manifest DEVE usar EXATAMENTE uma destas 7 categorias:
+
+1. **DOMAIN**: Entidades, Value Objects, Regras de Negócio, Domain Services
+2. **APPLICATION**: Use Cases, DTOs, Application Services, Interfaces/Ports
+3. **INFRASTRUCTURE**: Repositories (impl), Controllers, Adapters, External APIs, HTTP
+4. **DEVOPS**: CI/CD workflows, Dockerfiles, Scripts de deploy, Pipelines
+5. **CONFIG**: Arquivos de configuração (.env.example, tsconfig, package.json, eslint)
+6. **TESTS**: Testes unitários, integração, E2E, fixtures
+7. **DOCS**: README, documentação técnica, ADRs, changelogs
+
+❌ **PROIBIDO INVENTAR CATEGORIAS** como:
+   - HOOKS (use APPLICATION)
+   - UTILS (use APPLICATION)
+   - DATA-STRUCTURES (use DOMAIN)
+   - COMPONENTS (use INFRASTRUCTURE)
+   - MODELS (use DOMAIN)
+   - SERVICES (use APPLICATION ou DOMAIN conforme contexto)
+
+✅ **Regra de Ouro:** Se em dúvida, use APPLICATION como fallback.
+
+───────────────────────────────────────────────────────────────────────────────
 ## EXEMPLO COMPLETO DE MANIFEST (FEW-SHOT):
 ───────────────────────────────────────────────────────────────────────────────
 **Input (do módulo PRODUCT - resumido):**
