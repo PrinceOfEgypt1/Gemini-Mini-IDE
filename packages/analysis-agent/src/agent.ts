@@ -247,14 +247,32 @@ export class AnalysisAgent {
   private async runProductStep(prompt: string, analysis: Analysis): Promise<ProductPlan> { 
     return this.callLLM(SYSTEM_PROMPTS.PRODUCT, `Análise: ${analysis.summary}\nPrompt: ${prompt}`, sanitizeProductPlan, ProductPlanSchema, "Product"); 
   }
-  private async runArchitectureStep(userPrompt: string, productPlan: ProductPlan): Promise<Architecture> { 
+  private async runArchitectureStep(userPrompt: string, productPlan: ProductPlan): Promise<Architecture> {
     const epicsSummary = productPlan.epics.map(e => `- ${e.title}: ${e.context}`).join('\n');
-    const richContext = `CONTEXTO DO PROJETO:\nPedido Original: ${userPrompt}\n\nÉPICOS IDENTIFICADOS:\n${epicsSummary}`;
-    return this.callLLM(SYSTEM_PROMPTS.ARCHITECTURE, richContext, sanitizeArchitecture, ArchitectureSchema, "Architecture"); 
+
+    // Truncar prompt original se for muito grande (> 3000 chars)
+    const MAX_PROMPT_SIZE = 3000;
+    let truncatedPrompt = userPrompt;
+    if (userPrompt.length > MAX_PROMPT_SIZE) {
+      truncatedPrompt = userPrompt.substring(0, MAX_PROMPT_SIZE) + `\n\n[... prompt truncado de ${userPrompt.length} para ${MAX_PROMPT_SIZE} chars ...]`;
+      // eslint-disable-next-line no-console
+      console.warn(`[Agent] Prompt truncado: ${userPrompt.length} → ${MAX_PROMPT_SIZE} chars`);
+    }
+
+    const richContext = `CONTEXTO DO PROJETO:\nPedido Original: ${truncatedPrompt}\n\nÉPICOS IDENTIFICADOS:\n${epicsSummary}`;
+    // eslint-disable-next-line no-console
+    console.info(`[Agent] runArchitectureStep - Context size: ${richContext.length} chars, Epics: ${productPlan.epics.length}`);
+    return this.callLLM(SYSTEM_PROMPTS.ARCHITECTURE, richContext, sanitizeArchitecture, ArchitectureSchema, "Architecture");
   }
   private async generateFileContent(spec: ManifestItem, stack: string, userPrompt: string): Promise<GeneratedFile> {
     try {
-      const parsed = await this.callLLM(SYSTEM_PROMPTS.CODE_GEN, `File: ${spec.path}\nStack: ${stack}\nContext: ${userPrompt}`, (r) => sanitizeFileContent(r, spec.path), FileContentSchema, `File:${spec.path}`);
+      // Truncar contexto para geração de arquivos (mais agressivo: 1500 chars)
+      const MAX_CONTEXT_SIZE = 1500;
+      const truncatedContext = userPrompt.length > MAX_CONTEXT_SIZE
+        ? userPrompt.substring(0, MAX_CONTEXT_SIZE) + `\n[... truncado ...]`
+        : userPrompt;
+
+      const parsed = await this.callLLM(SYSTEM_PROMPTS.CODE_GEN, `File: ${spec.path}\nStack: ${stack}\nContext: ${truncatedContext}`, (r) => sanitizeFileContent(r, spec.path), FileContentSchema, `File:${spec.path}`);
       return { path: parsed.path, content: parsed.code, language: this.detectLanguage(parsed.path) };
     } catch (error) { return { path: normalizePath(spec.path), content: "// Error", language: "plaintext" }; }
   }
@@ -277,8 +295,8 @@ export class AnalysisAgent {
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        // Timeout dinâmico: 180s para HUs/Arquitetura, 120s para demais
-        const timeoutMs = ctx.includes("HUs") || ctx.includes("Architecture") ? 180000 : 120000;
+        // Timeout dinâmico: 360s (6min) para HUs/Arquitetura, 180s (3min) para demais
+        const timeoutMs = ctx.includes("HUs") || ctx.includes("Architecture") ? 360000 : 180000;
 
         // eslint-disable-next-line no-console
         console.info(`[Agent][LLM Call] ${ctx} (attempt ${attempt + 1}/${maxRetries}, timeout: ${timeoutMs}ms)`);
