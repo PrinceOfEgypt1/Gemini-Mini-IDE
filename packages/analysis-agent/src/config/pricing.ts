@@ -329,6 +329,7 @@ export function getPricing(provider: string, tier: ModelTier): ModelPricing | un
   const providerPricing = PRICING_TABLE[provider.toLowerCase()];
 
   if (!providerPricing) {
+    // eslint-disable-next-line no-console
     console.warn(`[Pricing] Provedor desconhecido: "${provider}" - custo não calculado`);
     return undefined;
   }
@@ -336,6 +337,7 @@ export function getPricing(provider: string, tier: ModelTier): ModelPricing | un
   const pricing = providerPricing.byTier[tier];
 
   if (!pricing) {
+    // eslint-disable-next-line no-console
     console.warn(`[Pricing] Tier "${tier}" não encontrado para provedor "${provider}"`);
     return undefined;
   }

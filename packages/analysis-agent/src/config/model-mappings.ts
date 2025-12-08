@@ -130,12 +130,14 @@ export const MODEL_MAPPINGS: ProviderMappings = {
 export function getModelForTier(provider: string, tier: ModelTier): string | undefined {
   const providerMappings = MODEL_MAPPINGS[provider.toLowerCase()];
   if (!providerMappings) {
+    // eslint-disable-next-line no-console
     console.warn(`[ModelMappings] Provedor desconhecido: "${provider}" - retornando undefined`);
     return undefined;
   }
 
   const model = providerMappings[tier];
   if (!model) {
+    // eslint-disable-next-line no-console
     console.warn(`[ModelMappings] Tier "${tier}" não encontrado para provedor "${provider}"`);
     return undefined;
   }
@@ -165,6 +167,7 @@ export function getModelForTier(provider: string, tier: ModelTier): string | und
  */
 export function detectProviderFromURL(baseURL?: string): string {
   if (!baseURL) {
+    // eslint-disable-next-line no-console
     console.info("[ModelMappings] baseURL não fornecida - assumindo provedor 'openai'");
     return "openai";
   }
@@ -202,6 +205,7 @@ export function detectProviderFromURL(baseURL?: string): string {
   }
 
   // Fallback: OpenAI como padrão
+  // eslint-disable-next-line no-console
   console.warn(`[ModelMappings] Provedor não identificado para URL "${baseURL}" - usando 'openai' como fallback`);
   return "openai";
 }

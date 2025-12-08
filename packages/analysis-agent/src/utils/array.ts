@@ -123,6 +123,7 @@ export async function processBatches<T, R>(
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batch = batches[batchIndex];
 
+    // eslint-disable-next-line no-console
     console.info(
       `[processBatches] Batch ${batchIndex + 1}/${batches.length}: processando ${batch.length} itens...`
     );
@@ -138,6 +139,7 @@ export async function processBatches<T, R>(
     results.push(...batchResults);
     processedCount += batch.length;
 
+    // eslint-disable-next-line no-console
     console.info(
       `[processBatches] Batch ${batchIndex + 1}/${batches.length}: completo (${processedCount}/${array.length} total)`
     );

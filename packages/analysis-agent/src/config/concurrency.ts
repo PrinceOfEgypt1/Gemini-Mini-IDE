@@ -95,6 +95,7 @@ export function getConcurrencyLimit(tier: ModelTier): number {
   const limit = CONCURRENCY_LIMITS[tier];
 
   if (limit === undefined) {
+    // eslint-disable-next-line no-console
     console.warn(`[Concurrency] Tier desconhecido: "${tier}" - usando limite padrão 5`);
     return 5;
   }
@@ -211,6 +212,7 @@ export function getTimeoutForTier(tier: ModelTier): number {
   const timeout = TIMEOUT_BY_TIER[tier];
 
   if (timeout === undefined) {
+    // eslint-disable-next-line no-console
     console.warn(`[Concurrency] Tier desconhecido: "${tier}" - usando timeout padrão 120s`);
     return 120_000;
   }

@@ -156,6 +156,7 @@ export function getTaskTypeFromContext(context: string): TaskType {
   }
 
   // Fallback: Se não identificado, assume complexo (PREMIUM) por segurança
+  // eslint-disable-next-line no-console
   console.warn(`[ModelStrategy] Tipo de tarefa não identificado em contexto: "${ctx}" - usando FILE_COMPLEX`);
   return TaskType.FILE_COMPLEX;
 }
@@ -273,6 +274,7 @@ function classifyFileTask(context: string): TaskType {
   }
 
   // Último recurso: Se não conseguimos classificar, assume complexo por segurança
+  // eslint-disable-next-line no-console
   console.warn(`[ModelStrategy] Arquivo não classificado: "${context}" - usando FILE_COMPLEX por segurança`);
   return TaskType.FILE_COMPLEX;
 }

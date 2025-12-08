@@ -140,10 +140,17 @@ type SanitizeFunction<T> = (raw: unknown) => T;
 export class AnalysisAgent {
   private client: OpenAI;
   private model: string;
+  private provider: string;
+  private metricsTracker: MetricsTracker | null = null;
 
   constructor(apiKey: string, baseURL?: string, model?: string) {
     this.client = new OpenAI({ apiKey, baseURL });
     this.model = model ?? "gpt-4o";
+
+    // HU-AGENT-OPT-001: Detectar provedor a partir da baseURL
+    this.provider = detectProviderFromURL(baseURL);
+    // eslint-disable-next-line no-console
+    console.info(`[Agent] Provider detectado: "${this.provider}" (baseURL: ${baseURL || "default"})`);
   }
 
   private cleanPrompt(prompt: string): string {
