@@ -15,8 +15,9 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Project paths
-PROJECT_ROOT="/home/user/Gemini-Mini-IDE"
+# Project paths - detectar automaticamente o diretório onde o script está
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$SCRIPT_DIR"
 AGENT_DIR="$PROJECT_ROOT/packages/analysis-agent"
 AGENT_FILE="$AGENT_DIR/src/agent.ts"
 

@@ -26,8 +26,9 @@ MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Project paths
-PROJECT_ROOT="/home/user/Gemini-Mini-IDE"
+# Project paths - detectar automaticamente o diretório onde o script está
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$SCRIPT_DIR"
 AGENT_DIR="$PROJECT_ROOT/packages/analysis-agent"
 
 # Timestamp para todos os backups
