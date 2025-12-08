@@ -143,6 +143,7 @@ export class AnalysisAgent {
   private client: OpenAI;
   private model: string;
   private provider: string;
+  // @ts-expect-error - Será usado quando implementarmos métricas completas (HU-AGENT-OPT-004)
   private metricsTracker: MetricsTracker | null = null;
 
   constructor(apiKey: string, baseURL?: string, model?: string) {
