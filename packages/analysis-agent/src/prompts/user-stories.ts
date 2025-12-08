@@ -41,271 +41,102 @@ com confiança e QA consegue testar sem ambiguidade.
 
 **Output Esperado:**
 {
-  "epicId": "EPIC-001",
-  "epicTitle": "Gestão de Pacientes",
-  
   "userStories": [
     {
       "id": "US-001",
       "title": "Cadastrar novo paciente com dados básicos",
-      "description": "Como recepcionista, quero cadastrar um novo paciente informando seus dados básicos, para que ele possa agendar consultas no sistema.",
+      "priority": "P0",
+      "role": "recepcionista",
+      "action": "cadastrar um novo paciente informando seus dados básicos (CPF, nome completo, email, telefone e data de nascimento)",
+      "benefit": "o paciente possa ser identificado no sistema e agendar consultas",
+      "businessContext": "O cadastro de pacientes é o primeiro passo para utilização do sistema clínico. Sem um cadastro correto, não é possível agendar consultas nem manter histórico médico. O sistema deve garantir unicidade por CPF para evitar duplicatas e manter conformidade com LGPD.",
       "acceptanceCriteria": [
-        {
-          "id": "AC-001-01",
-          "scenario": "Cadastro com dados válidos",
-          "given": "Que estou na tela de cadastro de paciente",
-          "when": "Preencho CPF válido (529.982.247-25), nome (Maria Silva), email (maria@email.com), telefone (11999998888) e data de nascimento (15/05/1990) e clico em Salvar",
-          "then": "O sistema valida os dados, cria o paciente com ID único, exibe mensagem 'Paciente cadastrado com sucesso' e redireciona para a ficha do paciente"
-        },
-        {
-          "id": "AC-001-02",
-          "scenario": "CPF inválido (dígitos verificadores errados)",
-          "given": "Que estou na tela de cadastro de paciente",
-          "when": "Informo um CPF com dígitos verificadores inválidos (111.111.111-11)",
-          "then": "O sistema exibe erro inline 'CPF inválido' e não permite submeter o formulário"
-        },
-        {
-          "id": "AC-001-03",
-          "scenario": "CPF já cadastrado no sistema",
-          "given": "Que existe um paciente com CPF 529.982.247-25",
-          "when": "Tento cadastrar outro paciente com o mesmo CPF",
-          "then": "O sistema exibe erro 'CPF já cadastrado' com link para visualizar o paciente existente"
-        },
-        {
-          "id": "AC-001-04",
-          "scenario": "Email em formato inválido",
-          "given": "Que estou na tela de cadastro de paciente",
-          "when": "Informo um email sem @ (mariaemail.com)",
-          "then": "O sistema exibe erro inline 'Email inválido' e não permite submeter"
-        },
-        {
-          "id": "AC-001-05",
-          "scenario": "Campos obrigatórios vazios",
-          "given": "Que estou na tela de cadastro de paciente",
-          "when": "Clico em Salvar sem preencher CPF, nome ou email",
-          "then": "O sistema destaca os campos obrigatórios em vermelho e exibe 'Campo obrigatório' abaixo de cada um"
-        },
-        {
-          "id": "AC-001-06",
-          "scenario": "Data de nascimento no futuro",
-          "given": "Que estou na tela de cadastro de paciente",
-          "when": "Informo uma data de nascimento no futuro (01/01/2030)",
-          "then": "O sistema exibe erro 'Data de nascimento não pode ser no futuro'"
-        }
+        "DADO QUE estou na tela de cadastro de paciente QUANDO preencho CPF válido (529.982.247-25), nome (Maria Silva), email (maria@email.com), telefone (11999998888) e data de nascimento (15/05/1990) e clico em Salvar ENTÃO o sistema valida os dados, cria o paciente com ID único, exibe mensagem 'Paciente cadastrado com sucesso' e redireciona para a ficha do paciente",
+        "DADO QUE estou na tela de cadastro QUANDO informo CPF com dígitos verificadores inválidos (111.111.111-11) ENTÃO o sistema exibe erro inline 'CPF inválido' e não permite submeter o formulário",
+        "DADO QUE existe paciente com CPF 529.982.247-25 QUANDO tento cadastrar outro paciente com mesmo CPF ENTÃO o sistema exibe erro 'CPF já cadastrado' com link para visualizar o paciente existente",
+        "DADO QUE estou na tela de cadastro QUANDO informo email sem @ (mariaemail.com) ENTÃO o sistema exibe erro inline 'Email inválido' e não permite submeter",
+        "DADO QUE estou na tela de cadastro QUANDO clico em Salvar sem preencher CPF, nome ou email ENTÃO o sistema destaca os campos obrigatórios em vermelho e exibe 'Campo obrigatório' abaixo de cada um",
+        "DADO QUE estou na tela de cadastro QUANDO informo data de nascimento no futuro (01/01/2030) ENTÃO o sistema exibe erro 'Data de nascimento não pode ser no futuro'"
       ],
-      "technicalNotes": [
+      "functionalRequirements": [
         "Endpoint: POST /api/v1/patients",
         "Validar CPF com algoritmo de dígitos verificadores (mod 11)",
         "Armazenar CPF apenas números (remover pontuação)",
         "Email deve ser lowercase e trimmed",
-        "Usar transação para garantir atomicidade"
+        "Usar transação para garantir atomicidade",
+        "Garantir unicidade de CPF com índice único no banco",
+        "Validar formato de email com regex padrão",
+        "Aceitar data de nascimento entre 1900 e hoje"
       ],
-      "dependencies": [
-        "US-000: Setup inicial do projeto com banco de dados",
-        "Componente de input com máscara de CPF"
-      ],
-      "estimatedPoints": 5,
-      "priority": "P0"
+      "securityRequirements": [
+        "Validar CPF no backend (não confiar apenas no frontend)",
+        "Sanitizar inputs para prevenir SQL injection e XSS",
+        "Log de auditoria: quem criou o paciente, quando e de qual IP",
+        "Criptografar dados sensíveis em trânsito (HTTPS obrigatório)",
+        "Implementar rate limiting: máximo 10 cadastros por IP por minuto"
+      ]
     },
     {
       "id": "US-002",
       "title": "Fazer upload de foto de perfil do paciente",
-      "description": "Como recepcionista, quero fazer upload da foto do paciente, para facilitar a identificação visual no momento da consulta.",
+      "priority": "P1",
+      "role": "recepcionista",
+      "action": "fazer upload da foto do paciente",
+      "benefit": "facilitar a identificação visual no momento da consulta",
+      "businessContext": "A foto do paciente ajuda na identificação rápida durante consultas e evita confusões com homônimos. Deve ser fácil de adicionar/remover e segura (validação de tipo e tamanho para evitar ataques).",
       "acceptanceCriteria": [
-        {
-          "id": "AC-002-01",
-          "scenario": "Upload de imagem válida (JPG)",
-          "given": "Que estou na ficha de um paciente cadastrado",
-          "when": "Clico em 'Adicionar foto' e seleciono uma imagem JPG de 500KB",
-          "then": "O sistema faz upload, redimensiona para 200x200px, exibe preview e salva associada ao paciente"
-        },
-        {
-          "id": "AC-002-02",
-          "scenario": "Upload de imagem muito grande",
-          "given": "Que estou na ficha de um paciente",
-          "when": "Tento fazer upload de uma imagem de 10MB",
-          "then": "O sistema exibe erro 'Imagem muito grande. Máximo: 5MB' sem iniciar o upload"
-        },
-        {
-          "id": "AC-002-03",
-          "scenario": "Upload de formato não suportado",
-          "given": "Que estou na ficha de um paciente",
-          "when": "Tento fazer upload de um arquivo .gif ou .webp",
-          "then": "O sistema exibe erro 'Formato não suportado. Use JPG ou PNG'"
-        },
-        {
-          "id": "AC-002-04",
-          "scenario": "Substituir foto existente",
-          "given": "Que o paciente já possui uma foto de perfil",
-          "when": "Faço upload de uma nova foto",
-          "then": "O sistema substitui a foto anterior, mantendo apenas a nova (não acumula)"
-        },
-        {
-          "id": "AC-002-05",
-          "scenario": "Remover foto existente",
-          "given": "Que o paciente possui uma foto de perfil",
-          "when": "Clico no ícone de lixeira na foto",
-          "then": "O sistema pede confirmação, e ao confirmar, remove a foto exibindo avatar padrão"
-        }
+        "DADO QUE estou na ficha de um paciente cadastrado QUANDO clico em 'Adicionar foto' e seleciono imagem JPG de 500KB ENTÃO o sistema faz upload, redimensiona para 200x200px, exibe preview e salva associada ao paciente",
+        "DADO QUE estou na ficha de um paciente QUANDO tento upload de imagem de 10MB ENTÃO o sistema exibe erro 'Imagem muito grande. Máximo: 5MB' sem iniciar o upload",
+        "DADO QUE estou na ficha de um paciente QUANDO tento upload de arquivo .gif ou .webp ENTÃO o sistema exibe erro 'Formato não suportado. Use JPG ou PNG'",
+        "DADO QUE o paciente já possui foto de perfil QUANDO faço upload de nova foto ENTÃO o sistema substitui a foto anterior, mantendo apenas a nova (não acumula)",
+        "DADO QUE o paciente possui foto de perfil QUANDO clico no ícone de lixeira ENTÃO o sistema pede confirmação e ao confirmar, remove a foto exibindo avatar padrão"
       ],
-      "technicalNotes": [
+      "functionalRequirements": [
         "Endpoint: POST /api/v1/patients/:id/photo",
         "Armazenar em S3/MinIO com path: patients/{id}/photo.jpg",
-        "Usar Sharp para redimensionar e otimizar",
-        "Retornar URL assinada com expiração de 1h",
-        "Validar mimetype no backend (não confiar no frontend)"
+        "Usar Sharp para redimensionar para 200x200px e otimizar",
+        "Retornar URL assinada com expiração de 1 hora",
+        "Aceitar apenas JPG e PNG",
+        "Limite de tamanho: 5MB"
       ],
-      "dependencies": [
-        "US-001: Cadastrar novo paciente",
-        "Configuração de bucket S3/MinIO"
-      ],
-      "estimatedPoints": 3,
-      "priority": "P1"
+      "securityRequirements": [
+        "Validar mimetype no backend (não confiar no frontend)",
+        "Sanitizar nome do arquivo para evitar path traversal",
+        "Gerar nome único (UUID) para evitar sobrescrita acidental",
+        "Verificar conteúdo do arquivo (magic bytes) para detectar falsificação de extensão",
+        "Aplicar rate limiting: máximo 5 uploads por usuário por minuto"
+      ]
     },
     {
       "id": "US-003",
-      "title": "Visualizar histórico de consultas do paciente",
-      "description": "Como médico, quero ver o histórico de consultas anteriores do paciente, para ter contexto sobre seu acompanhamento.",
-      "acceptanceCriteria": [
-        {
-          "id": "AC-003-01",
-          "scenario": "Paciente com histórico de consultas",
-          "given": "Que estou na ficha de um paciente que teve 5 consultas",
-          "when": "Acesso a aba 'Histórico'",
-          "then": "O sistema exibe lista paginada (10 por página) ordenada por data decrescente, mostrando: data, médico, especialidade e status (realizada/cancelada)"
-        },
-        {
-          "id": "AC-003-02",
-          "scenario": "Paciente sem histórico",
-          "given": "Que estou na ficha de um paciente recém-cadastrado",
-          "when": "Acesso a aba 'Histórico'",
-          "then": "O sistema exibe mensagem 'Nenhuma consulta registrada' com ilustração empty-state"
-        },
-        {
-          "id": "AC-003-03",
-          "scenario": "Filtrar histórico por período",
-          "given": "Que estou visualizando o histórico com 50 consultas",
-          "when": "Filtro por 'Último ano'",
-          "then": "O sistema exibe apenas consultas dos últimos 12 meses"
-        },
-        {
-          "id": "AC-003-04",
-          "scenario": "Ver detalhes de consulta específica",
-          "given": "Que estou visualizando o histórico",
-          "when": "Clico em uma consulta da lista",
-          "then": "O sistema abre modal/painel com detalhes: observações, prescrições, exames solicitados"
-        }
-      ],
-      "technicalNotes": [
-        "Endpoint: GET /api/v1/patients/:id/appointments?page=1&limit=10&from=&to=",
-        "Incluir relacionamentos: doctor, speciality",
-        "Cache de 5 minutos para histórico (não muda frequentemente)",
-        "Índice composto em appointments(patient_id, date DESC)"
-      ],
-      "dependencies": [
-        "US-001: Cadastrar novo paciente",
-        "EPIC-003: Sistema de Agendamento implementado"
-      ],
-      "estimatedPoints": 5,
-      "priority": "P1"
-    },
-    {
-      "id": "US-004",
-      "title": "Configurar preferências de contato do paciente",
-      "description": "Como paciente, quero definir meus canais preferidos de contato, para receber lembretes da forma que me for mais conveniente.",
-      "acceptanceCriteria": [
-        {
-          "id": "AC-004-01",
-          "scenario": "Definir preferência de contato",
-          "given": "Que estou no meu perfil de paciente",
-          "when": "Acesso 'Preferências' e seleciono 'WhatsApp' como canal principal e 'Email' como secundário",
-          "then": "O sistema salva as preferências e exibe confirmação"
-        },
-        {
-          "id": "AC-004-02",
-          "scenario": "Opt-out de notificações",
-          "given": "Que estou nas preferências de contato",
-          "when": "Desmarco todas as opções de notificação",
-          "then": "O sistema exibe aviso 'Você não receberá lembretes de consulta' e pede confirmação"
-        },
-        {
-          "id": "AC-004-03",
-          "scenario": "Validação de WhatsApp",
-          "given": "Que selecionei WhatsApp como canal",
-          "when": "Meu telefone cadastrado não tem WhatsApp válido",
-          "then": "O sistema solicita número de WhatsApp válido antes de salvar"
-        }
-      ],
-      "technicalNotes": [
-        "Endpoint: PATCH /api/v1/patients/:id/preferences",
-        "Campos: preferredChannel (EMAIL|SMS|WHATSAPP), optOut (boolean)",
-        "Validar se canal selecionado tem dados necessários (ex: WhatsApp precisa de phone)",
-        "Audit log de alterações de preferência (LGPD)"
-      ],
-      "dependencies": [
-        "US-001: Cadastrar novo paciente"
-      ],
-      "estimatedPoints": 3,
-      "priority": "P2"
-    },
-    {
-      "id": "US-005",
       "title": "Excluir paciente (soft delete) para LGPD",
-      "description": "Como administrador, quero excluir um paciente do sistema de forma reversível, para atender solicitações de exclusão de dados mantendo compliance com LGPD.",
+      "priority": "P1",
+      "role": "administrador",
+      "action": "excluir um paciente do sistema de forma reversível",
+      "benefit": "atender solicitações de exclusão de dados mantendo compliance com LGPD",
+      "businessContext": "Compliance com LGPD exige que usuários possam solicitar exclusão de seus dados. O soft delete permite reverter exclusões acidentais e manter dados para auditoria médica por período legal. Após 30 dias, anonimização completa garante conformidade total.",
       "acceptanceCriteria": [
-        {
-          "id": "AC-005-01",
-          "scenario": "Soft delete de paciente sem consultas futuras",
-          "given": "Que sou admin e o paciente não tem consultas agendadas",
-          "when": "Clico em 'Excluir paciente' e confirmo com minha senha",
-          "then": "O sistema marca como deletedAt=now(), remove de listagens, mas mantém dados para histórico médico"
-        },
-        {
-          "id": "AC-005-02",
-          "scenario": "Tentativa de exclusão com consultas futuras",
-          "given": "Que o paciente tem consultas agendadas",
-          "when": "Tento excluir o paciente",
-          "then": "O sistema bloqueia e exibe 'Cancele as consultas pendentes antes de excluir'"
-        },
-        {
-          "id": "AC-005-03",
-          "scenario": "Anonimização para compliance total",
-          "given": "Que a exclusão foi solicitada há mais de 30 dias",
-          "when": "O job de compliance roda",
-          "then": "O sistema anonimiza dados sensíveis (nome vira 'ANONIMIZADO', CPF vira hash) mantendo apenas dados estatísticos"
-        },
-        {
-          "id": "AC-005-04",
-          "scenario": "Audit log de exclusão",
-          "given": "Que um paciente foi excluído",
-          "when": "Consulto o log de auditoria",
-          "then": "Vejo registro: quem excluiu, quando, motivo (se informado), IP"
-        }
+        "DADO QUE sou admin e o paciente não tem consultas agendadas QUANDO clico em 'Excluir paciente' e confirmo com senha ENTÃO o sistema marca deletedAt=now(), remove de listagens, mas mantém dados para histórico médico",
+        "DADO QUE o paciente tem consultas agendadas QUANDO tento excluir ENTÃO o sistema bloqueia e exibe 'Cancele as consultas pendentes antes de excluir'",
+        "DADO QUE a exclusão foi solicitada há mais de 30 dias QUANDO job de compliance roda ENTÃO o sistema anonimiza dados sensíveis (nome vira 'ANONIMIZADO', CPF vira hash) mantendo apenas dados estatísticos",
+        "DADO QUE um paciente foi excluído QUANDO consulto log de auditoria ENTÃO vejo registro: quem excluiu, quando, motivo (se informado), IP"
       ],
-      "technicalNotes": [
+      "functionalRequirements": [
         "Endpoint: DELETE /api/v1/patients/:id",
+        "Campo deletedAt (soft delete) + deletedBy para auditoria",
+        "Job scheduled para anonimização após 30 dias de retenção",
+        "Excluídos não aparecem em queries normais (WHERE deletedAt IS NULL)",
+        "Verificar consultas futuras antes de permitir exclusão"
+      ],
+      "securityRequirements": [
         "Requer role ADMIN + confirmação de senha",
-        "Campo deletedAt (soft delete) + deletedBy",
-        "Job scheduled para anonimização após período de retenção",
-        "Excluídos não aparecem em queries normais (WHERE deletedAt IS NULL)"
-      ],
-      "dependencies": [
-        "US-001: Cadastrar novo paciente",
-        "Sistema de autenticação com roles",
-        "EPIC-003: Sistema de Agendamento (verificar pendências)"
-      ],
-      "estimatedPoints": 8,
-      "priority": "P1"
+        "Log completo de auditoria: quem, quando, motivo, IP",
+        "Anonimização irreversível após período de retenção",
+        "Garantir que soft delete não exponha dados em APIs públicas",
+        "Rate limiting: máximo 3 exclusões por admin por hora (prevenir exclusões em massa acidentais)"
+      ]
     }
-  ],
-  
-  "summary": {
-    "totalStories": 5,
-    "totalPoints": 24,
-    "p0Count": 1,
-    "p1Count": 3,
-    "p2Count": 1
-  }
+  ]
 }
 
 ───────────────────────────────────────────────────────────────────────────────
@@ -324,35 +155,46 @@ com confiança e QA consegue testar sem ambiguidade.
 ## FORMATO DE SAÍDA (JSON ESTRITO PT-BR):
 ───────────────────────────────────────────────────────────────────────────────
 
+**IMPORTANTE:** Siga EXATAMENTE este formato. Campos obrigatórios devem estar presentes e bem preenchidos!
+
 {
-  "epicId": "string",
-  "epicTitle": "string",
   "userStories": [
     {
       "id": "US-XXX",
-      "title": "string - verbo imperativo + objeto",
-      "description": "Como [persona], quero [ação], para [benefício]",
+      "title": "Verbo imperativo + objeto + contexto (ex: 'Cadastrar novo usuário no sistema')",
+      "priority": "P0 | P1 | P2 | P3",
+      "role": "persona específica (ex: 'administrador', 'médico', 'recepcionista', 'paciente')",
+      "action": "descrição DETALHADA da ação que o usuário quer fazer, com contexto e dados envolvidos",
+      "benefit": "benefício MENSURÁVEL e específico que justifica a história",
+      "businessContext": "contexto de negócio DETALHADO: por que isso é importante, quais problemas resolve, qual o impacto no negócio",
       "acceptanceCriteria": [
-        {
-          "id": "AC-XXX-XX",
-          "scenario": "string - nome do cenário",
-          "given": "string - pré-condição",
-          "when": "string - ação do usuário",
-          "then": "string - resultado esperado"
-        }
+        "DADO QUE [pré-condição específica com dados] QUANDO [ação com detalhes] ENTÃO [resultado esperado detalhado]",
+        "DADO QUE [cenário de erro] QUANDO [ação inválida] ENTÃO [mensagem de erro específica]",
+        "... mínimo 4 critérios cobrindo happy path + edge cases ..."
       ],
-      "technicalNotes": ["array de dicas técnicas"],
-      "dependencies": ["array de dependências"],
-      "estimatedPoints": "number (fibonacci: 1,2,3,5,8,13)",
-      "priority": "P0 | P1 | P2"
+      "functionalRequirements": [
+        "Detalhes técnicos de implementação (endpoints, validações, regras de negócio)",
+        "Requisitos específicos de performance, se aplicável",
+        "Integrações necessárias",
+        "... mínimo 4 requisitos ..."
+      ],
+      "securityRequirements": [
+        "Requisitos de autenticação e autorização",
+        "Validações de segurança (injection, XSS, etc)",
+        "Logs de auditoria",
+        "Rate limiting e proteções",
+        "... mínimo 3 requisitos ..."
+      ]
     }
-  ],
-  "summary": {
-    "totalStories": "number",
-    "totalPoints": "number",
-    "p0Count": "number",
-    "p1Count": "number",
-    "p2Count": "number"
-  }
+  ]
 }
+
+**VALIDAÇÕES OBRIGATÓRIAS:**
+- role: NUNCA usar "usuário" genérico - seja específico (admin, médico, cliente, etc)
+- action: NUNCA usar "realizar ação" - descreva a ação real com dados envolvidos
+- benefit: NUNCA usar "obter valor" - descreva benefício mensurável e específico
+- acceptanceCriteria: MÍNIMO 4 critérios no formato DADO-QUANDO-ENTÃO com dados específicos
+- functionalRequirements: MÍNIMO 4 requisitos técnicos detalhados
+- securityRequirements: MÍNIMO 3 requisitos de segurança contextualizados
+- businessContext: NUNCA genérico - explique o contexto real do negócio
 `.trim();
