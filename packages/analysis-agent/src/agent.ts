@@ -2,6 +2,8 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { SYSTEM_PROMPTS } from "./prompts/index.js";
 import { globalAnalysisCache } from "./services/cache.service.js";
+import { detectProviderFromURL } from "./config/model-mappings.js";
+import type { MetricsTracker } from "./types/metrics.js";
 
 // --- TIPOS ---
 export type Complexity = "Baixa" | "Média" | "Alta" | "Crítica";
