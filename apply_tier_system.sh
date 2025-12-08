@@ -357,8 +357,11 @@ EOF
 # Encontrar linha do detectLanguage
 DETECT_LANG_LINE=$(grep -n "private detectLanguage" "$AGENT_FILE" | cut -d: -f1)
 
-# Inserir antes dessa linha
-sed -i "${DETECT_LANG_LINE}i$(cat /tmp/new_methods.txt)" "$AGENT_FILE"
+# Calcular linha anterior (para inserir antes)
+INSERT_LINE=$((DETECT_LANG_LINE - 1))
+
+# Usar 'r' (read) ao invés de 'i' (insert) para ler o arquivo
+sed -i "${INSERT_LINE}r /tmp/new_methods.txt" "$AGENT_FILE"
 
 echo -e "${GREEN}✓ Métodos auxiliares adicionados${NC}"
 
@@ -484,11 +487,16 @@ START_LINE=$(grep -n "private async callLLM<T>" "$AGENT_FILE" | cut -d: -f1)
 # Encontrar o fechamento do método (próximo "  }" após o início)
 END_LINE=$(awk "NR > $START_LINE && /^  \}$/ { print NR; exit }" "$AGENT_FILE")
 
-# Deletar linhas do método antigo
-sed -i "${START_LINE},${END_LINE}d" "$AGENT_FILE"
+# Inserir novo método ANTES da linha do método antigo
+INSERT_LINE=$((START_LINE - 1))
+sed -i "${INSERT_LINE}r /tmp/new_callLLM.txt" "$AGENT_FILE"
 
-# Inserir novo método na mesma posição
-sed -i "${START_LINE}i$(cat /tmp/new_callLLM.txt)" "$AGENT_FILE"
+# Recalcular posição do método antigo (agora deslocado) e deletar
+# Contar quantas linhas tem o novo método
+NEW_METHOD_LINES=$(wc -l < /tmp/new_callLLM.txt)
+OLD_START=$((START_LINE + NEW_METHOD_LINES))
+OLD_END=$((END_LINE + NEW_METHOD_LINES))
+sed -i "${OLD_START},${OLD_END}d" "$AGENT_FILE"
 
 echo -e "${GREEN}✓ callLLM modificado para usar tier system e métricas${NC}"
 

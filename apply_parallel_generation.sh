@@ -60,7 +60,8 @@ EOF
 
 # Inserir antes do método detectLanguage
 DETECT_LANG_LINE=$(grep -n "private detectLanguage" "$AGENT_FILE" | cut -d: -f1)
-sed -i "${DETECT_LANG_LINE}i$(cat /tmp/determine_file_tier.txt)" "$AGENT_FILE"
+INSERT_LINE=$((DETECT_LANG_LINE - 1))
+sed -i "${INSERT_LINE}r /tmp/determine_file_tier.txt" "$AGENT_FILE"
 
 echo -e "${GREEN}✓ determineFileTier() adicionado${NC}"
 
@@ -133,7 +134,8 @@ EOF
 
 # Inserir antes do método detectLanguage
 DETECT_LANG_LINE=$(grep -n "private detectLanguage" "$AGENT_FILE" | cut -d: -f1)
-sed -i "${DETECT_LANG_LINE}i$(cat /tmp/generate_all_files_parallel.txt)" "$AGENT_FILE"
+INSERT_LINE=$((DETECT_LANG_LINE - 1))
+sed -i "${INSERT_LINE}r /tmp/generate_all_files_parallel.txt" "$AGENT_FILE"
 
 echo -e "${GREEN}✓ generateAllFilesParallel() adicionado${NC}"
 
@@ -184,11 +186,15 @@ EOF
 START_LINE=$(grep -n "private async expandEpicsToStories" "$AGENT_FILE" | cut -d: -f1)
 END_LINE=$(awk "NR > $START_LINE && /^  \}$/ { print NR; exit }" "$AGENT_FILE")
 
-# Deletar método antigo
-sed -i "${START_LINE},${END_LINE}d" "$AGENT_FILE"
+# Inserir novo método ANTES do antigo
+INSERT_LINE=$((START_LINE - 1))
+sed -i "${INSERT_LINE}r /tmp/new_expand_epics.txt" "$AGENT_FILE"
 
-# Inserir novo método
-sed -i "${START_LINE}i$(cat /tmp/new_expand_epics.txt)" "$AGENT_FILE"
+# Recalcular posição do método antigo e deletar
+NEW_METHOD_LINES=$(wc -l < /tmp/new_expand_epics.txt)
+OLD_START=$((START_LINE + NEW_METHOD_LINES))
+OLD_END=$((END_LINE + NEW_METHOD_LINES))
+sed -i "${OLD_START},${OLD_END}d" "$AGENT_FILE"
 
 echo -e "${GREEN}✓ expandEpicsToStories() modificado para geração paralela${NC}"
 

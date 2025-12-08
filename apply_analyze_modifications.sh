@@ -161,11 +161,15 @@ START_LINE=$(grep -n "async analyze(userPrompt: string" "$AGENT_FILE" | cut -d: 
 # Encontrar o fechamento do método (primeiro "  }" após a chave de abertura do try-catch)
 END_LINE=$(awk "NR > $START_LINE && /^  \}$/ { print NR; exit }" "$AGENT_FILE")
 
-# Deletar método antigo
-sed -i "${START_LINE},${END_LINE}d" "$AGENT_FILE"
+# Inserir novo método ANTES do antigo
+INSERT_LINE=$((START_LINE - 1))
+sed -i "${INSERT_LINE}r /tmp/new_analyze.txt" "$AGENT_FILE"
 
-# Inserir novo método
-sed -i "${START_LINE}i$(cat /tmp/new_analyze.txt)" "$AGENT_FILE"
+# Recalcular posição do método antigo e deletar
+NEW_METHOD_LINES=$(wc -l < /tmp/new_analyze.txt)
+OLD_START=$((START_LINE + NEW_METHOD_LINES))
+OLD_END=$((END_LINE + NEW_METHOD_LINES))
+sed -i "${OLD_START},${OLD_END}d" "$AGENT_FILE"
 
 echo -e "${GREEN}✓ Método analyze() substituído com sucesso${NC}"
 
