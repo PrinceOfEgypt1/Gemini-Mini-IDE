@@ -293,14 +293,80 @@ export class AnalysisAgent {
   }
 
   private async runArchitectureStep(userPrompt: string, _productPlan: RichProductPlan): Promise<RichArchitecture> {
-    const richContext = this.context.buildArchitectureContext(); // Removido argumento
-    return this.callLLM(
-      SYSTEM_PROMPTS.ARCHITECTURE,
-      `${userPrompt}\n\nCONTEXTO DE PRODUTO:\n${richContext}`,
-      sanitizeRichArchitecture,
-      RichArchitectureSchema,
-      "Architecture"
-    );
+    const richContext = this.context.buildArchitectureContext();
+    const fullContext = `${userPrompt}\n\nCONTEXTO DE PRODUTO:\n${richContext}`;
+
+    // eslint-disable-next-line no-console
+    console.log(`[Agent] Desenhando Arquitetura...`);
+    // eslint-disable-next-line no-console
+    console.log(`[Agent] runArchitectureStep - Context size: ${fullContext.length} chars, Epics: ${_productPlan.epics.length}`);
+
+    // VALIDAÇÃO COM RETRY: Tentar até 3 vezes até obter manifest válido
+    const MAX_ATTEMPTS = 3;
+    let lastArchitecture: RichArchitecture | null = null;
+    let lastValidation: { valid: boolean; errors: Array<{ structure: string; message: string }> } | null = null;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      // eslint-disable-next-line no-console
+      console.log(`[Validator] Tentativa ${attempt}/${MAX_ATTEMPTS} de gerar manifest válido...`);
+
+      // Adicionar feedback de erros da tentativa anterior (se houver)
+      let contextWithFeedback = fullContext;
+      if (lastValidation && !lastValidation.valid && attempt > 1) {
+        const feedbackErrors = lastValidation.errors.map(e => `- ${e.structure}: ${e.message}`).join('\n');
+        contextWithFeedback = `${fullContext}\n\n⚠️ ATENÇÃO: Sua resposta anterior foi REJEITADA pelos seguintes motivos:\n${feedbackErrors}\n\nGere novamente CORRIGINDO esses problemas.`;
+        // eslint-disable-next-line no-console
+        console.log(`[Validator] Feedback de erros:\n${feedbackErrors}`);
+      }
+
+      // Gerar arquitetura
+      const architecture = await this.callLLM(
+        SYSTEM_PROMPTS.ARCHITECTURE,
+        contextWithFeedback,
+        sanitizeRichArchitecture,
+        RichArchitectureSchema,
+        "Architecture"
+      );
+      lastArchitecture = architecture;
+
+      // Validar manifest
+      const { validateManifest } = await import("./validators/manifest-validator.js");
+      const validation = validateManifest(architecture.manifest, userPrompt);
+      lastValidation = validation;
+
+      if (validation.valid) {
+        // eslint-disable-next-line no-console
+        console.log(`[Validator] ✅ Manifest válido na tentativa ${attempt}`);
+        if (validation.warnings.length > 0) {
+          // eslint-disable-next-line no-console
+          console.warn(`[Validator] Avisos: ${validation.warnings.join(', ')}`);
+        }
+        return architecture;
+      }
+
+      // Manifest inválido
+      // eslint-disable-next-line no-console
+      console.error(`[Validator] ❌ Manifest inválido na tentativa ${attempt}:`);
+      for (const error of validation.errors) {
+        // eslint-disable-next-line no-console
+        console.error(`  - ${error.structure}: ${error.message}`);
+      }
+    }
+
+    // Falhou após MAX_ATTEMPTS tentativas
+    // eslint-disable-next-line no-console
+    console.error(`[Validator] ❌ Falha após ${MAX_ATTEMPTS} tentativas. Retornando última arquitetura (inválida).`);
+    if (lastValidation) {
+      // eslint-disable-next-line no-console
+      console.error(`[Validator] Erros finais:`);
+      for (const error of lastValidation.errors) {
+        // eslint-disable-next-line no-console
+        console.error(`  - ${error.structure}: ${error.message}`);
+      }
+    }
+
+    // Retornar última tentativa mesmo inválida (para não quebrar o fluxo)
+    return lastArchitecture!;
   }
 
   private async expandEpicsToStories(product: RichProductPlan): Promise<UserStoriesResult[]> {
