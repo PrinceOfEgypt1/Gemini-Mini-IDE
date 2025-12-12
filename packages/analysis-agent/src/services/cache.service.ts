@@ -49,7 +49,10 @@ export class CacheService {
   }
 
   generateKey(systemPrompt: string, userPrompt: string, model: string, temperature: number): string {
-    const content = `${model}:${temperature}:${systemPrompt}:${userPrompt}`;
+    // Incrementar CACHE_VERSION sempre que a lógica do agent mudar
+    // para invalidar caches antigos e evitar retornar resultados desatualizados
+    const CACHE_VERSION = "v14.2";
+    const content = `${CACHE_VERSION}:${model}:${temperature}:${systemPrompt}:${userPrompt}`;
     return createHash("sha256").update(content).digest("hex");
   }
 

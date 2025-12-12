@@ -209,8 +209,20 @@ export class AnalysisAgent {
   // Método auxiliar para parsing seguro de JSON
   private cleanJsonString(str: string): string {
     let cleaned = str.replace(/```json\s*/g, "").replace(/```\s*$/g, "");
-    cleaned = cleaned.replace(/\/\/.*/g, ""); 
+    cleaned = cleaned.replace(/\/\/.*/g, "");
     return cleaned.trim();
+  }
+
+  // Detecta a linguagem do arquivo baseado na extensão
+  private detectLanguage(filePath: string): string {
+    if (filePath.match(/\.(ts|tsx)$/)) return "typescript";
+    if (filePath.match(/\.(js|jsx)$/)) return "javascript";
+    if (filePath.endsWith(".json")) return "json";
+    if (filePath.endsWith(".md")) return "markdown";
+    if (filePath.match(/\.(yml|yaml)$/)) return "yaml";
+    if (filePath.endsWith(".css")) return "css";
+    if (filePath.endsWith(".html")) return "html";
+    return "plaintext";
   }
 
   private async callLLM<T>(
@@ -537,6 +549,11 @@ export class AnalysisAgent {
       }
       timings.codeGen = performance.now() - t4;
 
+      // Validação de Integridade: Verifica se todos os arquivos do manifest foram gerados
+      const { validateIntegrity, logIntegrityResults } = await import("./validators/integrity-validator.js");
+      const integrityResult = validateIntegrity(architecture.manifest, files);
+      logIntegrityResults(integrityResult);
+
       timings.total = performance.now() - startTime;
 
       return {
@@ -548,8 +565,8 @@ export class AnalysisAgent {
         product,
         architect: architecture, // Alias para compatibilidade ou uso direto
         userStories: flatUserStories,
-        engine: { 
-            files: files.map(f => ({ path: f.path, content: f.content, language: "typescript" })) 
+        engine: {
+            files: files.map(f => ({ path: f.path, content: f.content, language: this.detectLanguage(f.path) }))
         },
         quality: {
             validationErrors: [],
