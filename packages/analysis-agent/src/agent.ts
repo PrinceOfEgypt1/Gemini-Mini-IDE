@@ -108,13 +108,12 @@ function sanitizeRichProductPlan(data: any): RichProductPlan {
 
 function sanitizeRichArchitecture(data: any): RichArchitecture {
   const stackData = (data["stack"] && typeof data["stack"] === "object") ? data["stack"] : {};
-  
+
   const stack: TechStack = {
     runtime: ensureString(stackData["runtime"], "Node.js"),
     language: ensureString(stackData["language"], "TypeScript"),
     framework: ensureString(stackData["framework"], "React"),
     testing: ensureString(stackData["testing"], "Vitest"),
-    // styling removido pois não existe na interface TechStack definida no rich-schemas.ts
     documentation: ensureString(stackData["documentation"], "README.md"),
     orm: ensureString(stackData["orm"], "N/A"),
     database: ensureString(stackData["database"], "N/A"),
@@ -122,15 +121,72 @@ function sanitizeRichArchitecture(data: any): RichArchitecture {
     queue: ensureString(stackData["queue"], "N/A")
   };
 
+  // Mapeamento de categorias inválidas para válidas
+  const categoryMap: Record<string, string> = {
+    "STYLES": "APPLICATION",
+    "STYLE": "APPLICATION",
+    "UI": "APPLICATION",
+    "FRONTEND": "APPLICATION",
+    "BACKEND": "INFRASTRUCTURE",
+    "API": "INFRASTRUCTURE",
+    "SERVICE": "APPLICATION",
+    "MODEL": "DOMAIN",
+    "ENTITY": "DOMAIN",
+    "UTIL": "APPLICATION",
+    "UTILS": "APPLICATION",
+    "HELPER": "APPLICATION",
+    "HELPERS": "APPLICATION",
+    "TYPES": "DOMAIN",
+    "INTERFACE": "DOMAIN",
+    "TYPE": "DOMAIN"
+  };
+
+  const validCategories = ["DOMAIN", "APPLICATION", "INFRASTRUCTURE", "DEVOPS", "CONFIG", "TESTS", "DOCS"];
+
   const manifestRaw = Array.isArray(data["manifest"]) ? data["manifest"] : [];
-  const manifest: RichManifestItem[] = manifestRaw.map((file: any) => ({
-    path: ensureString(file["path"], "unknown.txt"),
-    purpose: ensureString(file["purpose"], "Component implementation"),
-    criticality: (["HIGH", "MEDIUM", "LOW"].includes(file["criticality"]) ? file["criticality"] : "MEDIUM") as any,
-    category: (["CONFIG", "DOMAIN", "APPLICATION", "INFRASTRUCTURE", "DEVOPS", "TESTS", "DOCS"].includes(file["category"]) 
-      ? file["category"] 
-      : "APPLICATION") as any
-  }));
+  const manifest: RichManifestItem[] = manifestRaw.map((file: any) => {
+    let category = file["category"];
+
+    // Normalizar categoria
+    if (typeof category === "string") {
+      const upperCategory = category.toUpperCase().trim();
+
+      // Verificar se está na lista válida
+      if (validCategories.includes(upperCategory)) {
+        category = upperCategory;
+      } else if (categoryMap[upperCategory]) {
+        // Mapear categoria inválida conhecida
+        category = categoryMap[upperCategory];
+      } else {
+        // Tentar inferir categoria do path
+        const path = ensureString(file["path"], "").toLowerCase();
+        if (path.includes("test") || path.includes("spec")) {
+          category = "TESTS";
+        } else if (path.includes("config") || path.includes(".env") || path.includes("tsconfig")) {
+          category = "CONFIG";
+        } else if (path.includes("domain") || path.includes("entity") || path.includes("model")) {
+          category = "DOMAIN";
+        } else if (path.includes("infrastructure") || path.includes("database") || path.includes("http")) {
+          category = "INFRASTRUCTURE";
+        } else if (path.includes("docker") || path.includes("ci") || path.includes("deploy")) {
+          category = "DEVOPS";
+        } else if (path.includes("docs") || path.includes("readme") || path.includes(".md")) {
+          category = "DOCS";
+        } else {
+          category = "APPLICATION"; // Fallback padrão
+        }
+      }
+    } else {
+      category = "APPLICATION"; // Fallback se não for string
+    }
+
+    return {
+      path: ensureString(file["path"], "unknown.txt"),
+      purpose: ensureString(file["purpose"], "Component implementation"),
+      criticality: (["HIGH", "MEDIUM", "LOW"].includes(file["criticality"]) ? file["criticality"] : "MEDIUM") as any,
+      category: category as any
+    };
+  });
 
   return {
     architectureStyle: ensureString(data["architectureStyle"], "Modular Monolith"),
@@ -231,14 +287,27 @@ export class AnalysisAgent {
     sanitizer: (data: any) => T,
     schema: z.ZodType<any>,
     stepName: string,
-    temperature: number = 0.0
+    temperature: number = 0.0,
+    skipCache: boolean = false,
+    retryAttempt: number = 0
   ): Promise<T> {
-    const cacheKey = globalAnalysisCache.generateKey(systemPrompt, userPrompt, "gpt-4o-mini", temperature);
-    const cached = globalAnalysisCache.get<T>(cacheKey);
+    // Incluir retryAttempt na chave do cache para diferenciar tentativas
+    const cacheKey = globalAnalysisCache.generateKey(
+      systemPrompt,
+      userPrompt,
+      "gpt-4o-mini",
+      temperature,
+      retryAttempt
+    );
 
-    if (cached) {
-      console.log(`[Cache Hit] Step: ${stepName}`);
-      return cached;
+    // Pular cache se solicitado (útil para retries)
+    if (!skipCache) {
+      const cached = globalAnalysisCache.get<T>(cacheKey);
+      if (cached) {
+        // eslint-disable-next-line no-console
+        console.log(`[Cache Hit] Step: ${stepName}`);
+        return cached;
+      }
     }
 
     let attempts = 0;
@@ -265,14 +334,21 @@ export class AnalysisAgent {
         // Validação Schema (Opcional, apenas log)
         const validation = schema.safeParse(parsed);
         if (!validation.success) {
-          console.warn(`[Validation Warning] ${stepName}:`, validation.error.message);
+          // eslint-disable-next-line no-console
+          console.warn(`[Validation Warning] ${stepName}:`, validation.error.issues);
         }
 
         const sanitized = sanitizer(parsed);
-        globalAnalysisCache.set(cacheKey, sanitized);
+
+        // Só cachear se não for skipCache
+        if (!skipCache) {
+          globalAnalysisCache.set(cacheKey, sanitized);
+        }
+
         return sanitized;
 
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(`[Error] ${stepName} (Attempt ${attempts}):`, error);
         if (attempts >= maxAttempts) throw error;
         await new Promise(r => setTimeout(r, 1000 * attempts));
@@ -331,13 +407,18 @@ export class AnalysisAgent {
         console.log(`[Validator] Feedback de erros:\n${feedbackErrors}`);
       }
 
-      // Gerar arquitetura
+      // Gerar arquitetura (skipar cache em retries para forçar regeneração)
+      const skipCache = attempt > 1; // Desabilita cache da 2ª tentativa em diante
+      const temperature = attempt > 1 ? 0.3 : 0.0; // Aumenta temperatura em retries
       const architecture = await this.callLLM(
         SYSTEM_PROMPTS.ARCHITECTURE,
         contextWithFeedback,
         sanitizeRichArchitecture,
         RichArchitectureSchema,
-        "Architecture"
+        "Architecture",
+        temperature,
+        skipCache,
+        attempt // Passar attempt como retryAttempt
       );
       lastArchitecture = architecture;
 
