@@ -138,7 +138,10 @@ function sanitizeRichArchitecture(data: any): RichArchitecture {
     "HELPERS": "APPLICATION",
     "TYPES": "DOMAIN",
     "INTERFACE": "DOMAIN",
-    "TYPE": "DOMAIN"
+    "TYPE": "DOMAIN",
+    "HOOKS": "APPLICATION",
+    "HOOK": "APPLICATION",
+    "MIDDLEWARE": "APPLICATION"
   };
 
   const validCategories = ["DOMAIN", "APPLICATION", "INFRASTRUCTURE", "DEVOPS", "CONFIG", "TESTS", "DOCS"];
@@ -252,9 +255,9 @@ export class AnalysisAgent {
   private structureAuditor: StructureAuditor;
 
   constructor(apiKey: string) {
-    this.client = new OpenAI({ 
+    this.client = new OpenAI({
       apiKey,
-      timeout: 60000 // 60s timeout
+      timeout: 600000 // 10 minutes timeout (large prompts can take time)
     });
     this.context = new GenerationContext();
     this.validator = new CompletenessValidator();
