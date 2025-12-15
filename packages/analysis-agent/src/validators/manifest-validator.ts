@@ -97,14 +97,43 @@ export function extractStructureRequirements(userPrompt: string): StructureRequi
 }
 
 /**
- * Conta métodos mencionados no purpose/description de um arquivo
+ * Conta métodos mencionados no purpose/description de um arquivo.
+ *
+ * ESTRATÉGIA: Prioriza contagem explícita no formato "(N methods)" ou "(N métodos)"
+ * e fallback para contagem de métodos listados separados por vírgula.
+ *
+ * IMPORTANTE: Prioriza formato explícito do LLM sobre keyword matching.
  */
 function countMethodsInDescription(description: string): number {
   if (!description) return 0;
 
   const lowerDesc = description.toLowerCase();
 
-  // Métodos comuns em estruturas de dados
+  // ESTRATÉGIA 1: Procurar contagem explícita no formato "(N methods)" ou "(N métodos)"
+  const explicitCountMatch = description.match(/\((\d+)\s+m[eé]todos?\)/i);
+  if (explicitCountMatch) {
+    const count = parseInt(explicitCountMatch[1], 10);
+    if (!isNaN(count) && count > 0) {
+      return count;
+    }
+  }
+
+  // ESTRATÉGIA 2: Procurar lista de métodos no formato "with methods: m1, m2, m3, ..."
+  const methodsListMatch = description.match(/with methods:\s*([^(]+)/i);
+  if (methodsListMatch) {
+    const methodsList = methodsListMatch[1];
+    // Contar métodos separados por vírgula
+    const methods = methodsList
+      .split(',')
+      .map(m => m.trim())
+      .filter(m => m.length > 0 && /^[a-zA-Z_][a-zA-Z0-9_]*/.test(m)); // Validação de nome de método
+
+    if (methods.length > 0) {
+      return methods.length;
+    }
+  }
+
+  // ESTRATÉGIA 3: Fallback - procurar métodos comuns em lista hardcoded
   const commonMethods = [
     'insert', 'remove', 'delete', 'search', 'find', 'get', 'set', 'update',
     'add', 'push', 'pop', 'peek', 'enqueue', 'dequeue',
@@ -112,22 +141,18 @@ function countMethodsInDescription(description: string): number {
     'traverse', 'foreach', 'map', 'filter', 'reduce',
     'reverse', 'sort', 'min', 'max', 'sum',
     'contains', 'indexof', 'toarray', 'tolist',
-    // Árvores
     'inorder', 'preorder', 'postorder', 'levelorder',
     'height', 'depth', 'balance', 'rotate',
     'findmin', 'findmax', 'getmin', 'getmax',
-    // Grafos
     'addnode', 'addedge', 'removenode', 'removeedge',
     'bfs', 'dfs', 'dijkstra', 'prim', 'kruskal',
     'haspath', 'shortestpath', 'mst', 'topologicalsort',
     'getneighbors', 'getvertices', 'getedges', 'isconnected'
   ];
 
-  // Contar quantos métodos únicos aparecem na descrição
   const foundMethods = new Set<string>();
 
   for (const method of commonMethods) {
-    // Buscar padrões como: "método insert", "insert()", "método de inserção"
     const patterns = [
       new RegExp(`\\b${method}\\b`, 'i'),
       new RegExp(`método\\s+${method}`, 'i'),
@@ -137,13 +162,6 @@ function countMethodsInDescription(description: string): number {
     if (patterns.some(pattern => pattern.test(lowerDesc))) {
       foundMethods.add(method);
     }
-  }
-
-  // Se a descrição menciona explicitamente quantidade (ex: "10 métodos")
-  const explicitCountMatch = description.match(/(\d+)\s+métodos?/i);
-  if (explicitCountMatch) {
-    const explicitCount = parseInt(explicitCountMatch[1]);
-    return Math.max(foundMethods.size, explicitCount);
   }
 
   return foundMethods.size;

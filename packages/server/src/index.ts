@@ -3,7 +3,7 @@ import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import dotenv from "dotenv";
 import { z } from "zod";
-import { AnalysisAgent } from "@mini-ide/analysis-agent";
+import { AnalysisAgent } from "@gemini-mini-ide/analysis-agent";
 import { exportController } from "./controllers/export.controller.js";
 
 dotenv.config({ path: "../../.env" });

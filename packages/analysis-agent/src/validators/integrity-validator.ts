@@ -73,33 +73,47 @@ export function validateIntegrity(
  * Loga os resultados da validação de integridade de forma formatada.
  */
 export function logIntegrityResults(result: IntegrityResult): void {
+  // eslint-disable-next-line no-console
   console.log("\n" + "═".repeat(80));
+  // eslint-disable-next-line no-console
   console.log("🔍 VALIDAÇÃO DE INTEGRIDADE - Manifest vs Arquivos Gerados");
+  // eslint-disable-next-line no-console
   console.log("═".repeat(80));
 
+  // eslint-disable-next-line no-console
   console.log(`📋 Arquivos no Manifest: ${result.manifestCount}`);
+  // eslint-disable-next-line no-console
   console.log(`📦 Arquivos Gerados: ${result.deliveredCount}`);
 
   if (result.valid) {
+    // eslint-disable-next-line no-console
     console.log("✅ INTEGRIDADE OK: Todos os arquivos do manifest foram gerados!");
   } else {
+    // eslint-disable-next-line no-console
     console.log("❌ FALHA DE INTEGRIDADE: Arquivos faltando na entrega!");
   }
 
   if (result.warnings.length > 0) {
+    // eslint-disable-next-line no-console
     console.log("\n⚠️ AVISOS:");
+    // eslint-disable-next-line no-console
     result.warnings.forEach(warning => console.log(`   ${warning}`));
   }
 
   if (result.missingFiles.length > 0) {
+    // eslint-disable-next-line no-console
     console.log("\n❌ ARQUIVOS FALTANDO:");
+    // eslint-disable-next-line no-console
     result.missingFiles.forEach(file => console.log(`   - ${file}`));
   }
 
   if (result.extraFiles.length > 0) {
+    // eslint-disable-next-line no-console
     console.log("\nℹ️ ARQUIVOS EXTRAS:");
+    // eslint-disable-next-line no-console
     result.extraFiles.forEach(file => console.log(`   - ${file}`));
   }
 
+  // eslint-disable-next-line no-console
   console.log("═".repeat(80) + "\n");
 }
