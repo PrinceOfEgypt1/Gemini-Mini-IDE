@@ -134,9 +134,9 @@ export class CompletenessValidator {
 
         if (!exportDecl) continue;
 
-        // procurar o comentário JSDoc imediatamente acima, pulando linhas vazias
+        // procurar o comentário JSDoc imediatamente acima, pulando linhas vazias e comentários de linha
         let j = i - 1;
-        while (j >= 0 && lines[j].trim() === "") j--;
+        while (j >= 0 && (lines[j].trim() === "" || lines[j].trim().startsWith("//"))) j--;
 
         const prev = j >= 0 ? lines[j].trim() : "";
         if (!prev.endsWith("*/")) {
