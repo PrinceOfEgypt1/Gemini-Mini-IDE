@@ -1,25 +1,19 @@
-import { RichArchitecture } from "../types/rich-schemas.js";
+import type { RichArchitecture, FileCategory, Criticality, RichManifestItem } from "../types/rich-schemas.js";
 
 export class StructureAuditor {
   /**
    * Audita a arquitetura e injeta arquivos obrigatórios se estiverem faltando.
    */
   public auditAndFix(architecture: RichArchitecture): RichArchitecture {
-    const fixedManifest = [...architecture.manifest];
+    const fixedManifest: RichManifestItem[] = [...architecture.manifest];
     const stack = architecture.stack;
-    
-    // Helper para verificar existência
-    const hasFile = (pattern: RegExp) => fixedManifest.some(f => pattern.test(f.path));
 
-    // Helper para adicionar arquivo
-    const addFile = (path: string, purpose: string, category: "CONFIG" | "DOCS" | "TESTS" | "APPLICATION") => {
-      if (!hasFile(new RegExp(path.replace(".", "\\.")))) {
-        fixedManifest.push({
-          path,
-          purpose,
-          category,
-          criticality: "HIGH"
-        });
+    const manifestPaths = new Set(fixedManifest.map(f => f.path));
+
+    const addFile = (path: string, purpose: string, category: FileCategory, criticality: Criticality = "HIGH") => {
+      if (!manifestPaths.has(path)) {
+        fixedManifest.push({ path, purpose, category, criticality });
+        manifestPaths.add(path);
       }
     };
 
@@ -31,7 +25,7 @@ export class StructureAuditor {
     if (stack.runtime.toLowerCase().includes("node")) {
       addFile("package.json", "Project dependencies and scripts", "CONFIG");
     }
-    
+
     if (stack.language.toLowerCase().includes("typescript")) {
       addFile("tsconfig.json", "TypeScript compiler configuration", "CONFIG");
     }
@@ -39,8 +33,15 @@ export class StructureAuditor {
     // 3. Framework specific checks
     if (stack.framework.toLowerCase().includes("react")) {
       addFile("vite.config.ts", "Vite build configuration", "CONFIG");
+
       // Verifica se existe algum entrypoint
-      if (!hasFile(/src\/main\.tsx?/) && !hasFile(/src\/index\.tsx?/)) {
+      const hasEntrypoint =
+        fixedManifest.some(f => f.path === "src/main.tsx") ||
+        fixedManifest.some(f => f.path === "src/main.ts") ||
+        fixedManifest.some(f => f.path === "src/index.tsx") ||
+        fixedManifest.some(f => f.path === "src/index.ts");
+
+      if (!hasEntrypoint) {
         addFile("src/main.tsx", "Application entrypoint", "APPLICATION");
       }
     }

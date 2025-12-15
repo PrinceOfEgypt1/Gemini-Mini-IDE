@@ -527,22 +527,27 @@ export class AnalysisAgent {
       try {
         const parsed = JSON.parse(cleaned);
         content = parsed.code || "";
-        
-        // 1. Validação de Completude (Anti-Lazy)
-        const completeness = this.validator.validate(content, fileSpec.path);
-        if (!completeness.isValid) {
-          lastError = `Qualidade insuficiente: ${completeness.errors.join(", ")}`;
-          console.warn(`[Governance Reject] ${fileSpec.path}: ${lastError}`);
-          continue; 
-        }
 
-        // 2. Sandbox de Sintaxe
+        // 1. Validação de Sintaxe (PRIMEIRO - bloqueia erros graves de gramática)
         const syntax = this.syntaxSandbox.validateTS(content, fileSpec.path);
         if (!syntax.isValid) {
           lastError = `Erro de Sintaxe TypeScript: ${syntax.error}`;
-          console.warn(`[Syntax Reject] ${fileSpec.path}: ${lastError}`);
+          // eslint-disable-next-line no-console
+          console.warn(`[VALIDATION_FAIL_SYNTAX] ${fileSpec.path}: ${lastError}`);
           continue;
         }
+
+        // 2. Validação de Completude (SEGUNDO - Anti-Lazy, força qualidade mínima)
+        const completeness = this.validator.validate(content, fileSpec.path);
+        if (!completeness.isValid) {
+          lastError = `Governance Reject: ${fileSpec.path}\nReasons:\n${completeness.errors.map(e => `  - ${e}`).join('\n')}\n\nGere o arquivo novamente removendo os itens listados e adicionando JSDoc e exports apropriados.`;
+          // eslint-disable-next-line no-console
+          console.warn(`[VALIDATION_FAIL_COMPLETENESS] ${fileSpec.path}:\n${completeness.errors.map(e => `  - ${e}`).join('\n')}`);
+          continue;
+        }
+
+        // eslint-disable-next-line no-console
+        console.log(`[VALIDATION_OK] ${fileSpec.path}`);
 
         // Sucesso! Método corrigido para addGeneratedFile
         this.context.addGeneratedFile({
@@ -550,7 +555,7 @@ export class AnalysisAgent {
           content: content,
           language: "typescript"
         });
-        
+
         return { path: fileSpec.path, content };
 
       } catch (e) {

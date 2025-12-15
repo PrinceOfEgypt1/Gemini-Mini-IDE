@@ -57,7 +57,7 @@ export class CacheService {
   ): string {
     // Incrementar CACHE_VERSION sempre que a lógica do agent mudar
     // para invalidar caches antigos e evitar retornar resultados desatualizados
-    const CACHE_VERSION = "v14.3";
+    const CACHE_VERSION = "v15.0"; // Bumped: Governance Gate enforcement (JSDoc, any blocking, stricter validation)
     const content = `${CACHE_VERSION}:${model}:${temperature}:${retryAttempt}:${systemPrompt}:${userPrompt}`;
     return createHash("sha256").update(content).digest("hex");
   }

@@ -8,7 +8,7 @@ export interface ValidationResult {
 export class SyntaxSandbox {
   /**
    * Valida APENAS a sintaxe (gramática) do TypeScript usando transpileModule.
-   * 
+   *
    * Vantagens desta abordagem:
    * 1. Ignora erros de tipo (ex: "Cannot find name 'Array'") - O que resolve o bloqueio anterior.
    * 2. Detecta erros de sintaxe (ex: faltou fechar chave, erro de token).
@@ -31,28 +31,27 @@ export class SyntaxSandbox {
           module: ts.ModuleKind.ESNext,
           // Estas opções garantem que ele não tente resolver tipos
           skipLibCheck: true,
-          types: [] 
+          types: []
         }
       });
 
       if (result.diagnostics && result.diagnostics.length > 0) {
         const diagnostic = result.diagnostics[0];
         const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-        
+
         let line = 0;
         if (diagnostic.file && diagnostic.start !== undefined) {
-           const { line: l } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-           line = l + 1;
+          const { line: l } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+          line = l + 1;
         }
 
-        return { 
-          isValid: false, 
-          error: `Syntax Error at Line ${line}: ${message}` 
+        return {
+          isValid: false,
+          error: `Syntax Error at Line ${line}: ${message}`
         };
       }
 
       return { isValid: true };
-
     } catch (err) {
       // Tratamento seguro de exceções de runtime do compilador
       const errorMessage = err instanceof Error ? err.message : String(err);
