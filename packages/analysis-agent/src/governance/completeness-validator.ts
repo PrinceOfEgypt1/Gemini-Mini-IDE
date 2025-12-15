@@ -15,7 +15,8 @@ export class CompletenessValidator {
   public validate(code: string, filePath: string): CompletenessValidationResult {
     const errors: string[] = [];
 
-    const normalizedPath = filePath.replace(/\\/g, "/");
+    // Normalização determinística: \ → / + lowercase (Windows/WSL/Linux)
+    const normalizedPath = filePath.replace(/\\/g, "/").toLowerCase();
     const trimmed = (code ?? "").trim();
 
     // Ignorar arquivos não-código (JSON, MD, YAML, Dockerfile)
@@ -79,12 +80,9 @@ export class CompletenessValidator {
       normalizedPath.includes("vite.config") ||
       normalizedPath.includes("vitest.config");
 
-    // G3 fix: detectar entrypoints (não exportam por design)
-    const isEntrypoint =
-      normalizedPath.endsWith("/main.ts") ||
-      normalizedPath.endsWith("/main.tsx") ||
-      normalizedPath.endsWith("/index.ts") ||
-      normalizedPath.endsWith("/index.tsx");
+    // Detectar entrypoints (não exportam por design)
+    // APENAS src/main.ts(x) ou src/index.ts(x) - não aceita src/utils/index.ts
+    const isEntrypoint = /(^|\/)src\/(main|index)\.tsx?$/.test(normalizedPath);
 
     if (isTsLike && !isScript) {
       // any / as any são aceitos como "code smell" grave aqui

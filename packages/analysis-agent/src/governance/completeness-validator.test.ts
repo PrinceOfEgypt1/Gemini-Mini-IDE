@@ -280,6 +280,65 @@ describe("CompletenessValidator", () => {
       expect(result.errors).not.toContain("Module does not export anything");
     });
 
+    it("should accept Windows path src\\\\main.tsx as entrypoint", () => {
+      const code = `
+        import React from 'react';
+        import ReactDOM from 'react-dom/client';
+        import App from './App.tsx';
+
+        ReactDOM.createRoot(document.getElementById('root')!).render(
+          <App />
+        );
+      `;
+      const result = validator.validate(code, "src\\main.tsx");
+      expect(result.isValid).toBe(true);
+      expect(result.errors).not.toContain("Module does not export anything");
+    });
+
+    it("should accept monorepo entrypoint packages/app/src/index.tsx", () => {
+      const code = `
+        import React from 'react';
+        import ReactDOM from 'react-dom/client';
+        import App from './App.tsx';
+
+        ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+      `;
+      const result = validator.validate(code, "packages/app/src/index.tsx");
+      expect(result.isValid).toBe(true);
+      expect(result.errors).not.toContain("Module does not export anything");
+    });
+
+    it("should reject src/utils/index.ts as NON-entrypoint (false positive)", () => {
+      const code = `
+        function helper() {
+          return 42;
+        }
+      `;
+      const result = validator.validate(code, "src/utils/index.ts");
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain("Module does not export anything");
+    });
+
+    it("should reject src/lib/index.ts with export but no JSDoc", () => {
+      const code = `
+        export function helper() {
+          return 42;
+        }
+      `;
+      const result = validator.validate(code, "src/lib/index.ts");
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some(e => e.includes("Missing JSDoc"))).toBe(true);
+    });
+
+    it("should reject packages/foo/index.ts as NON-entrypoint", () => {
+      const code = `
+        const x = 42;
+      `;
+      const result = validator.validate(code, "packages/foo/index.ts");
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain("Module does not export anything");
+    });
+
     it("should reject entrypoint with TODO (other validations still apply)", () => {
       const code = `
         import React from 'react';
