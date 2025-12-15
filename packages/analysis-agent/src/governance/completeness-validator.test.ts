@@ -231,4 +231,71 @@ describe("CompletenessValidator", () => {
       expect(result.isValid).toBe(true);
     });
   });
+
+  describe("G1 Fix: async function detection", () => {
+    it("should reject export async function without JSDoc", () => {
+      const code = `
+        export async function fetchUser(id: string) {
+          const res = await fetch(\`/api/users/\${id}\`);
+          return res.json();
+        }
+      `;
+      const result = validator.validate(code, "src/api/user.ts");
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some(e => e.includes("Missing JSDoc"))).toBe(true);
+    });
+
+    it("should accept export async function with JSDoc", () => {
+      const code = `
+        /**
+         * Fetches user data from API.
+         * @param id - User ID
+         * @returns User data
+         */
+        export async function fetchUser(id: string) {
+          const res = await fetch(\`/api/users/\${id}\`);
+          return res.json();
+        }
+      `;
+      const result = validator.validate(code, "src/api/user.ts");
+      expect(result.isValid).toBe(true);
+    });
+  });
+
+  describe("G3 Fix: entrypoints don't require exports", () => {
+    it("should accept src/main.tsx without exports", () => {
+      const code = `
+        import React from 'react';
+        import ReactDOM from 'react-dom/client';
+        import App from './App.tsx';
+
+        ReactDOM.createRoot(document.getElementById('root')!).render(
+          <React.StrictMode>
+            <App />
+          </React.StrictMode>
+        );
+      `;
+      const result = validator.validate(code, "src/main.tsx");
+      expect(result.isValid).toBe(true);
+      expect(result.errors).not.toContain("Module does not export anything");
+    });
+
+    it("should reject entrypoint with TODO (other validations still apply)", () => {
+      const code = `
+        import React from 'react';
+        import ReactDOM from 'react-dom/client';
+        import App from './App.tsx';
+
+        // TODO: add error boundary
+        ReactDOM.createRoot(document.getElementById('root')!).render(
+          <React.StrictMode>
+            <App />
+          </React.StrictMode>
+        );
+      `;
+      const result = validator.validate(code, "src/main.tsx");
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain("Contains TODO marker");
+    });
+  });
 });

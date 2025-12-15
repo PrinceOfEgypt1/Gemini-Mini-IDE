@@ -79,6 +79,13 @@ export class CompletenessValidator {
       normalizedPath.includes("vite.config") ||
       normalizedPath.includes("vitest.config");
 
+    // G3 fix: detectar entrypoints (não exportam por design)
+    const isEntrypoint =
+      normalizedPath.endsWith("/main.ts") ||
+      normalizedPath.endsWith("/main.tsx") ||
+      normalizedPath.endsWith("/index.ts") ||
+      normalizedPath.endsWith("/index.tsx");
+
     if (isTsLike && !isScript) {
       // any / as any são aceitos como "code smell" grave aqui
       if (/\bany\b/.test(code)) {
@@ -102,13 +109,13 @@ export class CompletenessValidator {
       }
     }
 
-    // 4) Checagem de exportação (apenas para source code, ignorando testes e configs)
+    // 4) Checagem de exportação (apenas para source code, ignorando testes, configs e entrypoints)
     const isSourceFile =
       normalizedPath.endsWith(".ts") ||
       normalizedPath.endsWith(".tsx") ||
       normalizedPath.endsWith(".js");
 
-    if (isSourceFile && !isTestFile && !isConfigFile && !isScript) {
+    if (isSourceFile && !isTestFile && !isConfigFile && !isScript && !isEntrypoint) {
       const hasExport =
         /\bexport\s+/.test(code) ||
         /\bmodule\.exports\b/.test(code) ||
@@ -119,18 +126,20 @@ export class CompletenessValidator {
       }
     }
 
-    // 5) Exigir JSDoc em exports públicos (somente para TS/TSX não-testes)
+    // 5) Exigir JSDoc em exports públicos (somente para TS/TSX não-testes, não-configs, não-entrypoints)
     // Regra pragmática: qualquer linha "export class|function|interface|type|const|let|var" deve ter /** ... */ imediatamente antes.
     if (
       (normalizedPath.endsWith(".ts") || normalizedPath.endsWith(".tsx")) &&
       !isTestFile &&
       !isConfigFile &&
-      !isScript
+      !isScript &&
+      !isEntrypoint
     ) {
       const lines = code.split("\n");
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i] ?? "";
-        const exportDecl = /^\s*export\s+(default\s+)?(class|function|interface|type|const|let|var)\b/.test(line);
+        // G1 fix: incluir (async\s+)? para detectar "export async function"
+        const exportDecl = /^\s*export\s+(default\s+)?(async\s+)?(class|function|interface|type|const|let|var)\b/.test(line);
 
         if (!exportDecl) continue;
 
