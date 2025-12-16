@@ -1,13 +1,15 @@
 /**
- * User Stories Planner - Heurísticas genéricas para determinar quantidade e cobertura de User Stories
+ * User Stories Planner - Planejamento determinístico baseado em artefatos estruturados
  *
- * Este módulo analisa o prompt e artefatos intermediários para calcular:
- * - Quantidade mínima de histórias necessárias (minStories)
- * - Range recomendado (targetRange)
- * - Rationale explicando os fatores de complexidade
+ * Este módulo calcula a quantidade mínima de User Stories necessárias baseado em:
+ * 1. **Fonte Primária**: RichProductPlan (épicos + requirements por épico)
+ * 2. **Ajustes Limitados**: Complexidade da análise, sinais do prompt (com clamps)
+ * 3. **Clamps Obrigatórios**: Multiplicadores, per-epic cap, global cap, prompt fallback cap
  *
- * IMPORTANTE: Não usa hardcoding de números específicos por prompt.
- * Baseado em sinais genéricos de complexidade e cobertura.
+ * IMPORTANTE:
+ * - Deriva principalmente de estruturas (ProductPlan), NÃO de texto bruto
+ * - Nunca explode para centenas sem justificativa estrutural
+ * - Todos os multiplicadores têm limites superiores (clamps)
  */
 
 import { RichAnalysis, RichProductPlan, RichArchitecture } from "../types/rich-schemas.js";
@@ -56,11 +58,37 @@ export interface PlanningResult {
 }
 
 /**
- * User Stories Planner - Calcula quantidade necessária de HUs baseado em heurísticas
+ * User Stories Planner - Planejamento determinístico baseado em artefatos estruturados
  */
 export class UserStoriesPlanner {
+  // ==================== CLAMPS OBRIGATÓRIOS ====================
+  /** Multiplicador mínimo (nunca reduz abaixo de 90%) */
+  private readonly MULTIPLIER_MIN = 0.9;
+
+  /** Multiplicador máximo (nunca aumenta acima de 140%) */
+  private readonly MULTIPLIER_MAX = 1.4;
+
+  /** Máximo de histórias por épico (evita explosão em um único épico) */
+  private readonly MAX_STORIES_PER_EPIC = 20;
+
+  /** Máximo global de histórias (limite absoluto, independente da quantidade de épicos) */
+  private readonly MAX_GLOBAL_STORIES = 100;
+
+  /** Contribuição máxima do prompt quando não há ProductPlan (fallback) */
+  private readonly MAX_PROMPT_FALLBACK_STORIES = 10;
+
+  /** Mínimo absoluto de histórias (mesmo para prompts triviais) */
+  private readonly MIN_ABSOLUTE_STORIES = 3;
+
+  // ==================== PESOS PARA FÓRMULA GENÉRICA ====================
+  /** Histórias base por épico (mínimo antes de ajustes) */
+  private readonly BASE_STORIES_PER_EPIC = 3;
+
+  /** Peso de cada requirement (% de requirements que viram histórias) */
+  private readonly WEIGHT_REQUIREMENT = 0.8;
+
   /**
-   * Palavras-chave para detectar entidades de domínio
+   * Palavras-chave para detectar entidades de domínio (usadas apenas em fallback)
    */
   private readonly DOMAIN_KEYWORDS = [
     "usuário", "user", "cliente", "customer", "produto", "product", "pedido", "order",
@@ -193,11 +221,19 @@ export class UserStoriesPlanner {
   }
 
   /**
-   * Calcula quantidade mínima de histórias baseado em heurísticas genéricas
+   * Calcula quantidade mínima de histórias baseado em artefatos estruturados
    *
-   * @param prompt - Prompt original do usuário
+   * FÓRMULA GENÉRICA:
+   * Para cada épico:
+   *   storiesPerEpic = BASE_STORIES_PER_EPIC + (requirements.length * WEIGHT_REQUIREMENT)
+   *   storiesPerEpic = min(storiesPerEpic, MAX_STORIES_PER_EPIC)
+   *
+   * minStories = Σ_epics (storiesPerEpic) * multiplier (clamped)
+   * minStories = clamp(minStories, MIN_ABSOLUTE_STORIES, MAX_GLOBAL_STORIES)
+   *
+   * @param prompt - Prompt original do usuário (usado apenas em fallback)
    * @param analysis - Análise de complexidade (opcional)
-   * @param product - Plano de produto com épicos (opcional)
+   * @param product - Plano de produto com épicos (FONTE PRIMÁRIA)
    * @param architecture - Arquitetura com manifest (opcional)
    * @returns Resultado do planejamento com minStories, targetRange e rationale
    */
@@ -207,116 +243,107 @@ export class UserStoriesPlanner {
     product?: RichProductPlan,
     architecture?: RichArchitecture
   ): PlanningResult {
-    const signals = this.analyzePrompt(prompt);
     const rationale: string[] = [];
-
-    // Base: começar com mínimo absoluto de 3 histórias por épico
-    let baseStoriesPerEpic = 3;
+    let minStories = 0;
     let multiplier = 1.0;
 
-    // Ajustar base por complexidade do prompt
-    if (signals.score >= 7) {
-      baseStoriesPerEpic = 10;
-      multiplier = 1.5;
-      rationale.push(`Alta complexidade detectada no prompt (score: ${signals.score.toFixed(1)}/10)`);
-    } else if (signals.score >= 4) {
-      baseStoriesPerEpic = 6;
-      multiplier = 1.2;
-      rationale.push(`Média complexidade detectada no prompt (score: ${signals.score.toFixed(1)}/10)`);
-    } else {
-      rationale.push(`Baixa complexidade detectada no prompt (score: ${signals.score.toFixed(1)}/10)`);
-    }
-
-    // Multiplicador extra por estruturas/algoritmos (cada um tem muitos métodos)
-    if (signals.structuresAndAlgorithms > 5) {
-      multiplier *= 2.0; // Dobrar quando tem muitas estruturas
-      rationale.push(`Multiplicador 2x por alta quantidade de estruturas/algoritmos`);
-    } else if (signals.structuresAndAlgorithms > 0) {
-      multiplier *= 1.5;
-    }
-
-    // Multiplicador por entidades de domínio (cada uma requer CRUD + operações)
-    if (signals.domainEntities > 3) {
-      multiplier *= 1.3;
-    }
-
-    // Fator de entidades de domínio (cada entidade tende a ter CRUD + operações específicas)
-    if (signals.domainEntities > 0) {
-      rationale.push(`${signals.domainEntities} entidades de domínio detectadas`);
-    }
-
-    // Fator de estruturas/algoritmos (cada estrutura tem múltiplos métodos)
-    if (signals.structuresAndAlgorithms > 0) {
-      rationale.push(`${signals.structuresAndAlgorithms} estruturas/algoritmos detectados (cada um com múltiplos métodos)`);
-    }
-
-    // Fator de operações
-    if (signals.operations > 0) {
-      rationale.push(`${signals.operations} operações/ações identificadas`);
-    }
-
-    // Fator de NFRs (geram histórias de infraestrutura)
-    if (signals.nonFunctionalReqs > 0) {
-      rationale.push(`${signals.nonFunctionalReqs} requisitos não-funcionais identificados`);
-    }
-
-    // Fator de integrações
-    if (signals.integrations > 0) {
-      rationale.push(`${signals.integrations} integrações externas identificadas`);
-    }
-
-    // Usar informações dos artefatos intermediários se disponíveis
-    let epicCount = 1;
-    let avgRequirementsPerEpic = 5;
-
+    // ==================== FASE 1: DERIVAR DE ARTEFATOS ESTRUTURADOS ====================
     if (product && product.epics.length > 0) {
-      epicCount = product.epics.length;
-      rationale.push(`${epicCount} épicos definidos no plano de produto`);
+      // FONTE PRIMÁRIA: RichProductPlan
+      rationale.push(`📋 Derivando de ProductPlan: ${product.epics.length} épicos`);
 
-      // Calcular média de requirements por épico
-      const totalReqs = product.epics.reduce((sum, epic) => sum + epic.requirements.length, 0);
-      avgRequirementsPerEpic = Math.max(totalReqs / epicCount, 3);
-      rationale.push(`Média de ${avgRequirementsPerEpic.toFixed(1)} requisitos por épico`);
-    }
+      let totalStoriesFromEpics = 0;
 
-    // Usar complexidade da análise se disponível
-    if (analysis) {
-      const complexityMultiplier = analysis.complexity.level === "CRITICAL" ? 1.5
-        : analysis.complexity.level === "HIGH" ? 1.3
-        : analysis.complexity.level === "MEDIUM" ? 1.0
-        : 0.8;
+      for (const epic of product.epics) {
+        // Fórmula: base + (requirements * weight)
+        const reqCount = epic.requirements.length;
+        let epicStories = this.BASE_STORIES_PER_EPIC + Math.ceil(reqCount * this.WEIGHT_REQUIREMENT);
 
-      baseStoriesPerEpic = Math.ceil(baseStoriesPerEpic * complexityMultiplier);
-      rationale.push(`Complexidade da análise: ${analysis.complexity.level} (multiplicador: ${complexityMultiplier}x)`);
-    }
+        // CLAMP: Per-epic cap
+        epicStories = Math.min(epicStories, this.MAX_STORIES_PER_EPIC);
 
-    // Ajustar por tamanho do manifest (mais arquivos = mais cobertura necessária)
-    if (architecture && architecture.manifest.length > 0) {
-      const fileCount = architecture.manifest.length;
-      if (fileCount > 30) {
-        multiplier *= 1.4;
-        rationale.push(`Arquitetura complexa (${fileCount} arquivos, multiplicador +40%)`);
-      } else if (fileCount > 15) {
-        multiplier *= 1.2;
-        rationale.push(`Arquitetura média (${fileCount} arquivos, multiplicador +20%)`);
+        totalStoriesFromEpics += epicStories;
+
+        rationale.push(
+          `  - ${epic.id}: ${reqCount} reqs → ${epicStories} histórias (cap: ${this.MAX_STORIES_PER_EPIC})`
+        );
       }
+
+      minStories = totalStoriesFromEpics;
+      rationale.push(`📊 Total de épicos: ${minStories} histórias`);
+
+      // Ajustar multiplier pela complexidade da análise (se disponível)
+      if (analysis) {
+        const rawMultiplier = analysis.complexity.level === "CRITICAL" ? 1.4
+          : analysis.complexity.level === "HIGH" ? 1.3
+          : analysis.complexity.level === "MEDIUM" ? 1.0
+          : 0.9;
+
+        // CLAMP: Multiplicador tem limites superiores e inferiores
+        multiplier = Math.max(this.MULTIPLIER_MIN, Math.min(rawMultiplier, this.MULTIPLIER_MAX));
+
+        rationale.push(
+          `🎚️  Complexidade: ${analysis.complexity.level} → multiplicador ${rawMultiplier.toFixed(1)}x (clamped: ${multiplier.toFixed(1)}x)`
+        );
+
+        minStories = Math.ceil(minStories * multiplier);
+      }
+
+      // CLAMP: Global cap (limite absoluto)
+      if (minStories > this.MAX_GLOBAL_STORIES) {
+        rationale.push(
+          `⚠️  Aplicando clamp global: ${minStories} → ${this.MAX_GLOBAL_STORIES} (limite máximo)`
+        );
+        minStories = this.MAX_GLOBAL_STORIES;
+      }
+    } else {
+      // ==================== FASE 2: FALLBACK (SEM PRODUCT PLAN) ====================
+      rationale.push(`⚠️  Fallback: ProductPlan não disponível, usando sinais do prompt (LIMITADOS)`);
+
+      const signals = this.analyzePrompt(prompt);
+      rationale.push(`📝 Score do prompt: ${signals.score.toFixed(1)}/10`);
+
+      // Fallback com contribuição MUITO LIMITADA
+      // Base: 3 histórias + até 5 histórias baseadas no score (máximo 8)
+      const promptContribution = Math.min(signals.score * 0.5, 5);
+      minStories = this.MIN_ABSOLUTE_STORIES + Math.ceil(promptContribution);
+
+      // CLAMP: Fallback nunca pode gerar mais que MAX_PROMPT_FALLBACK_STORIES
+      minStories = Math.min(minStories, this.MAX_PROMPT_FALLBACK_STORIES);
+
+      rationale.push(
+        `🔢 Fallback calculado: ${this.MIN_ABSOLUTE_STORIES} (base) + ${Math.ceil(promptContribution)} (prompt) = ${minStories} histórias (cap: ${this.MAX_PROMPT_FALLBACK_STORIES})`
+      );
+
+      // Retornar signals para observability
+      const targetRange: [number, number] = [minStories, Math.ceil(minStories * 1.2)];
+      return {
+        minStories,
+        targetRange,
+        rationale,
+        signals
+      };
     }
 
-    // Aplicar multiplicador final
-    baseStoriesPerEpic = Math.ceil(baseStoriesPerEpic * multiplier);
+    // ==================== FASE 3: CLAMPS FINAIS ====================
+    // Garantir mínimo absoluto
+    if (minStories < this.MIN_ABSOLUTE_STORIES) {
+      rationale.push(`⬆️  Aplicando mínimo absoluto: ${minStories} → ${this.MIN_ABSOLUTE_STORIES}`);
+      minStories = this.MIN_ABSOLUTE_STORIES;
+    }
 
-    // Calcular mínimo de histórias
-    const minStories = Math.max(
-      epicCount * baseStoriesPerEpic,
-      Math.ceil(avgRequirementsPerEpic * epicCount * 0.8) // Pelo menos 80% dos requirements viram histórias
+    // Calcular range recomendado (min até 1.2x min, mas respeitando global cap)
+    const targetMax = Math.min(
+      Math.ceil(minStories * 1.2),
+      this.MAX_GLOBAL_STORIES
     );
+    const targetRange: [number, number] = [minStories, targetMax];
 
-    // Calcular range recomendado (min até 1.5x min, mas com upper bound)
-    const targetMax = Math.min(minStories * 1.5, minStories + 50); // Não explodir em centenas
-    const targetRange: [number, number] = [minStories, Math.ceil(targetMax)];
+    rationale.push(`✅ Mínimo final: ${minStories} histórias`);
+    rationale.push(`📈 Range recomendado: ${targetRange[0]}-${targetRange[1]} histórias`);
 
-    rationale.push(`Mínimo calculado: ${minStories} histórias`);
-    rationale.push(`Range recomendado: ${targetRange[0]}-${targetRange[1]} histórias`);
+    // Signals vazio quando deriva de ProductPlan (não usado)
+    const signals = this.analyzePrompt(prompt);
 
     return {
       minStories,

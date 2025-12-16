@@ -1675,5 +1675,368 @@
         "p2Count": 0
       }
     }
+  },
+  "c8832586b763034ec9d75de1edf2ff765fdbc8c74b07ab132c7495dc71de94b5": {
+    "timestamp": 1765851192746,
+    "data": {
+      "summary": "Test Project",
+      "complexity": {
+        "level": "MEDIUM",
+        "score": 5,
+        "justification": "Padronizado por fallback"
+      },
+      "coreEntities": [],
+      "implicitRequirements": [],
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "7e443e124d7a0960e92fb7d8e197aa7e49ee2214d658b95b5a1256a51f44d64f": {
+    "timestamp": 1765851192748,
+    "data": {
+      "productVision": "Visão do produto não definida",
+      "epics": [
+        {
+          "id": "EPIC-001",
+          "title": "Epic 1",
+          "category": "CORE",
+          "context": "Ctx",
+          "requirements": [
+            "Req1"
+          ],
+          "acceptanceCriteria": [],
+          "priority": "P1",
+          "estimatedComplexity": "MEDIUM"
+        }
+      ],
+      "outOfScope": [],
+      "risks": []
+    }
+  },
+  "99685242aede546a2ceb8586efd0e78cdcfdfcfc187335250d8aab77b6161868": {
+    "timestamp": 1765851192751,
+    "data": {
+      "architectureStyle": "Modular Monolith",
+      "stack": {
+        "runtime": "Node.js",
+        "language": "TypeScript",
+        "framework": "React",
+        "testing": "Vitest",
+        "documentation": "README.md",
+        "orm": "N/A",
+        "database": "N/A",
+        "cache": "N/A",
+        "queue": "N/A"
+      },
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Config",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Core",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        }
+      ],
+      "keyDecisions": [],
+      "securityConsiderations": [],
+      "scalabilityPath": []
+    }
+  },
+  "0b37d76249cf30ab76057d26c7fdafcb2f896f50cd1b53c3e65b5edc71bcac4c": {
+    "timestamp": 1765851192800,
+    "data": {
+      "epicId": "EPIC-000",
+      "epicTitle": "Épico",
+      "userStories": [
+        {
+          "id": "HU-1",
+          "title": "Story 1",
+          "description": "No description",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-1",
+              "scenario": "Cenário 1",
+              "given": "Dado que",
+              "when": "Quando",
+              "then": "Então"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        }
+      ],
+      "summary": {
+        "totalStories": 1,
+        "totalPoints": 3,
+        "p0Count": 1,
+        "p1Count": 0,
+        "p2Count": 0
+      }
+    }
+  },
+  "9e292b519f6f6f4b68fa998dea04debca792a328fa8b9039384fd523989affe0": {
+    "timestamp": 1765851192913,
+    "data": {
+      "summary": "Análise indisponível",
+      "complexity": {
+        "level": "HIGH",
+        "score": 8,
+        "justification": "Complex"
+      },
+      "coreEntities": [
+        "Entity1",
+        "Entity2"
+      ],
+      "implicitRequirements": [
+        "Req1"
+      ],
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "5e724e04df833800d308b77578b25083cad1dd3bdd8d9ac08aa9cc0ea7697846": {
+    "timestamp": 1765851192914,
+    "data": {
+      "productVision": "Vision",
+      "epics": [
+        {
+          "id": "EPIC-001",
+          "title": "Epic 1",
+          "category": "CORE",
+          "context": "Ctx",
+          "requirements": [
+            "Req1",
+            "Req2",
+            "Req3",
+            "Req4",
+            "Req5"
+          ],
+          "acceptanceCriteria": [
+            "AC1"
+          ],
+          "priority": "P0",
+          "estimatedComplexity": "HIGH"
+        }
+      ],
+      "outOfScope": [],
+      "risks": []
+    }
+  },
+  "f800dab95caff6ba878b87cfbb6512408483dc410581a17c1e8a0c7b9912c6a3": {
+    "timestamp": 1765851192916,
+    "data": {
+      "architectureStyle": "Modular",
+      "stack": {
+        "runtime": "Node",
+        "language": "TS",
+        "framework": "React",
+        "testing": "Vitest",
+        "documentation": "README",
+        "orm": "Prisma",
+        "database": "PostgreSQL",
+        "cache": "Redis",
+        "queue": "BullMQ"
+      },
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "src/index.ts",
+          "purpose": "Entry",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/app.ts",
+          "purpose": "App",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "LOW",
+          "category": "DOCS"
+        }
+      ],
+      "keyDecisions": [],
+      "securityConsiderations": [],
+      "scalabilityPath": []
+    }
+  },
+  "90d622a5b3d826cc6f2780f42e540498c3fce3c374d112c0c3cc6213dd88d1d6": {
+    "timestamp": 1765851192921,
+    "data": {
+      "epicId": "EPIC-001",
+      "epicTitle": "Epic 1",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Story 1",
+          "description": "Description",
+          "acceptanceCriteria": [
+            {
+              "id": "AC1",
+              "scenario": "Scenario 1",
+              "given": "Given",
+              "when": "When",
+              "then": "Then"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-002",
+          "title": "Story 2",
+          "description": "Description",
+          "acceptanceCriteria": [
+            {
+              "id": "AC2",
+              "scenario": "Scenario 2",
+              "given": "Given",
+              "when": "When",
+              "then": "Then"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-003",
+          "title": "Story 3",
+          "description": "Description",
+          "acceptanceCriteria": [
+            {
+              "id": "AC3",
+              "scenario": "Scenario 3",
+              "given": "Given",
+              "when": "When",
+              "then": "Then"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-004",
+          "title": "Story 4",
+          "description": "Description",
+          "acceptanceCriteria": [
+            {
+              "id": "AC4",
+              "scenario": "Scenario 4",
+              "given": "Given",
+              "when": "When",
+              "then": "Then"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-005",
+          "title": "Story 5",
+          "description": "Description",
+          "acceptanceCriteria": [
+            {
+              "id": "AC5",
+              "scenario": "Scenario 5",
+              "given": "Given",
+              "when": "When",
+              "then": "Then"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-006",
+          "title": "Story 6",
+          "description": "Description",
+          "acceptanceCriteria": [
+            {
+              "id": "AC6",
+              "scenario": "Scenario 6",
+              "given": "Given",
+              "when": "When",
+              "then": "Then"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-007",
+          "title": "Story 7",
+          "description": "Description",
+          "acceptanceCriteria": [
+            {
+              "id": "AC7",
+              "scenario": "Scenario 7",
+              "given": "Given",
+              "when": "When",
+              "then": "Then"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        },
+        {
+          "id": "US-008",
+          "title": "Story 8",
+          "description": "Description",
+          "acceptanceCriteria": [
+            {
+              "id": "AC8",
+              "scenario": "Scenario 8",
+              "given": "Given",
+              "when": "When",
+              "then": "Then"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P1"
+        }
+      ],
+      "summary": {
+        "totalStories": 8,
+        "totalPoints": 24,
+        "p0Count": 0,
+        "p1Count": 8,
+        "p2Count": 0
+      }
+    }
   }
 }

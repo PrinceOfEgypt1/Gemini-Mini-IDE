@@ -57,7 +57,7 @@ export class CacheService {
   ): string {
     // Incrementar CACHE_VERSION sempre que a lógica do agent mudar
     // para invalidar caches antigos e evitar retornar resultados desatualizados
-    const CACHE_VERSION = "v16.0"; // Bumped: User Stories Planner (heurísticas genéricas de quantidade/cobertura + retry)
+    const CACHE_VERSION = "v17.0"; // Bumped: Refactored User Stories Planner (structured artifacts, clamps, delta retry)
     const content = `${CACHE_VERSION}:${model}:${temperature}:${retryAttempt}:${systemPrompt}:${userPrompt}`;
     return createHash("sha256").update(content).digest("hex");
   }

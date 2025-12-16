@@ -500,39 +500,83 @@ export class AnalysisAgent {
       // eslint-disable-next-line no-console
       console.log(`\n[UserStories] Tentativa ${attempt}/${MAX_RETRY_ATTEMPTS}...`);
 
-      const results: UserStoriesResult[] = [];
+      // PRIMEIRA TENTATIVA: Gerar histórias para todos os épicos
+      if (attempt === 1) {
+        const results: UserStoriesResult[] = [];
 
-      for (const epic of product.epics) {
-        const promptContext = this.context.buildUserStoriesContext(epic.id);
+        for (const epic of product.epics) {
+          const promptContext = this.context.buildUserStoriesContext(epic.id);
 
-        // Adicionar feedback se for retry
-        let enhancedContext = promptContext;
-        if (attempt > 1 && lastTotalStories > 0) {
-          const delta = planning.minStories - lastTotalStories;
-          enhancedContext = `${promptContext}\n\n⚠️ ATENÇÃO: A tentativa anterior gerou apenas ${lastTotalStories} histórias, mas o mínimo necessário é ${planning.minStories} (faltam ${delta}).\n\nPara corrigir:\n1. Gere MAIS histórias por épico (detalhando melhor cada requisito)\n2. Não agrupe múltiplos requisitos em uma única história\n3. Cada operação significativa deve ter sua própria história\n4. Inclua histórias para NFRs (segurança, observabilidade, testes)\n5. Garanta cobertura completa de todas as camadas (frontend, backend, domínio)\n\nGere histórias ADICIONAIS para este épico.`;
+          const stories = await this.callLLM(
+            SYSTEM_PROMPTS.USER_STORIES,
+            promptContext,
+            sanitizeUserStories,
+            UserStoriesSchema,
+            `UserStories-${epic.id}`,
+            0.0, // Temperatura baixa na primeira tentativa
+            false, // Usar cache
+            attempt
+          );
+
+          results.push(stories);
+          this.context.addUserStories(stories.userStories);
         }
 
-        // Skippar cache em retries para forçar regeneração
-        const skipCache = attempt > 1;
-        const temperature = attempt > 1 ? 0.3 : 0.0;
+        lastResults = results;
+        lastTotalStories = results.reduce((sum, r) => sum + r.userStories.length, 0);
+      } else {
+        // RETRIES: Gerar apenas DELTA (histórias faltantes) sem perder as existentes
+        const delta = planning.minStories - lastTotalStories;
 
-        const stories = await this.callLLM(
-          SYSTEM_PROMPTS.USER_STORIES,
-          enhancedContext,
-          sanitizeUserStories,
-          UserStoriesSchema,
-          `UserStories-${epic.id}`,
-          temperature,
-          skipCache,
-          attempt // Pass attempt como retryAttempt para diferenciar cache
-        );
+        // eslint-disable-next-line no-console
+        console.log(`[UserStories] 🔄 Retry: gerando ${delta} histórias adicionais...`);
 
-        results.push(stories);
-        this.context.addUserStories(stories.userStories);
+        // Distribuir delta entre os épicos proporcionalmente aos seus requirements
+        const totalReqs = product.epics.reduce((sum, epic) => sum + epic.requirements.length, 0);
+        let remainingDelta = delta;
+
+        for (const epic of product.epics) {
+          if (remainingDelta <= 0) break;
+
+          // Calcular quantas histórias adicionais este épico deve gerar
+          const epicProportion = epic.requirements.length / totalReqs;
+          const additionalForThisEpic = Math.max(1, Math.ceil(delta * epicProportion));
+          const toGenerate = Math.min(additionalForThisEpic, remainingDelta);
+
+          // eslint-disable-next-line no-console
+          console.log(`[UserStories]   - ${epic.id}: gerando ${toGenerate} histórias adicionais`);
+
+          const promptContext = this.context.buildUserStoriesContext(epic.id);
+          const deltaContext = `${promptContext}\n\n🔄 GERAÇÃO ADICIONAL (Retry ${attempt}/${MAX_RETRY_ATTEMPTS}):\n\nVocê já gerou ${lastTotalStories} histórias no total, mas o mínimo necessário é ${planning.minStories}.\n\nGere EXATAMENTE ${toGenerate} histórias ADICIONAIS para este épico:\n1. Foque em requisitos ainda não completamente cobertos\n2. Detalhe melhor operações complexas (cada operação = 1 história)\n3. Adicione histórias para NFRs (segurança, observabilidade, testes, performance)\n4. Não regenere histórias já existentes - apenas ADICIONE novas\n\nGere ${toGenerate} histórias novas.`;
+
+          const additionalStories = await this.callLLM(
+            SYSTEM_PROMPTS.USER_STORIES,
+            deltaContext,
+            sanitizeUserStories,
+            UserStoriesSchema,
+            `UserStories-${epic.id}-delta`,
+            0.3, // Temperatura maior para variedade
+            true, // Skip cache (retry)
+            attempt
+          );
+
+          // Adicionar as histórias adicionais ao contexto
+          this.context.addUserStories(additionalStories.userStories);
+
+          // Atualizar os resultados existentes para este épico
+          const existingResultIndex = lastResults.findIndex(r => r.epicId === epic.id);
+          if (existingResultIndex >= 0) {
+            // Merge stories
+            lastResults[existingResultIndex].userStories.push(...additionalStories.userStories);
+          } else {
+            // Adicionar novo resultado
+            lastResults.push(additionalStories);
+          }
+
+          remainingDelta -= additionalStories.userStories.length;
+          lastTotalStories += additionalStories.userStories.length;
+        }
       }
-
-      lastResults = results;
-      lastTotalStories = results.reduce((sum, r) => sum + r.userStories.length, 0);
 
       // 2. VALIDAÇÃO: Verificar se atingiu o mínimo
       const validation = this.storiesPlanner.validate(lastTotalStories, planning);
@@ -554,12 +598,12 @@ export class AnalysisAgent {
       if (attempt < MAX_RETRY_ATTEMPTS) {
         // eslint-disable-next-line no-console
         console.warn(`[UserStories] ⚠️ Quantidade insuficiente. Faltam ${validation.delta} histórias. Tentando novamente...`);
-
-        // Limpar contexto de user stories para tentar novamente
-        this.context.clearUserStories();
+        // NÃO limpar contexto - mantemos as histórias existentes!
       } else {
         // eslint-disable-next-line no-console
-        console.error(`[UserStories] ❌ Falha após ${MAX_RETRY_ATTEMPTS} tentativas. Continuando com ${lastTotalStories} histórias (abaixo do mínimo de ${planning.minStories}).`);
+        console.error(`[UserStories] ❌ Falha após ${MAX_RETRY_ATTEMPTS} tentativas. Continuando com ${lastTotalStories} histórias (${validation.delta} abaixo do mínimo de ${planning.minStories}).`);
+        // eslint-disable-next-line no-console
+        console.error(`[UserStories] ⚠️ Pipeline continua mesmo sem atingir mínimo (não bloqueia).`);
       }
     }
 
