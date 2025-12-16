@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { UserStoriesPlanner } from "./user-stories-planner.js";
-import { RichAnalysis, RichProductPlan, RichArchitecture } from "../types/rich-schemas.js";
+import { RichAnalysis, RichProductPlan } from "../types/rich-schemas.js";
 
 describe("UserStoriesPlanner", () => {
   const planner = new UserStoriesPlanner();

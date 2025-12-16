@@ -241,7 +241,7 @@ export class UserStoriesPlanner {
     prompt: string,
     analysis?: RichAnalysis,
     product?: RichProductPlan,
-    architecture?: RichArchitecture
+    _architecture?: RichArchitecture
   ): PlanningResult {
     const rationale: string[] = [];
     let minStories = 0;
