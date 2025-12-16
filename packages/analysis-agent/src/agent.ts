@@ -613,12 +613,12 @@ export class AnalysisAgent {
   private async generateFileContent(fileSpec: { path: string, description: string, imports: string[] }): Promise<{ path: string, content: string }> {
     // Método corrigido para buildCodeGenContext
     const contextStr = this.context.buildCodeGenContext(fileSpec.path);
-    
+
     const userPrompt = `
       FILE: ${fileSpec.path}
       DESCRIPTION: ${fileSpec.description}
       IMPORTS NEEDED: ${JSON.stringify(fileSpec.imports)}
-      
+
       CONTEXT:
       ${contextStr}
     `;
@@ -627,21 +627,47 @@ export class AnalysisAgent {
     let content = "";
     let lastError = "";
 
-    while (attempts < 3) {
+    // SOLUÇÃO 3: Aumentar tentativas para arquivos complexos (domain/data-structures)
+    const isComplexDomain = fileSpec.path.includes("/domain/") ||
+                            fileSpec.path.includes("/data-structures/") ||
+                            fileSpec.path.includes("/entities/");
+    const maxAttempts = isComplexDomain ? 5 : 3;
+
+    while (attempts < maxAttempts) {
       attempts++;
-      
-      const promptWithFeedback = lastError 
-        ? `${userPrompt}\n\nATENÇÃO: A versão anterior foi rejeitada pelo auditor. Corrija este erro:\n${lastError}`
+
+      // SOLUÇÃO 2: Feedback mais específico com código anterior e instruções claras
+      const promptWithFeedback = lastError
+        ? `${userPrompt}
+
+⚠️ TENTATIVA ${attempts}/${maxAttempts} - CÓDIGO ANTERIOR FOI REJEITADO
+
+📄 CÓDIGO QUE FALHOU (primeiras linhas):
+${content.substring(0, 800)}${content.length > 800 ? '\n...(truncado)' : ''}
+
+❌ ERROS DETECTADOS:
+${lastError}
+
+✅ COMO CORRIGIR:
+1. Adicione /** JSDoc */ ANTES de TODAS as declarações "export class", "export function", "export interface"
+2. Substitua TODOS os placeholders '...' por código completo e funcional
+3. Remova TODOS os usos de tipo 'any' - use tipos específicos (string, number, objeto tipado)
+4. Verifique sintaxe TypeScript cuidadosamente (não use palavras-chave incorretamente)
+5. Certifique-se de que TODO o código está completo e pronto para produção
+
+⚡ AÇÃO: Gere o arquivo COMPLETO novamente, corrigindo TODOS os erros listados acima.
+`
         : userPrompt;
 
+      // SOLUÇÃO 5: Randomizar temperature no retry para evitar repetição determinística
       const response = await this.client.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           { role: "system", content: SYSTEM_PROMPTS.CODE_GEN },
           { role: "user", content: promptWithFeedback }
         ],
-        temperature: 0.0,
-        seed: 42,
+        temperature: attempts > 1 ? 0.3 : 0.0, // Aumentar variação após primeira falha
+        seed: attempts > 1 ? undefined : 42,   // Remover seed no retry
         response_format: { type: "json_object" }
       });
 
@@ -687,7 +713,7 @@ export class AnalysisAgent {
       }
     }
 
-    console.error(`[Failed] Could not generate clean code for ${fileSpec.path} after 3 attempts.`);
+    console.error(`[Failed] Could not generate clean code for ${fileSpec.path} after ${maxAttempts} attempts.`);
     return { path: fileSpec.path, content: `// FAILED TO GENERATE CLEAN CODE\n// Error: ${lastError}\n${content}` };
   }
 
