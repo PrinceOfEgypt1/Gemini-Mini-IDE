@@ -62,8 +62,16 @@ export class GenerationContext {
     this._userStories.push(...stories);
   }
 
+  clearUserStories(): void {
+    this._userStories = [];
+  }
+
   addGeneratedFile(file: GeneratedFile): void {
     this._generatedFiles.push(file);
+  }
+
+  getUserPrompt(): string {
+    return this._userPrompt;
   }
 
   // --- GETTERS ---

@@ -24,6 +24,7 @@ import { GenerationContext } from "./context/generation-context.js";
 import { CompletenessValidator } from "./governance/completeness-validator.js";
 import { SyntaxSandbox } from "./governance/syntax-sandbox.js";
 import { StructureAuditor } from "./governance/structure-auditor.js";
+import { UserStoriesPlanner } from "./planning/user-stories-planner.js";
 
 // --- HELPERS DE SANITIZAÇÃO ---
 function ensureString(val: unknown, fallback: string): string {
@@ -253,6 +254,7 @@ export class AnalysisAgent {
   private validator: CompletenessValidator;
   private syntaxSandbox: SyntaxSandbox;
   private structureAuditor: StructureAuditor;
+  private storiesPlanner: UserStoriesPlanner;
 
   constructor(apiKey: string) {
     this.client = new OpenAI({
@@ -263,6 +265,7 @@ export class AnalysisAgent {
     this.validator = new CompletenessValidator();
     this.syntaxSandbox = new SyntaxSandbox();
     this.structureAuditor = new StructureAuditor();
+    this.storiesPlanner = new UserStoriesPlanner();
   }
 
   // Método auxiliar para parsing seguro de JSON
@@ -465,25 +468,102 @@ export class AnalysisAgent {
     return lastArchitecture!;
   }
 
-  private async expandEpicsToStories(product: RichProductPlan): Promise<UserStoriesResult[]> {
-    const results: UserStoriesResult[] = [];
-    
-    for (const epic of product.epics) {
-      // Método buildUserStoriesContext corrigido conforme definition
-      const promptContext = this.context.buildUserStoriesContext(epic.id);
+  private async expandEpicsToStories(
+    product: RichProductPlan,
+    analysis?: RichAnalysis,
+    architecture?: RichArchitecture
+  ): Promise<UserStoriesResult[]> {
+    // 1. PLANEJAMENTO: Calcular quantidade mínima necessária de histórias
+    const userPrompt = this.context.getUserPrompt();
+    const planning = this.storiesPlanner.plan(userPrompt, analysis, product, architecture);
 
-      const stories = await this.callLLM(
-        SYSTEM_PROMPTS.USER_STORIES,
-        promptContext,
-        sanitizeUserStories,
-        UserStoriesSchema,
-        `UserStories-${epic.id}`
-      );
-      
-      results.push(stories);
-      this.context.addUserStories(stories.userStories);
+    // eslint-disable-next-line no-console
+    console.log(`[UserStoriesPlanner] Planejamento calculado:`);
+    // eslint-disable-next-line no-console
+    console.log(`  - Mínimo necessário: ${planning.minStories} histórias`);
+    // eslint-disable-next-line no-console
+    console.log(`  - Range recomendado: ${planning.targetRange[0]}-${planning.targetRange[1]}`);
+    // eslint-disable-next-line no-console
+    console.log(`  - Rationale:`);
+    for (const reason of planning.rationale) {
+      // eslint-disable-next-line no-console
+      console.log(`    • ${reason}`);
     }
-    return results;
+
+    const MAX_RETRY_ATTEMPTS = 3;
+    let attempt = 0;
+    let lastResults: UserStoriesResult[] = [];
+    let lastTotalStories = 0;
+
+    while (attempt < MAX_RETRY_ATTEMPTS) {
+      attempt++;
+      // eslint-disable-next-line no-console
+      console.log(`\n[UserStories] Tentativa ${attempt}/${MAX_RETRY_ATTEMPTS}...`);
+
+      const results: UserStoriesResult[] = [];
+
+      for (const epic of product.epics) {
+        const promptContext = this.context.buildUserStoriesContext(epic.id);
+
+        // Adicionar feedback se for retry
+        let enhancedContext = promptContext;
+        if (attempt > 1 && lastTotalStories > 0) {
+          const delta = planning.minStories - lastTotalStories;
+          enhancedContext = `${promptContext}\n\n⚠️ ATENÇÃO: A tentativa anterior gerou apenas ${lastTotalStories} histórias, mas o mínimo necessário é ${planning.minStories} (faltam ${delta}).\n\nPara corrigir:\n1. Gere MAIS histórias por épico (detalhando melhor cada requisito)\n2. Não agrupe múltiplos requisitos em uma única história\n3. Cada operação significativa deve ter sua própria história\n4. Inclua histórias para NFRs (segurança, observabilidade, testes)\n5. Garanta cobertura completa de todas as camadas (frontend, backend, domínio)\n\nGere histórias ADICIONAIS para este épico.`;
+        }
+
+        // Skippar cache em retries para forçar regeneração
+        const skipCache = attempt > 1;
+        const temperature = attempt > 1 ? 0.3 : 0.0;
+
+        const stories = await this.callLLM(
+          SYSTEM_PROMPTS.USER_STORIES,
+          enhancedContext,
+          sanitizeUserStories,
+          UserStoriesSchema,
+          `UserStories-${epic.id}`,
+          temperature,
+          skipCache,
+          attempt // Pass attempt como retryAttempt para diferenciar cache
+        );
+
+        results.push(stories);
+        this.context.addUserStories(stories.userStories);
+      }
+
+      lastResults = results;
+      lastTotalStories = results.reduce((sum, r) => sum + r.userStories.length, 0);
+
+      // 2. VALIDAÇÃO: Verificar se atingiu o mínimo
+      const validation = this.storiesPlanner.validate(lastTotalStories, planning);
+
+      // eslint-disable-next-line no-console
+      console.log(`[UserStoriesPlanner] Validação:`);
+      // eslint-disable-next-line no-console
+      console.log(`  - Histórias geradas: ${lastTotalStories}`);
+      // eslint-disable-next-line no-console
+      console.log(`  - ${validation.message}`);
+
+      if (validation.valid) {
+        // eslint-disable-next-line no-console
+        console.log(`[UserStories] ✅ Quantidade adequada atingida na tentativa ${attempt}`);
+        return lastResults;
+      }
+
+      // Falhou - vai tentar novamente
+      if (attempt < MAX_RETRY_ATTEMPTS) {
+        // eslint-disable-next-line no-console
+        console.warn(`[UserStories] ⚠️ Quantidade insuficiente. Faltam ${validation.delta} histórias. Tentando novamente...`);
+
+        // Limpar contexto de user stories para tentar novamente
+        this.context.clearUserStories();
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(`[UserStories] ❌ Falha após ${MAX_RETRY_ATTEMPTS} tentativas. Continuando com ${lastTotalStories} histórias (abaixo do mínimo de ${planning.minStories}).`);
+      }
+    }
+
+    return lastResults;
   }
 
   private async generateFileContent(fileSpec: { path: string, description: string, imports: string[] }): Promise<{ path: string, content: string }> {
@@ -602,7 +682,7 @@ export class AnalysisAgent {
       // 4. Histórias de Usuário
       const t3 = performance.now();
       console.log("Step 4: User Stories...");
-      const userStoriesResults = await this.expandEpicsToStories(product);
+      const userStoriesResults = await this.expandEpicsToStories(product, analysis, architecture);
       // userStoriesResults é UserStoriesResult[], mas AgentResult espera userStories: RichUserStory[]
       const flatUserStories = userStoriesResults.flatMap(r => r.userStories);
       timings.userStories = performance.now() - t3;
