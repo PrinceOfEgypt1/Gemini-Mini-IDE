@@ -2038,5 +2038,91 @@
         "p2Count": 0
       }
     }
+  },
+  "433afba9d22fe1d2e8b5411227e6c23ea101406f6be8f969c59f3c0db7e5926f": {
+    "timestamp": 1765931041559,
+    "data": {
+      "epicId": "EPIC-000",
+      "epicTitle": "Épico",
+      "userStories": [
+        {
+          "id": "HU-1",
+          "title": "Story 1",
+          "description": "No description",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-1",
+              "scenario": "Cenário 1",
+              "given": "Dado que",
+              "when": "Quando",
+              "then": "Então"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        }
+      ],
+      "summary": {
+        "totalStories": 1,
+        "totalPoints": 3,
+        "p0Count": 1,
+        "p1Count": 0,
+        "p2Count": 0
+      }
+    }
+  },
+  "2b0aa3474179eda33ee0545884fc2516f8b657ae346b50e6f58d3f5b6ca7d182": {
+    "timestamp": 1765931041639,
+    "data": {
+      "epicId": "EPIC-001",
+      "epicTitle": "Epic 1",
+      "userStories": [
+        {
+          "id": "US-001",
+          "title": "Story 1",
+          "description": "Desc",
+          "acceptanceCriteria": [
+            {
+              "id": "AC1",
+              "scenario": "S1",
+              "given": "G",
+              "when": "W",
+              "then": "T"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        },
+        {
+          "id": "US-002",
+          "title": "Story 2",
+          "description": "Desc",
+          "acceptanceCriteria": [
+            {
+              "id": "AC2",
+              "scenario": "S2",
+              "given": "G",
+              "when": "W",
+              "then": "T"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 5,
+          "priority": "P1"
+        }
+      ],
+      "summary": {
+        "totalStories": 2,
+        "totalPoints": 8,
+        "p0Count": 1,
+        "p1Count": 1,
+        "p2Count": 0
+      }
+    }
   }
 }
