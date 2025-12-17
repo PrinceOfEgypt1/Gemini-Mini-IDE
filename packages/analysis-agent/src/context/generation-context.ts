@@ -62,16 +62,8 @@ export class GenerationContext {
     this._userStories.push(...stories);
   }
 
-  clearUserStories(): void {
-    this._userStories = [];
-  }
-
   addGeneratedFile(file: GeneratedFile): void {
     this._generatedFiles.push(file);
-  }
-
-  getUserPrompt(): string {
-    return this._userPrompt;
   }
 
   // --- GETTERS ---
@@ -169,7 +161,13 @@ ${this._product.risks.map(r => `- ${r.description} → ${r.mitigation}`).join("\
   }
 
   /**
-   * Gera contexto para geração de código de um arquivo específico
+   * Gera contexto para geração de código de um arquivo específico.
+   * 
+   * MELHORIAS (Causa Raiz #4 - Falta de Context Awareness):
+   * - Inclui User Stories relacionadas ao arquivo
+   * - Fornece requisitos funcionais específicos
+   * - Cita exemplos de uso esperado
+   * - Mapeia dependências de código
    */
   buildCodeGenContext(filePath: string): string {
     const parts: string[] = [];
@@ -207,8 +205,9 @@ ${fileList}
     }
 
     // Informação do arquivo específico no manifest
+    let manifestItem;
     if (this._architecture) {
-      const manifestItem = this._architecture.manifest.find(m => m.path === filePath);
+      manifestItem = this._architecture.manifest.find(m => m.path === filePath);
       if (manifestItem) {
         parts.push(`
 ## ARQUIVO A GERAR
@@ -216,6 +215,49 @@ ${fileList}
 - Propósito: ${manifestItem.purpose}
 - Criticidade: ${manifestItem.criticality}
 - Categoria: ${manifestItem.category}
+`);
+      }
+    }
+
+    // NOVO: Incluir User Stories relacionadas ao arquivo (Causa Raiz #4)
+    if (this._userStories.length > 0 && manifestItem) {
+      // Estratégia de mapeamento: User Stories que mencionam o arquivo ou sua categoria
+      const relatedStories = this._userStories.filter(us => {
+        // Mapear por categoria ou por palavras-chave no path
+        const titleLower = us.title.toLowerCase();
+        const descLower = us.description.toLowerCase();
+        
+        // Critério 1: Categoria do arquivo mencionada na HU
+        if (titleLower.includes(manifestItem.category.toLowerCase()) || 
+            descLower.includes(manifestItem.category.toLowerCase())) {
+          return true;
+        }
+        
+        // Critério 2: Nome do arquivo ou componente mencionado na HU
+        const fileName = filePath.split('/').pop()?.replace(/\.[^.]+$/, '').toLowerCase() || '';
+        if (fileName && (titleLower.includes(fileName) || descLower.includes(fileName))) {
+          return true;
+        }
+        
+        // Critério 3: Palavras-chave do propósito mencionadas na HU
+        const purposeKeywords = manifestItem.purpose.toLowerCase().split(/\s+/);
+        if (purposeKeywords.some((kw: string) => kw.length > 3 && (titleLower.includes(kw) || descLower.includes(kw)))) {
+          return true;
+        }
+        
+        return false;
+      });
+
+      if (relatedStories.length > 0) {
+        const storiesText = relatedStories
+          .map(us => `- [${us.id}] ${us.title}\n  Descrição: ${us.description}\n  Pontos: ${us.estimatedPoints} | Prioridade: ${us.priority}`)
+          .join("\n\n");
+        
+        parts.push(`
+## USER STORIES RELACIONADAS (Requisitos Funcionais)
+O código deste arquivo deve atender aos seguintes requisitos:
+
+${storiesText}
 `);
       }
     }

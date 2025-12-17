@@ -24,7 +24,6 @@ import { GenerationContext } from "./context/generation-context.js";
 import { CompletenessValidator } from "./governance/completeness-validator.js";
 import { SyntaxSandbox } from "./governance/syntax-sandbox.js";
 import { StructureAuditor } from "./governance/structure-auditor.js";
-import { UserStoriesPlanner } from "./planning/user-stories-planner.js";
 
 // --- HELPERS DE SANITIZAÇÃO ---
 function ensureString(val: unknown, fallback: string): string {
@@ -254,7 +253,6 @@ export class AnalysisAgent {
   private validator: CompletenessValidator;
   private syntaxSandbox: SyntaxSandbox;
   private structureAuditor: StructureAuditor;
-  private storiesPlanner: UserStoriesPlanner;
 
   constructor(apiKey: string) {
     this.client = new OpenAI({
@@ -265,7 +263,6 @@ export class AnalysisAgent {
     this.validator = new CompletenessValidator();
     this.syntaxSandbox = new SyntaxSandbox();
     this.structureAuditor = new StructureAuditor();
-    this.storiesPlanner = new UserStoriesPlanner();
   }
 
   // Método auxiliar para parsing seguro de JSON
@@ -468,206 +465,110 @@ export class AnalysisAgent {
     return lastArchitecture!;
   }
 
-  private async expandEpicsToStories(
-    product: RichProductPlan,
-    analysis?: RichAnalysis,
-    architecture?: RichArchitecture
-  ): Promise<UserStoriesResult[]> {
-    // 1. PLANEJAMENTO: Calcular quantidade mínima necessária de histórias
-    const userPrompt = this.context.getUserPrompt();
-    const planning = this.storiesPlanner.plan(userPrompt, analysis, product, architecture);
+  private async expandEpicsToStories(product: RichProductPlan): Promise<UserStoriesResult[]> {
+    const results: UserStoriesResult[] = [];
+    
+    for (const epic of product.epics) {
+      // Método buildUserStoriesContext corrigido conforme definition
+      const promptContext = this.context.buildUserStoriesContext(epic.id);
 
-    // eslint-disable-next-line no-console
-    console.log(`[UserStoriesPlanner] Planejamento calculado:`);
-    // eslint-disable-next-line no-console
-    console.log(`  - Mínimo necessário: ${planning.minStories} histórias`);
-    // eslint-disable-next-line no-console
-    console.log(`  - Range recomendado: ${planning.targetRange[0]}-${planning.targetRange[1]}`);
-    // eslint-disable-next-line no-console
-    console.log(`  - Rationale:`);
-    for (const reason of planning.rationale) {
-      // eslint-disable-next-line no-console
-      console.log(`    • ${reason}`);
+      const stories = await this.callLLM(
+        SYSTEM_PROMPTS.USER_STORIES,
+        promptContext,
+        sanitizeUserStories,
+        UserStoriesSchema,
+        `UserStories-${epic.id}`
+      );
+      
+      results.push(stories);
+      this.context.addUserStories(stories.userStories);
     }
-
-    const MAX_RETRY_ATTEMPTS = 3;
-    let attempt = 0;
-    let lastResults: UserStoriesResult[] = [];
-    let lastTotalStories = 0;
-
-    while (attempt < MAX_RETRY_ATTEMPTS) {
-      attempt++;
-      // eslint-disable-next-line no-console
-      console.log(`\n[UserStories] Tentativa ${attempt}/${MAX_RETRY_ATTEMPTS}...`);
-
-      // PRIMEIRA TENTATIVA: Gerar histórias para todos os épicos
-      if (attempt === 1) {
-        const results: UserStoriesResult[] = [];
-
-        for (const epic of product.epics) {
-          const promptContext = this.context.buildUserStoriesContext(epic.id);
-
-          const stories = await this.callLLM(
-            SYSTEM_PROMPTS.USER_STORIES,
-            promptContext,
-            sanitizeUserStories,
-            UserStoriesSchema,
-            `UserStories-${epic.id}`,
-            0.0, // Temperatura baixa na primeira tentativa
-            false, // Usar cache
-            attempt
-          );
-
-          results.push(stories);
-          this.context.addUserStories(stories.userStories);
-        }
-
-        lastResults = results;
-        lastTotalStories = results.reduce((sum, r) => sum + r.userStories.length, 0);
-      } else {
-        // RETRIES: Gerar apenas DELTA (histórias faltantes) sem perder as existentes
-        const delta = planning.minStories - lastTotalStories;
-
-        // eslint-disable-next-line no-console
-        console.log(`[UserStories] 🔄 Retry: gerando ${delta} histórias adicionais...`);
-
-        // Distribuir delta entre os épicos proporcionalmente aos seus requirements
-        const totalReqs = product.epics.reduce((sum, epic) => sum + epic.requirements.length, 0);
-        let remainingDelta = delta;
-
-        for (const epic of product.epics) {
-          if (remainingDelta <= 0) break;
-
-          // Calcular quantas histórias adicionais este épico deve gerar
-          const epicProportion = epic.requirements.length / totalReqs;
-          const additionalForThisEpic = Math.max(1, Math.ceil(delta * epicProportion));
-          const toGenerate = Math.min(additionalForThisEpic, remainingDelta);
-
-          // eslint-disable-next-line no-console
-          console.log(`[UserStories]   - ${epic.id}: gerando ${toGenerate} histórias adicionais`);
-
-          const promptContext = this.context.buildUserStoriesContext(epic.id);
-          const deltaContext = `${promptContext}\n\n🔄 GERAÇÃO ADICIONAL (Retry ${attempt}/${MAX_RETRY_ATTEMPTS}):\n\nVocê já gerou ${lastTotalStories} histórias no total, mas o mínimo necessário é ${planning.minStories}.\n\nGere EXATAMENTE ${toGenerate} histórias ADICIONAIS para este épico:\n1. Foque em requisitos ainda não completamente cobertos\n2. Detalhe melhor operações complexas (cada operação = 1 história)\n3. Adicione histórias para NFRs (segurança, observabilidade, testes, performance)\n4. Não regenere histórias já existentes - apenas ADICIONE novas\n\nGere ${toGenerate} histórias novas.`;
-
-          const additionalStories = await this.callLLM(
-            SYSTEM_PROMPTS.USER_STORIES,
-            deltaContext,
-            sanitizeUserStories,
-            UserStoriesSchema,
-            `UserStories-${epic.id}-delta`,
-            0.3, // Temperatura maior para variedade
-            true, // Skip cache (retry)
-            attempt
-          );
-
-          // Adicionar as histórias adicionais ao contexto
-          this.context.addUserStories(additionalStories.userStories);
-
-          // Atualizar os resultados existentes para este épico
-          const existingResultIndex = lastResults.findIndex(r => r.epicId === epic.id);
-          if (existingResultIndex >= 0) {
-            // Merge stories
-            lastResults[existingResultIndex].userStories.push(...additionalStories.userStories);
-          } else {
-            // Adicionar novo resultado
-            lastResults.push(additionalStories);
-          }
-
-          remainingDelta -= additionalStories.userStories.length;
-          lastTotalStories += additionalStories.userStories.length;
-        }
-      }
-
-      // 2. VALIDAÇÃO: Verificar se atingiu o mínimo
-      const validation = this.storiesPlanner.validate(lastTotalStories, planning);
-
-      // eslint-disable-next-line no-console
-      console.log(`[UserStoriesPlanner] Validação:`);
-      // eslint-disable-next-line no-console
-      console.log(`  - Histórias geradas: ${lastTotalStories}`);
-      // eslint-disable-next-line no-console
-      console.log(`  - ${validation.message}`);
-
-      if (validation.valid) {
-        // eslint-disable-next-line no-console
-        console.log(`[UserStories] ✅ Quantidade adequada atingida na tentativa ${attempt}`);
-        return lastResults;
-      }
-
-      // Falhou - vai tentar novamente
-      if (attempt < MAX_RETRY_ATTEMPTS) {
-        // eslint-disable-next-line no-console
-        console.warn(`[UserStories] ⚠️ Quantidade insuficiente. Faltam ${validation.delta} histórias. Tentando novamente...`);
-        // NÃO limpar contexto - mantemos as histórias existentes!
-      } else {
-        // eslint-disable-next-line no-console
-        console.error(`[UserStories] ❌ Falha após ${MAX_RETRY_ATTEMPTS} tentativas. Continuando com ${lastTotalStories} histórias (${validation.delta} abaixo do mínimo de ${planning.minStories}).`);
-        // eslint-disable-next-line no-console
-        console.error(`[UserStories] ⚠️ Pipeline continua mesmo sem atingir mínimo (não bloqueia).`);
-      }
-    }
-
-    return lastResults;
+    return results;
   }
 
+  /**
+   * Gera o conteúdo de um arquivo com retry inteligente.
+   * 
+   * Estratégia de retry:
+   * - Tentativa 1: temperature=0.0, seed=42 (determinístico, reprodutível)
+   * - Tentativas 2+: temperature=0.7, sem seed (variação para escapar do "modo de falha")
+   * 
+   * Feedback aprimorado:
+   * - Inclui exemplos concretos de JSDoc
+   * - Cita os erros específicos detectados
+   * - Fornece instruções passo-a-passo para correção
+   */
   private async generateFileContent(fileSpec: { path: string, description: string, imports: string[] }): Promise<{ path: string, content: string }> {
     // Método corrigido para buildCodeGenContext
     const contextStr = this.context.buildCodeGenContext(fileSpec.path);
-
+    
     const userPrompt = `
       FILE: ${fileSpec.path}
       DESCRIPTION: ${fileSpec.description}
       IMPORTS NEEDED: ${JSON.stringify(fileSpec.imports)}
-
+      
       CONTEXT:
       ${contextStr}
     `;
 
+    const maxAttempts = 5; // Aumentado de 3 para 5 (conforme relatório de auditoria)
     let attempts = 0;
     let content = "";
     let lastError = "";
 
-    // SOLUÇÃO 3: Aumentar tentativas para arquivos complexos (domain/data-structures)
-    const isComplexDomain = fileSpec.path.includes("/domain/") ||
-                            fileSpec.path.includes("/data-structures/") ||
-                            fileSpec.path.includes("/entities/");
-    const maxAttempts = isComplexDomain ? 5 : 3;
-
     while (attempts < maxAttempts) {
       attempts++;
+      
+      // Configuração dinâmica de temperatura e seed
+      let temperature = 0.0;
+      let seed: number | undefined = 42;
+      
+      if (attempts > 1) {
+        // Nas tentativas de retry (2+), aumenta a variação para escapar do "modo de falha"
+        temperature = 0.7;
+        seed = undefined; // Remove o seed para permitir variação
+      }
+      
+      // Construção do prompt com feedback aprimorado
+      let promptWithFeedback = userPrompt;
+      if (lastError) {
+        promptWithFeedback = `${userPrompt}
 
-      // SOLUÇÃO 2: Feedback mais específico com código anterior e instruções claras
-      const promptWithFeedback = lastError
-        ? `${userPrompt}
-
-⚠️ TENTATIVA ${attempts}/${maxAttempts} - CÓDIGO ANTERIOR FOI REJEITADO
-
-📄 CÓDIGO QUE FALHOU (primeiras linhas):
-${content.substring(0, 800)}${content.length > 800 ? '\n...(truncado)' : ''}
+⚠️ TENTATIVA ${attempts}/${maxAttempts} - O CÓDIGO ANTERIOR FOI REJEITADO PELO AUDITOR.
 
 ❌ ERROS DETECTADOS:
 ${lastError}
 
 ✅ COMO CORRIGIR:
-1. Adicione /** JSDoc */ ANTES de TODAS as declarações "export class", "export function", "export interface"
-2. Substitua TODOS os placeholders '...' por código completo e funcional
-3. Remova TODOS os usos de tipo 'any' - use tipos específicos (string, number, objeto tipado)
-4. Verifique sintaxe TypeScript cuidadosamente (não use palavras-chave incorretamente)
-5. Certifique-se de que TODO o código está completo e pronto para produção
+1. Corrija todos os erros listados acima.
+2. **NÃO** use placeholders como '...' ou 'TODO'.
+3. **ADICIONE JSDoc** (/** ... */) imediatamente antes de **TODAS** as declarações 'export class', 'export function', 'export interface', etc.
+4. **EXEMPLO DE JSDOC CORRETO:**
+\`\`\`typescript
+/**
+ * Classe que representa um Array dinâmico com operações genéricas.
+ * @template T O tipo dos elementos armazenados no array.
+ * @example
+ * const arr = new Array<number>();
+ * arr.push(1, 2, 3);
+ */
+export class Array<T> {
+  // implementação aqui
+}
+\`\`\`
+5. Garanta que todas as declarações públicas (export) tenham JSDoc.
+6. Não use 'any' ou 'as any' - use tipos específicos.
+7. Gere código completo e funcional, sem placeholders.`;
+      }
 
-⚡ AÇÃO: Gere o arquivo COMPLETO novamente, corrigindo TODOS os erros listados acima.
-`
-        : userPrompt;
-
-      // SOLUÇÃO 5: Randomizar temperature no retry para evitar repetição determinística
       const response = await this.client.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           { role: "system", content: SYSTEM_PROMPTS.CODE_GEN },
           { role: "user", content: promptWithFeedback }
         ],
-        temperature: attempts > 1 ? 0.3 : 0.0, // Aumentar variação após primeira falha
-        seed: attempts > 1 ? undefined : 42,   // Remover seed no retry
+        temperature: temperature,
+        ...(seed !== undefined && { seed }), // Inclui seed apenas se definido
         response_format: { type: "json_object" }
       });
 
@@ -713,8 +614,11 @@ ${lastError}
       }
     }
 
+    // eslint-disable-next-line no-console
     console.error(`[Failed] Could not generate clean code for ${fileSpec.path} after ${maxAttempts} attempts.`);
-    return { path: fileSpec.path, content: `// FAILED TO GENERATE CLEAN CODE\n// Error: ${lastError}\n${content}` };
+    // eslint-disable-next-line no-console
+    console.error(`[Failed] Last error: ${lastError}`);
+    return { path: fileSpec.path, content: `// FAILED TO GENERATE CLEAN CODE\n// Error: ${lastError}\n// Attempts: ${maxAttempts}\n${content}` };
   }
 
   // --- ORQUESTRADOR PRINCIPAL ---
@@ -752,7 +656,7 @@ ${lastError}
       // 4. Histórias de Usuário
       const t3 = performance.now();
       console.log("Step 4: User Stories...");
-      const userStoriesResults = await this.expandEpicsToStories(product, analysis, architecture);
+      const userStoriesResults = await this.expandEpicsToStories(product);
       // userStoriesResults é UserStoriesResult[], mas AgentResult espera userStories: RichUserStory[]
       const flatUserStories = userStoriesResults.flatMap(r => r.userStories);
       timings.userStories = performance.now() - t3;
