@@ -15,6 +15,10 @@ import type {
   RichUserStory,
   GeneratedFile
 } from "../types/rich-schemas.js";
+import {
+  ProjectTypeDetectionResult,
+  projectTypeDetector,
+} from "../planning/project-type-detector.js";
 
 /**
  * Contexto acumulativo de geração.
@@ -30,6 +34,7 @@ export class GenerationContext {
   private _userStories: RichUserStory[] = [];
   private _generatedFiles: GeneratedFile[] = [];
   private _startTime: number = 0;
+  private _projectTypeDetection: ProjectTypeDetectionResult | null = null;
 
   /**
    * Inicia um novo contexto de geração
@@ -42,6 +47,22 @@ export class GenerationContext {
     this._architecture = null;
     this._userStories = [];
     this._generatedFiles = [];
+
+    // Detect project type early in the pipeline
+    this._projectTypeDetection = projectTypeDetector.detect(userPrompt);
+
+    // eslint-disable-next-line no-console
+    console.log(
+      `[GenerationContext] Detected project type: ${this._projectTypeDetection.primaryType}`
+    );
+    // eslint-disable-next-line no-console
+    console.log(
+      `[GenerationContext] Estimated minimum files: ${this._projectTypeDetection.estimatedMinFiles}`
+    );
+    // eslint-disable-next-line no-console
+    console.log(
+      `[GenerationContext] Data structures detected: ${this._projectTypeDetection.dataStructures.length}`
+    );
   }
 
   // --- SETTERS ---
@@ -96,6 +117,10 @@ export class GenerationContext {
     return performance.now() - this._startTime;
   }
 
+  get projectTypeDetection(): ProjectTypeDetectionResult | null {
+    return this._projectTypeDetection;
+  }
+
   // --- CONTEXT BUILDERS ---
 
   /**
@@ -128,6 +153,44 @@ ${this._userPrompt}
 
     parts.push(`## PEDIDO ORIGINAL\n${this._userPrompt}`);
 
+    // Add project type detection information
+    if (this._projectTypeDetection) {
+      const detection = this._projectTypeDetection;
+      parts.push(`
+## DETECÇÃO DE TIPO DE PROJETO (CRÍTICO - LEIA COM ATENÇÃO)
+
+⚠️ **TIPO DE PROJETO DETECTADO:** ${detection.primaryType}
+⚠️ **QUANTIDADE MÍNIMA DE ARQUIVOS ESPERADA:** ${detection.estimatedMinFiles}
+
+${detection.primaryType === "VISUALIZATION" || detection.primaryType === "EDUCATIONAL" ? `
+🚨 **ATENÇÃO:** Este é um projeto de VISUALIZAÇÃO/EDUCACIONAL.
+Você DEVE gerar NO MÍNIMO ${detection.estimatedMinFiles} arquivos para atender os requisitos.
+Se gerar menos de ${Math.floor(detection.estimatedMinFiles * 0.8)} arquivos, sua resposta será REJEITADA.
+
+**Requisitos especiais detectados:**
+${detection.flags.needsAnimation ? "- ✅ Motor de animação (10 arquivos)" : ""}
+${detection.flags.needsPseudocode ? "- ✅ Painel de pseudocódigo" : ""}
+${detection.flags.needsLogging ? "- ✅ Sistema de logging" : ""}
+${detection.flags.needsPlaybackControls ? "- ✅ Controles de playback (play/pause/step)" : ""}
+${detection.flags.needsStepExecution ? "- ✅ Execução passo a passo" : ""}
+` : ""}
+
+**Estruturas de dados detectadas (${detection.dataStructures.length}):**
+${detection.dataStructures.map(ds => `- ${ds.name}: ${ds.minMethods}+ métodos obrigatórios`).join("\n")}
+
+**Arquivos esperados por categoria:**
+- Config: ${detection.fileBreakdown.config}
+- Domain: ${detection.fileBreakdown.domain}
+- Application: ${detection.fileBreakdown.application}
+- Infrastructure: ${detection.fileBreakdown.infrastructure}
+- Tests: ${detection.fileBreakdown.tests}
+- Docs: ${detection.fileBreakdown.docs}
+- DevOps: ${detection.fileBreakdown.devops}
+${detection.fileBreakdown.visualization ? `- Visualization: ${detection.fileBreakdown.visualization}` : ""}
+${detection.fileBreakdown.animation ? `- Animation: ${detection.fileBreakdown.animation}` : ""}
+`);
+    }
+
     if (this._analysis) {
       parts.push(`
 ## ANÁLISE
@@ -141,7 +204,7 @@ ${this._userPrompt}
       const epicsText = this._product.epics
         .map(e => `- [${e.id}] ${e.title} (${e.category}, ${e.priority})`)
         .join("\n");
-      
+
       parts.push(`
 ## PRODUTO
 Visão: ${this._product.productVision}

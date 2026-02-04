@@ -650,7 +650,7 @@ export class Array<T> {
       let architecture = await this.runArchitectureStep(userPrompt, product);
       this.context.setArchitecture(architecture);
       
-      architecture = this.structureAuditor.auditAndFix(architecture);
+      architecture = this.structureAuditor.auditAndFix(architecture, userPrompt);
       timings.architecture = performance.now() - t2;
 
       // 4. Histórias de Usuário
