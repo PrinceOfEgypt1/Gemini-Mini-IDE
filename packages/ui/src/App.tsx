@@ -14,6 +14,7 @@ import { ProjectWizard } from './components/wizard/ProjectWizard';
 import { QuickStartGallery } from './components/wizard/QuickStartGallery';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { HelpModal } from './components/help/HelpModal';
+import { ConversationChat } from './components/chat/ConversationChat';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { api } from './services/api';
@@ -40,6 +41,9 @@ const MainLayout = () => {
   // Estados de Processamento
   const [isExporting, setIsExporting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Chat mode: 'classic' (one-shot) ou 'interactive' (conversacional)
+  const [chatMode, setChatMode] = useState<'classic' | 'interactive'>('interactive');
 
   // Dados
   const [chatInput, setChatInput] = useState('');
@@ -206,16 +210,41 @@ const MainLayout = () => {
         </section>
 
         <aside className="w-96 flex-none flex flex-col m-3 ml-0 bg-[var(--bg-panel)] border border-[var(--border-main)] rounded-xl shadow-sm overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
-            {chatHistory.map((msg, idx) => (
-              <div key={idx} className={`p-3 rounded-lg border text-sm ${msg.role === "agent" ? "bg-[var(--bg-panel)] border-[var(--border-main)]" : "bg-[var(--bg-panel-hover)] border-[var(--brand-primary)]/30"}`}>
-                <strong className={`block text-xs mb-1 ${msg.role === "agent" ? "text-[var(--brand-primary)]" : "text-[var(--success)]"}`}>{msg.role === "agent" ? "Agente" : "Você"}</strong>
-                <div className="whitespace-pre-wrap">{msg.text}</div>
-              </div>
-            ))}
-            {isAnalyzing && <div className="text-xs text-[var(--text-muted)] animate-pulse">Processando...</div>}
+          {/* Chat mode toggle */}
+          <div className="flex-none flex border-b border-[var(--border-main)]">
+            <button
+              onClick={() => setChatMode('interactive')}
+              className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${chatMode === 'interactive' ? 'text-[var(--brand-primary)] border-b-2 border-[var(--brand-primary)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+            >
+              Chat Interativo
+            </button>
+            <button
+              onClick={() => setChatMode('classic')}
+              className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${chatMode === 'classic' ? 'text-[var(--brand-primary)] border-b-2 border-[var(--brand-primary)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+            >
+              Chat Classico
+            </button>
           </div>
-          <TokenMeter chatHistory={chatHistory} files={generatedProject?.engine?.files || []} />
+
+          {chatMode === 'interactive' ? (
+            <ConversationChat
+              onProjectGenerated={(result) => setGeneratedProject(result as GeneratedProject)}
+              onToast={(msg, type) => showToast(msg, type)}
+            />
+          ) : (
+            <>
+              <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+                {chatHistory.map((msg, idx) => (
+                  <div key={idx} className={`p-3 rounded-lg border text-sm ${msg.role === "agent" ? "bg-[var(--bg-panel)] border-[var(--border-main)]" : "bg-[var(--bg-panel-hover)] border-[var(--brand-primary)]/30"}`}>
+                    <strong className={`block text-xs mb-1 ${msg.role === "agent" ? "text-[var(--brand-primary)]" : "text-[var(--success)]"}`}>{msg.role === "agent" ? "Agente" : "Voce"}</strong>
+                    <div className="whitespace-pre-wrap">{msg.text}</div>
+                  </div>
+                ))}
+                {isAnalyzing && <div className="text-xs text-[var(--text-muted)] animate-pulse">Processando...</div>}
+              </div>
+              <TokenMeter chatHistory={chatHistory} files={generatedProject?.engine?.files || []} />
+            </>
+          )}
         </aside>
       </main>
 
