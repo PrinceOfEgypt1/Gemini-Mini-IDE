@@ -9,3 +9,4 @@ coverage
 bundles/
 *.bak
 *.log.*
+*.tsbuildinfo
