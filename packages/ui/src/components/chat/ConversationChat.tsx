@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { Button } from '../common/Button';
 
 const API_BASE_URL = import.meta.env.VITE_MINI_IDE_SERVER_URL || 'http://localhost:3200';
@@ -40,11 +40,18 @@ interface InteractionResult {
   options?: string[];
 }
 
+/** Métodos expostos via ref para controle externo */
+export interface ConversationChatHandle {
+  sendMessage: (text: string) => void;
+}
+
 interface ConversationChatProps {
   /** Callback quando o projeto é gerado */
   onProjectGenerated?: (result: unknown) => void;
   /** Callback para mostrar toast */
   onToast?: (message: string, type: 'success' | 'error' | 'warning') => void;
+  /** Se true, esconde o input interno (input vem do componente pai) */
+  hideInput?: boolean;
 }
 
 // ============================================================================
@@ -82,10 +89,11 @@ const AGENT_LABELS: Record<string, string> = {
 // COMPONENT
 // ============================================================================
 
-export const ConversationChat: React.FC<ConversationChatProps> = ({
+export const ConversationChat = forwardRef<ConversationChatHandle, ConversationChatProps>(({
   onProjectGenerated,
-  onToast
-}) => {
+  onToast,
+  hideInput = false
+}, ref) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -307,6 +315,13 @@ export const ConversationChat: React.FC<ConversationChatProps> = ({
     }
   }, [inputValue, sessionId, currentPhase, startConversation, respondToAgent, finalizeConversation, addMessage, onToast]);
 
+  // Expõe sendMessage para o componente pai via ref
+  useImperativeHandle(ref, () => ({
+    sendMessage: (text: string) => {
+      handleSend(text);
+    }
+  }), [handleSend]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && e.ctrlKey) {
       e.preventDefault();
@@ -425,41 +440,53 @@ export const ConversationChat: React.FC<ConversationChatProps> = ({
         </div>
       )}
 
-      {/* Input area */}
-      <div className="flex-none px-3 py-2 border-t border-[var(--border-main)]">
-        {currentPhase === 'completed' ? (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleNewConversation}
-            className="w-full"
-          >
-            Nova Conversa
-          </Button>
-        ) : (
-          <div className="flex gap-2">
-            <textarea
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={sessionId ? 'Responda aqui... (Ctrl+Enter para enviar)' : 'Descreva seu projeto... (Ctrl+Enter para enviar)'}
-              className="flex-1 bg-[var(--bg-app)] border border-[var(--border-main)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--brand-primary)] resize-none h-10"
-              disabled={isLoading || isGenerating}
-              rows={1}
-            />
+      {/* Input area — escondido se input vem do pai */}
+      {!hideInput && (
+        <div className="flex-none px-3 py-2 border-t border-[var(--border-main)]">
+          {currentPhase === 'completed' ? (
             <Button
               variant="primary"
               size="sm"
-              onClick={() => handleSend()}
-              disabled={isLoading || isGenerating || !inputValue.trim()}
-              isLoading={isLoading}
+              onClick={handleNewConversation}
+              className="w-full"
             >
-              Enviar
+              Nova Conversa
             </Button>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="flex gap-2">
+              <textarea
+                ref={inputRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={sessionId ? 'Responda aqui... (Ctrl+Enter para enviar)' : 'Descreva seu projeto... (Ctrl+Enter para enviar)'}
+                className="flex-1 bg-[var(--bg-app)] border border-[var(--border-main)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--brand-primary)] resize-none h-10"
+                disabled={isLoading || isGenerating}
+                rows={1}
+              />
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => handleSend()}
+                disabled={isLoading || isGenerating || !inputValue.trim()}
+                isLoading={isLoading}
+              >
+                Enviar
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+      {/* Botão Nova Conversa quando hideInput=true e conversa completou */}
+      {hideInput && currentPhase === 'completed' && (
+        <div className="flex-none px-3 py-2 border-t border-[var(--border-main)]">
+          <Button variant="primary" size="sm" onClick={handleNewConversation} className="w-full">
+            Nova Conversa
+          </Button>
+        </div>
+      )}
     </div>
   );
-};
+});
+
+ConversationChat.displayName = 'ConversationChat';

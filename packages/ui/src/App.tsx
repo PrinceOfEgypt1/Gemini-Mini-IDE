@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
 import { WorkspaceTabs } from './components/WorkspaceTabs';
@@ -15,6 +15,7 @@ import { QuickStartGallery } from './components/wizard/QuickStartGallery';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { HelpModal } from './components/help/HelpModal';
 import { ConversationChat } from './components/chat/ConversationChat';
+import type { ConversationChatHandle } from './components/chat/ConversationChat';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { api } from './services/api';
@@ -44,6 +45,7 @@ const MainLayout = () => {
 
   // Chat mode: 'classic' (one-shot) ou 'interactive' (conversacional)
   const [chatMode, setChatMode] = useState<'classic' | 'interactive'>('interactive');
+  const conversationChatRef = useRef<ConversationChatHandle>(null);
 
   // Dados
   const [chatInput, setChatInput] = useState('');
@@ -78,6 +80,15 @@ const MainLayout = () => {
   const handleSendMessage = async () => {
     if (!chatInput.trim()) return;
 
+    // Se modo interativo, delega para o ConversationChat via ref
+    if (chatMode === 'interactive') {
+      const msg = chatInput;
+      setChatInput('');
+      conversationChatRef.current?.sendMessage(msg);
+      return;
+    }
+
+    // Modo clássico: pipeline one-shot
     const apiKey = sessionStorage.getItem("mini-ide-api-key");
     if (!apiKey) {
       showToast("Configure sua API Key nas Preferências para continuar.", "warning");
@@ -94,7 +105,7 @@ const MainLayout = () => {
     setIsAnalyzing(true);
     try {
       const context = generatedProject ? { files: generatedProject.engine?.files?.map(f => ({ path: f.path })) || [], summary: generatedProject.summary } : undefined; const response = await api.analyze(userMsg, context);
-      
+
       // STATE MERGING INTELLIGENCE (Lint Fixed)
       setGeneratedProject(prevProject => {
         const newFiles = response.engine?.files;
@@ -108,19 +119,19 @@ const MainLayout = () => {
                 requestId: response.requestId
             };
         }
-        
+
         // Se tem arquivos novos, é um novo projeto ou refatoração: substitui
         return response as GeneratedProject;
       });
-      
+
       const agentText = response.summary || "Análise concluída.";
       setChatHistory(prev => [...prev, { role: 'agent', text: agentText }]);
-      
+
       const fileCount = response.engine?.files?.length || 0;
       if (fileCount > 0) {
          showToast(`Projeto gerado com ${fileCount} arquivos!`, 'success');
       }
-      
+
     } catch (error: unknown) {
       // FIX: Tipagem segura para erro
       const errMsg = error instanceof Error ? error.message : 'Erro desconhecido';
@@ -228,8 +239,10 @@ const MainLayout = () => {
 
           {chatMode === 'interactive' ? (
             <ConversationChat
+              ref={conversationChatRef}
               onProjectGenerated={(result) => setGeneratedProject(result as GeneratedProject)}
               onToast={(msg, type) => showToast(msg, type)}
+              hideInput={true}
             />
           ) : (
             <>
@@ -253,7 +266,7 @@ const MainLayout = () => {
           value={chatInput} 
           onChange={(e) => setChatInput(e.target.value)} 
           onKeyDown={handleKeyDown} 
-          placeholder="Digite aqui..." 
+          placeholder={chatMode === 'interactive' ? "Descreva seu projeto ou responda ao agente... (Ctrl+Enter)" : "Digite aqui..."}
           className="w-full h-full bg-[var(--bg-app)] border border-[var(--border-main)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--brand-primary)] resize-none" 
           disabled={isAnalyzing} 
         />
