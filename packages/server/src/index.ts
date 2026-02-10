@@ -155,7 +155,7 @@ const start = async (): Promise<void> => {
   app.post("/export", exportController);
 
   // Rotas de conversação interativa
-  await app.register(conversationRoutes);
+  await conversationRoutes(app);
 
   // Inicia o servidor
   await app.listen({ port: PORT, host: "0.0.0.0" });
