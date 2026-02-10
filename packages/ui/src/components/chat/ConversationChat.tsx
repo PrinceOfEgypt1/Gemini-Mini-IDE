@@ -222,7 +222,8 @@ export const ConversationChat = forwardRef<ConversationChatHandle, ConversationC
     try {
       const response = await fetch(`${API_BASE_URL}/conversations/${sessionId}/finalize`, {
         method: 'POST',
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
+        body: JSON.stringify({})
       });
 
       if (!response.ok) {
@@ -262,7 +263,8 @@ export const ConversationChat = forwardRef<ConversationChatHandle, ConversationC
     try {
       const response = await fetch(`${API_BASE_URL}/conversations/${sessionId}/skip`, {
         method: 'POST',
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
+        body: JSON.stringify({})
       });
 
       if (!response.ok) {
