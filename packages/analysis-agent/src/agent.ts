@@ -467,22 +467,36 @@ export class AnalysisAgent {
 
   private async expandEpicsToStories(product: RichProductPlan): Promise<UserStoriesResult[]> {
     const results: UserStoriesResult[] = [];
-    
-    for (const epic of product.epics) {
-      // Método buildUserStoriesContext corrigido conforme definition
-      const promptContext = this.context.buildUserStoriesContext(epic.id);
+    // eslint-disable-next-line no-console
+    console.log(`[UserStories] Expandindo ${product.epics.length} épicos...`);
 
-      const stories = await this.callLLM(
-        SYSTEM_PROMPTS.USER_STORIES,
-        promptContext,
-        sanitizeUserStories,
-        UserStoriesSchema,
-        `UserStories-${epic.id}`
-      );
-      
-      results.push(stories);
-      this.context.addUserStories(stories.userStories);
+    for (const epic of product.epics) {
+      try {
+        // eslint-disable-next-line no-console
+        console.log(`[UserStories] Processando ${epic.id}: ${epic.title}...`);
+        const promptContext = this.context.buildUserStoriesContext(epic.id);
+
+        const stories = await this.callLLM(
+          SYSTEM_PROMPTS.USER_STORIES,
+          promptContext,
+          sanitizeUserStories,
+          UserStoriesSchema,
+          `UserStories-${epic.id}`
+        );
+
+        results.push(stories);
+        this.context.addUserStories(stories.userStories);
+        // eslint-disable-next-line no-console
+        console.log(`[UserStories] ✅ ${epic.id}: ${stories.userStories.length} histórias geradas`);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(`[UserStories] ❌ Falha no ${epic.id} (${epic.title}):`, err instanceof Error ? err.message : err);
+        // Continua para o próximo épico em vez de abortar tudo
+      }
     }
+
+    // eslint-disable-next-line no-console
+    console.log(`[UserStories] Concluído: ${results.length}/${product.epics.length} épicos expandidos`);
     return results;
   }
 

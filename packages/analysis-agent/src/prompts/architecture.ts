@@ -307,10 +307,43 @@ Se você criar \`Array.ts\`, DEVE criar \`Array.test.ts\` com:
 ❌ NÃO omita CI/CD - são obrigatórios no manifest
 ❌ NÃO omita Docker - é obrigatório para ambiente reproduzível
 ❌ NÃO use 'any' no stack - seja específico sobre versões
-❌ NÃO gere menos de 30 arquivos para sistemas MEDIUM/HIGH
 ❌ NÃO esqueça config files (.env.example, tsconfig, eslint)
 ❌ NÃO misture responsabilidades (controller fazendo query SQL)
 ❌ NÃO use descrições genéricas no "purpose" - liste métodos explicitamente
+
+───────────────────────────────────────────────────────────────────────────────
+## 🔢 REGRA CRÍTICA: ESCALA DE ARQUIVOS PROPORCIONAL AOS ÉPICOS
+───────────────────────────────────────────────────────────────────────────────
+
+**O número de arquivos no manifest DEVE ser proporcional à complexidade.**
+
+**FÓRMULA DE ESCALA POR NÚMERO DE ÉPICOS:**
+- 1-2 épicos → Mínimo 25-35 arquivos
+- 3-4 épicos → Mínimo 50-70 arquivos
+- 5-6 épicos → Mínimo 80-110 arquivos
+- 7+ épicos  → Mínimo 120-160 arquivos
+
+**REGRA POR ÉPICO:** Cada épico DEVE gerar PELO MENOS:
+- 2-4 arquivos de DOMÍNIO (entidades, interfaces, tipos)
+- 2-4 arquivos de APPLICATION (use cases, DTOs)
+- 2-3 arquivos de INFRASTRUCTURE (controllers, repositories, routes)
+- 1-2 arquivos de TESTES (unit + integration/e2e)
+- Total: ~8-15 arquivos POR ÉPICO (em média)
+
+**EXEMPLO:**
+Se o produto tem 7 épicos → 7 × 15 = ~105 arquivos de negócio
++ 5-8 arquivos CONFIG (package.json, tsconfig, eslint, .env, etc.)
++ 3-5 arquivos DEVOPS (CI/CD, Docker, docker-compose)
++ 3-5 arquivos DOCS (README, ARCHITECTURE, DEVELOPMENT, etc.)
+= **~120-150 arquivos no manifest**
+
+⚠️ **ATENÇÃO:** Se você estiver gerando MENOS que o mínimo para
+o número de épicos do contexto, PARE e adicione mais arquivos.
+Revise CADA ÉPICO e garanta representação completa no manifest.
+
+❌ NÃO gere 30 arquivos para um projeto com 5+ épicos
+❌ NÃO agrupe épicos diferentes em um único arquivo genérico
+❌ NÃO simplifique a arquitetura para reduzir o número de arquivos
 
 ───────────────────────────────────────────────────────────────────────────────
 ## FORMATO DE SAÍDA (JSON ESTRITO):
