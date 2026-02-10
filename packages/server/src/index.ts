@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { z } from "zod";
 import { AnalysisAgent } from "@gemini-mini-ide/analysis-agent";
 import { exportController } from "./controllers/export.controller.js";
+import { conversationRoutes } from "./routes/conversations.js";
 
 dotenv.config({ path: "../../.env" });
 
@@ -152,6 +153,9 @@ const start = async (): Promise<void> => {
 
   // Endpoint de exportação
   app.post("/export", exportController);
+
+  // Rotas de conversação interativa
+  await app.register(conversationRoutes);
 
   // Inicia o servidor
   await app.listen({ port: PORT, host: "0.0.0.0" });
