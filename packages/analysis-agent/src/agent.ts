@@ -14,6 +14,7 @@ import {
   RichArchitecture,
   UserStoriesResult,
   AgentResult,
+  PlanResult,
   TechStack,
   RichManifestItem,
   RichEpic
@@ -635,7 +636,146 @@ export class Array<T> {
     return { path: fileSpec.path, content: `// FAILED TO GENERATE CLEAN CODE\n// Error: ${lastError}\n// Attempts: ${maxAttempts}\n${content}` };
   }
 
-  // --- ORQUESTRADOR PRINCIPAL ---
+  // --- FASE 1: PLANEJAMENTO (Steps 1-4) ---
+
+  /**
+   * Executa os Steps 1-4 do pipeline (Analysis, Product, Architecture, User Stories).
+   * Retorna o plano completo para revisão do usuário ANTES de gerar código.
+   */
+  public async planProject(userPrompt: string): Promise<PlanResult> {
+    try {
+      this.context.start(userPrompt);
+
+      // 1. Análise
+      // eslint-disable-next-line no-console
+      console.log("Step 1: Analysis...");
+      const analysis = await this.runAnalysisStep(userPrompt);
+      this.context.setAnalysis(analysis);
+
+      // 2. Produto
+      // eslint-disable-next-line no-console
+      console.log("Step 2: Product Strategy...");
+      const product = await this.runProductStep(userPrompt, analysis);
+      this.context.setProduct(product);
+
+      // 3. Arquitetura
+      // eslint-disable-next-line no-console
+      console.log("Step 3: Architecture...");
+      let architecture = await this.runArchitectureStep(userPrompt, product);
+      this.context.setArchitecture(architecture);
+      architecture = this.structureAuditor.auditAndFix(architecture);
+
+      // 4. Histórias de Usuário
+      // eslint-disable-next-line no-console
+      console.log("Step 4: User Stories...");
+      const userStoriesResults = await this.expandEpicsToStories(product);
+      const flatUserStories = userStoriesResults.flatMap(r => r.userStories);
+
+      // eslint-disable-next-line no-console
+      console.log(`[Plan] ✅ Planejamento concluído: ${architecture.manifest.length} arquivos, ${product.epics.length} épicos, ${flatUserStories.length} user stories`);
+
+      return {
+        summary: analysis.summary,
+        analysis,
+        product,
+        architect: architecture,
+        userStories: flatUserStories,
+        manifestFileCount: architecture.manifest.length,
+        epicCount: product.epics.length,
+        userStoryCount: flatUserStories.length
+      };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Critical Error in Plan Phase:", error);
+      throw error;
+    }
+  }
+
+  // --- FASE 2: GERAÇÃO DE CÓDIGO (Step 5) ---
+
+  /**
+   * Gera código a partir de um PlanResult aprovado pelo usuário.
+   * Deve ser chamado APÓS planProject() e aprovação do usuário.
+   */
+  public async generateFromPlan(plan: PlanResult, userPrompt: string): Promise<AgentResult> {
+    const startTime = performance.now();
+
+    try {
+      // Restaurar contexto do plano
+      this.context.start(userPrompt);
+      this.context.setAnalysis(plan.analysis);
+      this.context.setProduct(plan.product);
+      this.context.setArchitecture(plan.architect);
+      for (const story of plan.userStories) {
+        this.context.addUserStories([story]);
+      }
+
+      // 5. Geração de Código
+      // eslint-disable-next-line no-console
+      console.log(`Step 5: Engine (Generating ${plan.architect.manifest.length} files)...`);
+
+      const orderMap: Record<string, number> = {
+        "CONFIG": 1, "DOMAIN": 2, "APPLICATION": 3, "INFRASTRUCTURE": 4, "DEVOPS": 5, "TESTS": 6, "DOCS": 7
+      };
+
+      const sortedManifest = [...plan.architect.manifest].sort((a, b) => {
+        return (orderMap[a.category] ?? 99) - (orderMap[b.category] ?? 99);
+      });
+
+      const batchSize = 5;
+      const files: Array<{path: string, content: string}> = [];
+
+      for (let i = 0; i < sortedManifest.length; i += batchSize) {
+        const batch = sortedManifest.slice(i, i + batchSize);
+        // eslint-disable-next-line no-console
+        console.log(`Processing Batch ${Math.floor(i/batchSize)+1}/${Math.ceil(sortedManifest.length/batchSize)}...`);
+
+        const batchResults = await Promise.all(
+          batch.map(spec => this.generateFileContent({
+            path: spec.path,
+            description: spec.purpose,
+            imports: []
+          }))
+        );
+        files.push(...batchResults);
+      }
+
+      // Validação de Integridade
+      const { validateIntegrity, logIntegrityResults } = await import("./validators/integrity-validator.js");
+      const integrityResult = validateIntegrity(plan.architect.manifest, files);
+      logIntegrityResults(integrityResult);
+
+      const totalTime = performance.now() - startTime;
+
+      return {
+        summary: plan.analysis.summary,
+        requestId: "req-" + Date.now(),
+        timestamp: new Date().toISOString(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        timings: { codeGen: totalTime, total: totalTime } as any,
+        analysis: plan.analysis,
+        product: plan.product,
+        architect: plan.architect,
+        userStories: plan.userStories,
+        engine: {
+          files: files.map(f => ({ path: f.path, content: f.content, language: this.detectLanguage(f.path) }))
+        },
+        quality: {
+          validationErrors: [],
+          codeCompleteness: 100
+        },
+        fenix: {
+          notes: "Generated by Gemini-Mini-IDE v2.0 (Plan+Generate)"
+        }
+      };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Critical Error in Code Generation Phase:", error);
+      throw error;
+    }
+  }
+
+  // --- ORQUESTRADOR COMPLETO (LEGADO) ---
 
   public async analyze(userPrompt: string, _options?: unknown): Promise<AgentResult> {
     const startTime = performance.now();

@@ -279,7 +279,43 @@ const start = async (): Promise<void> => {
     }
   });
 
-  // POST /conversations/:sessionId/finalize — Gera resultado final
+  // POST /conversations/:sessionId/plan — Gera plano (arch + HUs) para revisão
+  app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/plan", async (request, reply) => {
+    const apiKey = extractApiKey(request.headers["authorization"]);
+    if (!apiKey) {
+      return reply.status(401).send({ error: "API Key não configurada" });
+    }
+    const { sessionId } = request.params;
+    try {
+      const orchestrator = await getOrchestrator(apiKey);
+      const plan = await orchestrator.generatePlan(sessionId);
+      return reply.send(plan);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha ao gerar plano");
+      return reply.status(502).send({ error: "Falha ao gerar plano", details: errorMessage });
+    }
+  });
+
+  // POST /conversations/:sessionId/generate — Gera código a partir do plano aprovado
+  app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/generate", async (request, reply) => {
+    const apiKey = extractApiKey(request.headers["authorization"]);
+    if (!apiKey) {
+      return reply.status(401).send({ error: "API Key não configurada" });
+    }
+    const { sessionId } = request.params;
+    try {
+      const orchestrator = await getOrchestrator(apiKey);
+      const result = await orchestrator.generateCodeFromPlan(sessionId);
+      return reply.send(result);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha ao gerar código");
+      return reply.status(502).send({ error: "Falha ao gerar código", details: errorMessage });
+    }
+  });
+
+  // POST /conversations/:sessionId/finalize — Gera resultado final (legado)
   app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/finalize", async (request, reply) => {
     const apiKey = extractApiKey(request.headers["authorization"]);
     if (!apiKey) {

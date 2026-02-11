@@ -31,7 +31,7 @@ import { InteractiveAutonomousDecisionAgent } from "./agents/interactive-autonom
 import { InteractiveExperienceDesignerAgent } from "./agents/interactive-experience-designer.js";
 
 import { AnalysisAgent } from "./agent.js";
-import type { AgentResult } from "./types/rich-schemas.js";
+import type { AgentResult, PlanResult } from "./types/rich-schemas.js";
 
 /**
  * Resultado da interação com um agente.
@@ -272,10 +272,10 @@ export class InteractiveOrchestrator {
   }
 
   /**
-   * Gera o resultado final usando o pipeline de engenharia.
-   * Deve ser chamado quando a fase é "engineering_layer".
+   * FASE 1: Gera o plano do projeto (análise, arquitetura, HUs).
+   * Retorna o plano para revisão do usuário ANTES de gerar código.
    */
-  async generateFinalResult(sessionId: string): Promise<AgentResult> {
+  async generatePlan(sessionId: string): Promise<PlanResult> {
     const session = this.sessionManager.getSession(sessionId);
     if (!session) {
       throw new Error(`Session not found: ${sessionId}`);
@@ -283,12 +283,49 @@ export class InteractiveOrchestrator {
 
     const contextData = session.contextData;
     const originalPrompt = (contextData["originalUserPrompt"] as string) || "";
-
-    // Construir prompt enriquecido com todo o contexto coletado
     const enrichedPrompt = this.buildEnrichedPrompt(originalPrompt, contextData);
 
-    // Executa o pipeline de engenharia existente
-    const result = await this.engineeringAgent.analyze(enrichedPrompt);
+    // Executa Steps 1-4 (Analysis, Product, Architecture, User Stories)
+    const plan = await this.engineeringAgent.planProject(enrichedPrompt);
+
+    // Armazena o plano na sessão para uso posterior em generateCodeFromPlan
+    this.sessionManager.updateSessionContext(sessionId, {
+      planResult: plan
+    });
+
+    // Registra mensagem com resumo do plano
+    this.sessionManager.addMessage(
+      sessionId,
+      "agent",
+      `Plano gerado! ${plan.epicCount} épicos, ${plan.userStoryCount} user stories, ${plan.manifestFileCount} arquivos planejados.`,
+      "analysis",
+      { type: "feedback", data: { plan: true } }
+    );
+
+    return plan;
+  }
+
+  /**
+   * FASE 2: Gera o código a partir do plano aprovado pelo usuário.
+   * Deve ser chamado APÓS generatePlan() e aprovação.
+   */
+  async generateCodeFromPlan(sessionId: string): Promise<AgentResult> {
+    const session = this.sessionManager.getSession(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    const contextData = session.contextData;
+    const originalPrompt = (contextData["originalUserPrompt"] as string) || "";
+    const enrichedPrompt = this.buildEnrichedPrompt(originalPrompt, contextData);
+    const plan = contextData["planResult"] as PlanResult | undefined;
+
+    if (!plan) {
+      throw new Error("No plan found. Call generatePlan first.");
+    }
+
+    // Executa Step 5 (Code Generation) usando o plano aprovado
+    const result = await this.engineeringAgent.generateFromPlan(plan, enrichedPrompt);
 
     // Marca sessão como completa
     this.sessionManager.updateSessionPhase(sessionId, "completed", "code_gen");
@@ -300,7 +337,42 @@ export class InteractiveOrchestrator {
       }
     });
 
-    // Registra mensagem final
+    this.sessionManager.addMessage(
+      sessionId,
+      "agent",
+      `Projeto gerado com sucesso! ${result.engine?.files?.length || 0} arquivos criados.`,
+      "code_gen",
+      { type: "feedback", data: { fileCount: result.engine?.files?.length || 0 } }
+    );
+
+    return result;
+  }
+
+  /**
+   * Gera o resultado final (legado — roda tudo de uma vez).
+   * Mantido para compatibilidade. Prefira generatePlan + generateCodeFromPlan.
+   */
+  async generateFinalResult(sessionId: string): Promise<AgentResult> {
+    const session = this.sessionManager.getSession(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    const contextData = session.contextData;
+    const originalPrompt = (contextData["originalUserPrompt"] as string) || "";
+    const enrichedPrompt = this.buildEnrichedPrompt(originalPrompt, contextData);
+
+    const result = await this.engineeringAgent.analyze(enrichedPrompt);
+
+    this.sessionManager.updateSessionPhase(sessionId, "completed", "code_gen");
+    this.sessionManager.updateSessionContext(sessionId, {
+      engineeringResult: {
+        summary: result.summary,
+        fileCount: result.engine?.files?.length || 0,
+        timestamp: new Date().toISOString()
+      }
+    });
+
     this.sessionManager.addMessage(
       sessionId,
       "agent",
