@@ -138,16 +138,20 @@ ${this._userPrompt}
     }
 
     if (this._product) {
-      const epicsText = this._product.epics
-        .map(e => `- [${e.id}] ${e.title} (${e.category}, ${e.priority})`)
+      const epicCount = this._product.epics.length;
+      const epicsDetailed = this._product.epics
+        .map(e => {
+          const reqs = e.requirements.length > 0 ? `\n  Requisitos: ${e.requirements.join("; ")}` : "";
+          return `- [${e.id}] ${e.title} (${e.category}, ${e.priority}, ${e.estimatedComplexity})${reqs}`;
+        })
         .join("\n");
-      
+
       parts.push(`
 ## PRODUTO
 Visão: ${this._product.productVision}
 
-### Épicos:
-${epicsText}
+### Épicos (${epicCount} total):
+${epicsDetailed}
 
 ### Fora de Escopo:
 ${this._product.outOfScope.join(", ")}

@@ -72,6 +72,8 @@ const PHASE_LABELS: Record<string, string> = {
   strategic_layer_decisions: 'Decisoes Tecnicas',
   strategic_layer_experience: 'Design de Experiencia',
   engineering_layer: 'Gerando Projeto',
+  plan_review: 'Revisao do Plano',
+  generating_code: 'Gerando Codigo',
   completed: 'Concluido'
 };
 
@@ -207,27 +209,117 @@ export const ConversationChat = forwardRef<ConversationChatHandle, ConversationC
   }, [sessionId, handleInteractionResult, addMessage, onToast]);
 
   // ─────────────────────────────────────────────────────────
-  // FINALIZE (GENERATE PROJECT)
+  // PHASE 1: GENERATE PLAN (Architecture + User Stories)
   // ─────────────────────────────────────────────────────────
-  const finalizeConversation = useCallback(async () => {
+  const generatePlan = useCallback(async () => {
     if (!sessionId) return;
 
     setIsGenerating(true);
+    setCurrentPhase('plan_review');
     addMessage({
       role: 'agent',
-      content: 'Gerando seu projeto completo... Isso pode levar alguns instantes.',
-      agentType: 'code_gen'
+      content: 'Gerando o plano do projeto (analise, arquitetura, historias de usuario)... Isso pode levar alguns instantes.',
+      agentType: 'analysis'
     });
 
     try {
-      const response = await fetch(`${API_BASE_URL}/conversations/${sessionId}/finalize`, {
+      const response = await fetch(`${API_BASE_URL}/conversations/${sessionId}/plan`, {
         method: 'POST',
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
+        body: JSON.stringify({})
       });
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
-        throw new Error(err.error || 'Erro ao gerar projeto');
+        throw new Error(err.error || 'Erro ao gerar plano');
+      }
+
+      const plan = await response.json();
+
+      // Formatar resumo do plano para exibição
+      const epicsList = plan.product?.epics?.map(
+        (e: { id: string; title: string; category: string; priority: string }) =>
+          `  - [${e.id}] ${e.title} (${e.category}, ${e.priority})`
+      ).join('\n') || 'Nenhum';
+
+      const manifestSample = plan.architect?.manifest?.slice(0, 15).map(
+        (f: { path: string; category: string }) => `  - ${f.path} [${f.category}]`
+      ).join('\n') || 'Nenhum';
+      const manifestTotal = plan.architect?.manifest?.length || 0;
+      const manifestMore = manifestTotal > 15 ? `\n  ... e mais ${manifestTotal - 15} arquivos` : '';
+
+      const storyCount = plan.userStoryCount || plan.userStories?.length || 0;
+
+      const archStyle = plan.architect?.architectureStyle || 'Nao definido';
+      const stack = plan.architect?.stack;
+      const stackInfo = stack
+        ? `Runtime: ${stack.runtime}, Framework: ${stack.framework}, DB: ${stack.database}, Testes: ${stack.testing}`
+        : 'Nao definido';
+
+      const planSummary = [
+        `📋 PLANO DO PROJETO`,
+        ``,
+        `📊 Resumo: ${plan.summary}`,
+        ``,
+        `🏗️ Arquitetura: ${archStyle}`,
+        `⚙️ Stack: ${stackInfo}`,
+        ``,
+        `📦 Epicos (${plan.epicCount || plan.product?.epics?.length || 0}):`,
+        epicsList,
+        ``,
+        `📝 User Stories: ${storyCount} historias geradas`,
+        ``,
+        `📂 Manifest (${manifestTotal} arquivos planejados):`,
+        manifestSample,
+        manifestMore,
+        ``,
+        `Revise o plano acima. Se estiver de acordo, clique em "Aprovar e Gerar Codigo". Se quiser ajustar algo, me diga o que mudar.`
+      ].join('\n');
+
+      addMessage({
+        role: 'agent',
+        content: planSummary,
+        agentType: 'analysis',
+        phase: 'plan_review'
+      });
+
+      setCurrentPhase('plan_review');
+      setCurrentOptions(['Aprovar e Gerar Codigo', 'Quero ajustar algo']);
+      onToast?.(`Plano gerado: ${manifestTotal} arquivos, ${storyCount} user stories`, 'success');
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : 'Erro desconhecido';
+      addMessage({ role: 'agent', content: `Erro ao gerar plano: ${errMsg}` });
+      onToast?.(errMsg, 'error');
+      setCurrentPhase('engineering_layer');
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [sessionId, addMessage, onToast]);
+
+  // ─────────────────────────────────────────────────────────
+  // PHASE 2: GENERATE CODE (from approved plan)
+  // ─────────────────────────────────────────────────────────
+  const generateCode = useCallback(async () => {
+    if (!sessionId) return;
+
+    setIsGenerating(true);
+    setCurrentPhase('generating_code');
+    addMessage({
+      role: 'agent',
+      content: 'Plano aprovado! Gerando o codigo do projeto... Isso pode levar vários minutos.',
+      agentType: 'code_gen'
+    });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/conversations/${sessionId}/generate`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({})
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || 'Erro ao gerar codigo');
       }
 
       const result = await response.json();
@@ -245,7 +337,7 @@ export const ConversationChat = forwardRef<ConversationChatHandle, ConversationC
       onToast?.(`Projeto gerado com ${fileCount} arquivos!`, 'success');
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Erro desconhecido';
-      addMessage({ role: 'agent', content: `Erro na geração: ${errMsg}` });
+      addMessage({ role: 'agent', content: `Erro na geracao de codigo: ${errMsg}` });
       onToast?.(errMsg, 'error');
     } finally {
       setIsGenerating(false);
@@ -262,7 +354,8 @@ export const ConversationChat = forwardRef<ConversationChatHandle, ConversationC
     try {
       const response = await fetch(`${API_BASE_URL}/conversations/${sessionId}/skip`, {
         method: 'POST',
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
+        body: JSON.stringify({})
       });
 
       if (!response.ok) {
@@ -298,11 +391,31 @@ export const ConversationChat = forwardRef<ConversationChatHandle, ConversationC
 
     addMessage({ role: 'user', content: message });
 
-    // Se estamos na fase de engenharia e o usuario quer gerar
+    const lower = message.toLowerCase();
+
+    // Se estamos na fase de engenharia → gerar PLANO (não código direto)
     if (currentPhase === 'engineering_layer') {
-      const lower = message.toLowerCase();
       if (lower.includes('gerar') || lower.includes('sim') || lower.includes('agora')) {
-        await finalizeConversation();
+        await generatePlan();
+        return;
+      }
+    }
+
+    // Se estamos na fase de revisão do plano → aprovar e gerar código
+    if (currentPhase === 'plan_review') {
+      if (lower.includes('aprovar') || lower.includes('gerar codigo') || lower.includes('gerar código')) {
+        await generateCode();
+        return;
+      }
+      // Se quer ajustar, volta para a conversa normal com o agente
+      if (lower.includes('ajustar') || lower.includes('mudar') || lower.includes('revisar')) {
+        addMessage({
+          role: 'agent',
+          content: 'Entendi! Descreva o que deseja ajustar no plano e vou gerar um novo plano com as mudanças.',
+          agentType: 'analysis'
+        });
+        setCurrentPhase('engineering_layer');
+        setCurrentOptions(['Gerar novo plano', 'Gerar codigo com plano atual']);
         return;
       }
     }
@@ -313,7 +426,7 @@ export const ConversationChat = forwardRef<ConversationChatHandle, ConversationC
     } else {
       await respondToAgent(message);
     }
-  }, [inputValue, sessionId, currentPhase, startConversation, respondToAgent, finalizeConversation, addMessage, onToast]);
+  }, [inputValue, sessionId, currentPhase, startConversation, respondToAgent, generatePlan, generateCode, addMessage, onToast]);
 
   // Expõe sendMessage para o componente pai via ref
   useImperativeHandle(ref, () => ({

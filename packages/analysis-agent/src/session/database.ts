@@ -5,7 +5,8 @@
  */
 
 import Database from "better-sqlite3";
-import { resolve } from "path";
+import { resolve, dirname } from "path";
+import { mkdirSync } from "fs";
 
 /** Resultado de operações de escrita */
 export interface RunResult {
@@ -27,6 +28,8 @@ export class SessionDatabase {
 
   constructor(dbPath?: string) {
     const resolvedPath = dbPath || resolve(process.cwd(), "data", "sessions.db");
+    // Garante que o diretório existe antes de abrir o banco
+    mkdirSync(dirname(resolvedPath), { recursive: true });
     this.db = new Database(resolvedPath);
     this.db.pragma("journal_mode = WAL");
     this.db.pragma("foreign_keys = ON");

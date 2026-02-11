@@ -271,3 +271,18 @@ export interface RichAgentResult {
 
 // Alias para compatibilidade
 export type AgentResult = RichAgentResult;
+
+/**
+ * Resultado da fase de planejamento (Steps 1-4).
+ * Contém análise, produto, arquitetura e user stories para revisão do usuário.
+ */
+export interface PlanResult {
+  summary: string;
+  analysis: RichAnalysis;
+  product: RichProductPlan;
+  architect: RichArchitecture;
+  userStories: RichUserStory[];
+  manifestFileCount: number;
+  epicCount: number;
+  userStoryCount: number;
+}

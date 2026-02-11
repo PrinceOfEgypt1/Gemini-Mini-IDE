@@ -307,10 +307,46 @@ Se você criar \`Array.ts\`, DEVE criar \`Array.test.ts\` com:
 ❌ NÃO omita CI/CD - são obrigatórios no manifest
 ❌ NÃO omita Docker - é obrigatório para ambiente reproduzível
 ❌ NÃO use 'any' no stack - seja específico sobre versões
-❌ NÃO gere menos de 30 arquivos para sistemas MEDIUM/HIGH
 ❌ NÃO esqueça config files (.env.example, tsconfig, eslint)
 ❌ NÃO misture responsabilidades (controller fazendo query SQL)
 ❌ NÃO use descrições genéricas no "purpose" - liste métodos explicitamente
+
+───────────────────────────────────────────────────────────────────────────────
+## 🔢 REGRA CRÍTICA: COMPLETUDE DO MANIFEST
+───────────────────────────────────────────────────────────────────────────────
+
+**O manifest DEVE representar COMPLETAMENTE todos os requisitos do projeto.**
+
+**PROCESSO DE ANÁLISE (obrigatório antes de montar o manifest):**
+
+1. **Identifique TODAS as entidades/módulos/componentes** mencionados no prompt e nos épicos
+2. **Para CADA entidade, aplique Clean Architecture:**
+   - Arquivo de domínio (entidade, value objects, interfaces de repositório)
+   - Arquivo de application (use case, DTO)
+   - Arquivo de infrastructure (implementação concreta, controller, rotas)
+   - Arquivo de teste unitário
+   - Arquivo de teste de integração/e2e (quando aplicável)
+3. **Adicione infraestrutura transversal:**
+   - Config files (package.json, tsconfig, eslint, .env.example, etc.)
+   - DevOps (CI/CD, Docker, docker-compose)
+   - Documentação (README, ARCHITECTURE, DEVELOPMENT, USER_STORIES, etc.)
+   - Entry points (main.ts, index.ts, rotas, bootstrap)
+   - Shared/utils quando houver código reutilizável entre módulos
+
+**VALIDAÇÃO MENTAL OBRIGATÓRIA:**
+
+Antes de retornar o manifest, percorra CADA ÉPICO do contexto e verifique:
+- [ ] Todas as entidades deste épico têm arquivo de domínio?
+- [ ] Todos os casos de uso deste épico têm arquivo de application?
+- [ ] A infraestrutura necessária (API, banco, serviços externos) está representada?
+- [ ] Existem testes para as funcionalidades críticas deste épico?
+- [ ] A documentação cobre os fluxos deste épico?
+
+Se algum épico NÃO tiver representação completa, adicione os arquivos faltantes.
+
+❌ NÃO agrupe entidades de épicos diferentes em um único arquivo genérico
+❌ NÃO omita arquivos de teste — cada entidade e cada use case precisa de cobertura
+❌ NÃO simplifique a arquitetura sacrificando a separação de responsabilidades
 
 ───────────────────────────────────────────────────────────────────────────────
 ## FORMATO DE SAÍDA (JSON ESTRITO):
