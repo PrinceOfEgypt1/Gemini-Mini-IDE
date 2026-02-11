@@ -153,10 +153,6 @@ Visão: ${this._product.productVision}
 ### Épicos (${epicCount} total):
 ${epicsDetailed}
 
-⚠️ ATENÇÃO: Este projeto tem ${epicCount} épicos.
-Cada épico DEVE ter representação completa no manifest (domínio + application + infra + testes).
-Consulte a REGRA DE ESCALA DE ARQUIVOS no system prompt.
-
 ### Fora de Escopo:
 ${this._product.outOfScope.join(", ")}
 

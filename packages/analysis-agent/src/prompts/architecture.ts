@@ -312,38 +312,41 @@ Se você criar \`Array.ts\`, DEVE criar \`Array.test.ts\` com:
 ❌ NÃO use descrições genéricas no "purpose" - liste métodos explicitamente
 
 ───────────────────────────────────────────────────────────────────────────────
-## 🔢 REGRA CRÍTICA: ESCALA DE ARQUIVOS PROPORCIONAL AOS ÉPICOS
+## 🔢 REGRA CRÍTICA: COMPLETUDE DO MANIFEST
 ───────────────────────────────────────────────────────────────────────────────
 
-**O número de arquivos no manifest DEVE ser proporcional à complexidade.**
+**O manifest DEVE representar COMPLETAMENTE todos os requisitos do projeto.**
 
-**FÓRMULA DE ESCALA POR NÚMERO DE ÉPICOS:**
-- 1-2 épicos → Mínimo 25-35 arquivos
-- 3-4 épicos → Mínimo 50-70 arquivos
-- 5-6 épicos → Mínimo 80-110 arquivos
-- 7+ épicos  → Mínimo 120-160 arquivos
+**PROCESSO DE ANÁLISE (obrigatório antes de montar o manifest):**
 
-**REGRA POR ÉPICO:** Cada épico DEVE gerar PELO MENOS:
-- 2-4 arquivos de DOMÍNIO (entidades, interfaces, tipos)
-- 2-4 arquivos de APPLICATION (use cases, DTOs)
-- 2-3 arquivos de INFRASTRUCTURE (controllers, repositories, routes)
-- 1-2 arquivos de TESTES (unit + integration/e2e)
-- Total: ~8-15 arquivos POR ÉPICO (em média)
+1. **Identifique TODAS as entidades/módulos/componentes** mencionados no prompt e nos épicos
+2. **Para CADA entidade, aplique Clean Architecture:**
+   - Arquivo de domínio (entidade, value objects, interfaces de repositório)
+   - Arquivo de application (use case, DTO)
+   - Arquivo de infrastructure (implementação concreta, controller, rotas)
+   - Arquivo de teste unitário
+   - Arquivo de teste de integração/e2e (quando aplicável)
+3. **Adicione infraestrutura transversal:**
+   - Config files (package.json, tsconfig, eslint, .env.example, etc.)
+   - DevOps (CI/CD, Docker, docker-compose)
+   - Documentação (README, ARCHITECTURE, DEVELOPMENT, USER_STORIES, etc.)
+   - Entry points (main.ts, index.ts, rotas, bootstrap)
+   - Shared/utils quando houver código reutilizável entre módulos
 
-**EXEMPLO:**
-Se o produto tem 7 épicos → 7 × 15 = ~105 arquivos de negócio
-+ 5-8 arquivos CONFIG (package.json, tsconfig, eslint, .env, etc.)
-+ 3-5 arquivos DEVOPS (CI/CD, Docker, docker-compose)
-+ 3-5 arquivos DOCS (README, ARCHITECTURE, DEVELOPMENT, etc.)
-= **~120-150 arquivos no manifest**
+**VALIDAÇÃO MENTAL OBRIGATÓRIA:**
 
-⚠️ **ATENÇÃO:** Se você estiver gerando MENOS que o mínimo para
-o número de épicos do contexto, PARE e adicione mais arquivos.
-Revise CADA ÉPICO e garanta representação completa no manifest.
+Antes de retornar o manifest, percorra CADA ÉPICO do contexto e verifique:
+- [ ] Todas as entidades deste épico têm arquivo de domínio?
+- [ ] Todos os casos de uso deste épico têm arquivo de application?
+- [ ] A infraestrutura necessária (API, banco, serviços externos) está representada?
+- [ ] Existem testes para as funcionalidades críticas deste épico?
+- [ ] A documentação cobre os fluxos deste épico?
 
-❌ NÃO gere 30 arquivos para um projeto com 5+ épicos
-❌ NÃO agrupe épicos diferentes em um único arquivo genérico
-❌ NÃO simplifique a arquitetura para reduzir o número de arquivos
+Se algum épico NÃO tiver representação completa, adicione os arquivos faltantes.
+
+❌ NÃO agrupe entidades de épicos diferentes em um único arquivo genérico
+❌ NÃO omita arquivos de teste — cada entidade e cada use case precisa de cobertura
+❌ NÃO simplifique a arquitetura sacrificando a separação de responsabilidades
 
 ───────────────────────────────────────────────────────────────────────────────
 ## FORMATO DE SAÍDA (JSON ESTRITO):
