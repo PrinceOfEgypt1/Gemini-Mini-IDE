@@ -1870,44 +1870,6 @@
       }
     }
   },
-  "c8832586b763034ec9d75de1edf2ff765fdbc8c74b07ab132c7495dc71de94b5": {
-    "timestamp": 1770670684243,
-    "data": {
-      "summary": "Test Project",
-      "complexity": {
-        "level": "MEDIUM",
-        "score": 5,
-        "justification": "Padronizado por fallback"
-      },
-      "coreEntities": [],
-      "implicitRequirements": [],
-      "assumptions": [
-        "A1"
-      ]
-    }
-  },
-  "7e443e124d7a0960e92fb7d8e197aa7e49ee2214d658b95b5a1256a51f44d64f": {
-    "timestamp": 1770670684246,
-    "data": {
-      "productVision": "Visão do produto não definida",
-      "epics": [
-        {
-          "id": "EPIC-001",
-          "title": "Epic 1",
-          "category": "CORE",
-          "context": "Ctx",
-          "requirements": [
-            "Req1"
-          ],
-          "acceptanceCriteria": [],
-          "priority": "P1",
-          "estimatedComplexity": "MEDIUM"
-        }
-      ],
-      "outOfScope": [],
-      "risks": []
-    }
-  },
   "99685242aede546a2ceb8586efd0e78cdcfdfcfc187335250d8aab77b6161868": {
     "timestamp": 1770670684249,
     "data": {
@@ -1947,89 +1909,6 @@
       "keyDecisions": [],
       "securityConsiderations": [],
       "scalabilityPath": []
-    }
-  },
-  "433afba9d22fe1d2e8b5411227e6c23ea101406f6be8f969c59f3c0db7e5926f": {
-    "timestamp": 1770670684284,
-    "data": {
-      "epicId": "EPIC-000",
-      "epicTitle": "Épico",
-      "userStories": [
-        {
-          "id": "HU-1",
-          "title": "Story 1",
-          "description": "No description",
-          "acceptanceCriteria": [
-            {
-              "id": "AC-1",
-              "scenario": "Cenário 1",
-              "given": "Dado que",
-              "when": "Quando",
-              "then": "Então"
-            }
-          ],
-          "technicalNotes": [],
-          "dependencies": [],
-          "estimatedPoints": 3,
-          "priority": "P0"
-        }
-      ],
-      "summary": {
-        "totalStories": 1,
-        "totalPoints": 3,
-        "p0Count": 1,
-        "p1Count": 0,
-        "p2Count": 0
-      }
-    }
-  },
-  "9e292b519f6f6f4b68fa998dea04debca792a328fa8b9039384fd523989affe0": {
-    "timestamp": 1770670684412,
-    "data": {
-      "summary": "Análise indisponível",
-      "complexity": {
-        "level": "HIGH",
-        "score": 8,
-        "justification": "Complex"
-      },
-      "coreEntities": [
-        "Entity1",
-        "Entity2"
-      ],
-      "implicitRequirements": [
-        "Req1"
-      ],
-      "assumptions": [
-        "A1"
-      ]
-    }
-  },
-  "5e724e04df833800d308b77578b25083cad1dd3bdd8d9ac08aa9cc0ea7697846": {
-    "timestamp": 1770670684414,
-    "data": {
-      "productVision": "Vision",
-      "epics": [
-        {
-          "id": "EPIC-001",
-          "title": "Epic 1",
-          "category": "CORE",
-          "context": "Ctx",
-          "requirements": [
-            "Req1",
-            "Req2",
-            "Req3",
-            "Req4",
-            "Req5"
-          ],
-          "acceptanceCriteria": [
-            "AC1"
-          ],
-          "priority": "P0",
-          "estimatedComplexity": "HIGH"
-        }
-      ],
-      "outOfScope": [],
-      "risks": []
     }
   },
   "f800dab95caff6ba878b87cfbb6512408483dc410581a17c1e8a0c7b9912c6a3": {
@@ -2073,8 +1952,211 @@
       "scalabilityPath": []
     }
   },
+  "f94fb80aaf633f9a214c40eb821d1475ea5a9e5ac7e7f4d96663a58a167b2163": {
+    "timestamp": 1770736628517,
+    "data": {
+      "architectureStyle": "Modular Monolith",
+      "stack": {
+        "runtime": "Node.js",
+        "language": "TypeScript",
+        "framework": "React",
+        "testing": "Vitest",
+        "documentation": "README.md",
+        "orm": "N/A",
+        "database": "N/A",
+        "cache": "N/A",
+        "queue": "N/A"
+      },
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Config",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Core",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        }
+      ],
+      "keyDecisions": [],
+      "securityConsiderations": [],
+      "scalabilityPath": []
+    }
+  },
+  "f6a58c8e14f426c1b98781ea0aa1acc95c64ef5a34c61095149ed77e08fe1127": {
+    "timestamp": 1770736628664,
+    "data": {
+      "architectureStyle": "Modular",
+      "stack": {
+        "runtime": "Node",
+        "language": "TS",
+        "framework": "React",
+        "testing": "Vitest",
+        "documentation": "README",
+        "orm": "Prisma",
+        "database": "PostgreSQL",
+        "cache": "Redis",
+        "queue": "BullMQ"
+      },
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "src/index.ts",
+          "purpose": "Entry",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/app.ts",
+          "purpose": "App",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "LOW",
+          "category": "DOCS"
+        }
+      ],
+      "keyDecisions": [],
+      "securityConsiderations": [],
+      "scalabilityPath": []
+    }
+  },
+  "c8832586b763034ec9d75de1edf2ff765fdbc8c74b07ab132c7495dc71de94b5": {
+    "timestamp": 1770768731200,
+    "data": {
+      "summary": "Test Project",
+      "complexity": {
+        "level": "MEDIUM",
+        "score": 5,
+        "justification": "Padronizado por fallback"
+      },
+      "coreEntities": [],
+      "implicitRequirements": [],
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "7e443e124d7a0960e92fb7d8e197aa7e49ee2214d658b95b5a1256a51f44d64f": {
+    "timestamp": 1770768731203,
+    "data": {
+      "productVision": "Visão do produto não definida",
+      "epics": [
+        {
+          "id": "EPIC-001",
+          "title": "Epic 1",
+          "category": "CORE",
+          "context": "Ctx",
+          "requirements": [
+            "Req1"
+          ],
+          "acceptanceCriteria": [],
+          "priority": "P1",
+          "estimatedComplexity": "MEDIUM"
+        }
+      ],
+      "outOfScope": [],
+      "risks": []
+    }
+  },
+  "433afba9d22fe1d2e8b5411227e6c23ea101406f6be8f969c59f3c0db7e5926f": {
+    "timestamp": 1770768731220,
+    "data": {
+      "epicId": "EPIC-000",
+      "epicTitle": "Épico",
+      "userStories": [
+        {
+          "id": "HU-1",
+          "title": "Story 1",
+          "description": "No description",
+          "acceptanceCriteria": [
+            {
+              "id": "AC-1",
+              "scenario": "Cenário 1",
+              "given": "Dado que",
+              "when": "Quando",
+              "then": "Então"
+            }
+          ],
+          "technicalNotes": [],
+          "dependencies": [],
+          "estimatedPoints": 3,
+          "priority": "P0"
+        }
+      ],
+      "summary": {
+        "totalStories": 1,
+        "totalPoints": 3,
+        "p0Count": 1,
+        "p1Count": 0,
+        "p2Count": 0
+      }
+    }
+  },
+  "9e292b519f6f6f4b68fa998dea04debca792a328fa8b9039384fd523989affe0": {
+    "timestamp": 1770768731349,
+    "data": {
+      "summary": "Análise indisponível",
+      "complexity": {
+        "level": "HIGH",
+        "score": 8,
+        "justification": "Complex"
+      },
+      "coreEntities": [
+        "Entity1",
+        "Entity2"
+      ],
+      "implicitRequirements": [
+        "Req1"
+      ],
+      "assumptions": [
+        "A1"
+      ]
+    }
+  },
+  "5e724e04df833800d308b77578b25083cad1dd3bdd8d9ac08aa9cc0ea7697846": {
+    "timestamp": 1770768731350,
+    "data": {
+      "productVision": "Vision",
+      "epics": [
+        {
+          "id": "EPIC-001",
+          "title": "Epic 1",
+          "category": "CORE",
+          "context": "Ctx",
+          "requirements": [
+            "Req1",
+            "Req2",
+            "Req3",
+            "Req4",
+            "Req5"
+          ],
+          "acceptanceCriteria": [
+            "AC1"
+          ],
+          "priority": "P0",
+          "estimatedComplexity": "HIGH"
+        }
+      ],
+      "outOfScope": [],
+      "risks": []
+    }
+  },
   "2b0aa3474179eda33ee0545884fc2516f8b657ae346b50e6f58d3f5b6ca7d182": {
-    "timestamp": 1770670684419,
+    "timestamp": 1770768731354,
     "data": {
       "epicId": "EPIC-001",
       "epicTitle": "Epic 1",
@@ -2231,88 +2313,6 @@
         "p1Count": 8,
         "p2Count": 0
       }
-    }
-  },
-  "f94fb80aaf633f9a214c40eb821d1475ea5a9e5ac7e7f4d96663a58a167b2163": {
-    "timestamp": 1770736628517,
-    "data": {
-      "architectureStyle": "Modular Monolith",
-      "stack": {
-        "runtime": "Node.js",
-        "language": "TypeScript",
-        "framework": "React",
-        "testing": "Vitest",
-        "documentation": "README.md",
-        "orm": "N/A",
-        "database": "N/A",
-        "cache": "N/A",
-        "queue": "N/A"
-      },
-      "diagram": "Flow",
-      "manifest": [
-        {
-          "path": "README.md",
-          "purpose": "Doc",
-          "criticality": "MEDIUM",
-          "category": "APPLICATION"
-        },
-        {
-          "path": "package.json",
-          "purpose": "Config",
-          "criticality": "MEDIUM",
-          "category": "APPLICATION"
-        },
-        {
-          "path": "src/main.ts",
-          "purpose": "Core",
-          "criticality": "MEDIUM",
-          "category": "APPLICATION"
-        }
-      ],
-      "keyDecisions": [],
-      "securityConsiderations": [],
-      "scalabilityPath": []
-    }
-  },
-  "f6a58c8e14f426c1b98781ea0aa1acc95c64ef5a34c61095149ed77e08fe1127": {
-    "timestamp": 1770736628664,
-    "data": {
-      "architectureStyle": "Modular",
-      "stack": {
-        "runtime": "Node",
-        "language": "TS",
-        "framework": "React",
-        "testing": "Vitest",
-        "documentation": "README",
-        "orm": "Prisma",
-        "database": "PostgreSQL",
-        "cache": "Redis",
-        "queue": "BullMQ"
-      },
-      "diagram": "Flow",
-      "manifest": [
-        {
-          "path": "src/index.ts",
-          "purpose": "Entry",
-          "criticality": "HIGH",
-          "category": "APPLICATION"
-        },
-        {
-          "path": "src/app.ts",
-          "purpose": "App",
-          "criticality": "HIGH",
-          "category": "APPLICATION"
-        },
-        {
-          "path": "README.md",
-          "purpose": "Doc",
-          "criticality": "LOW",
-          "category": "DOCS"
-        }
-      ],
-      "keyDecisions": [],
-      "securityConsiderations": [],
-      "scalabilityPath": []
     }
   }
 }
