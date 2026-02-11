@@ -2314,5 +2314,87 @@
         "p2Count": 0
       }
     }
+  },
+  "03921d2bb57fe657e692164556e88524be992ef702c30c6da1bcba5ab5ab6b70": {
+    "timestamp": 1770769493666,
+    "data": {
+      "architectureStyle": "Modular Monolith",
+      "stack": {
+        "runtime": "Node.js",
+        "language": "TypeScript",
+        "framework": "React",
+        "testing": "Vitest",
+        "documentation": "README.md",
+        "orm": "N/A",
+        "database": "N/A",
+        "cache": "N/A",
+        "queue": "N/A"
+      },
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "package.json",
+          "purpose": "Config",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/main.ts",
+          "purpose": "Core",
+          "criticality": "MEDIUM",
+          "category": "APPLICATION"
+        }
+      ],
+      "keyDecisions": [],
+      "securityConsiderations": [],
+      "scalabilityPath": []
+    }
+  },
+  "c7f7ec4fc33b61fefd4f7d7674789727802afd826e85e46607fa70898c21b638": {
+    "timestamp": 1770769493846,
+    "data": {
+      "architectureStyle": "Modular",
+      "stack": {
+        "runtime": "Node",
+        "language": "TS",
+        "framework": "React",
+        "testing": "Vitest",
+        "documentation": "README",
+        "orm": "Prisma",
+        "database": "PostgreSQL",
+        "cache": "Redis",
+        "queue": "BullMQ"
+      },
+      "diagram": "Flow",
+      "manifest": [
+        {
+          "path": "src/index.ts",
+          "purpose": "Entry",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "src/app.ts",
+          "purpose": "App",
+          "criticality": "HIGH",
+          "category": "APPLICATION"
+        },
+        {
+          "path": "README.md",
+          "purpose": "Doc",
+          "criticality": "LOW",
+          "category": "DOCS"
+        }
+      ],
+      "keyDecisions": [],
+      "securityConsiderations": [],
+      "scalabilityPath": []
+    }
   }
 }
