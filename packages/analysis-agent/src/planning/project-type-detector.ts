@@ -631,10 +631,10 @@ export class ProjectTypeDetector {
       projectType === "VISUALIZATION" || projectType === "EDUCATIONAL";
 
     // Base configuration files
-    let config = this.BASE_CONFIG_FILES;
+    const config = this.BASE_CONFIG_FILES;
 
     // Domain files: structure implementations + types + frames
-    let domain = numStructures * this.FILES_PER_STRUCTURE;
+    const domain = numStructures * this.FILES_PER_STRUCTURE;
 
     // Application files: operations + registry + inputs + pseudocode + core app
     let application = this.CORE_APP_FILES;
@@ -654,7 +654,7 @@ export class ProjectTypeDetector {
     }
 
     // Infrastructure files (minimal for visualization projects)
-    let infrastructure = 2;
+    const infrastructure = 2;
 
     // Test files
     let tests = numStructures * this.TEST_FILES_PER_STRUCTURE;
@@ -663,10 +663,10 @@ export class ProjectTypeDetector {
     }
 
     // Documentation files
-    let docs = isVisualization ? this.DOC_FILES_VISUALIZATION : this.DOC_FILES_MIN;
+    const docs = isVisualization ? this.DOC_FILES_VISUALIZATION : this.DOC_FILES_MIN;
 
     // DevOps files
-    let devops = 3; // Basic CI/CD
+    const devops = 3; // Basic CI/CD
 
     // Visualization files (if applicable)
     let visualization = 0;
