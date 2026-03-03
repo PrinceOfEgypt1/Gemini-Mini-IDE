@@ -7,5 +7,8 @@ export { AnalysisAgent };
 export * from "./types/index.js";
 export * from "./governance/index.js";
 
+// Exporta o sistema ESAA Hardened v2
+export * from "./esaa/index.js";
+
 // Exporta helpers se necessário
 export const createAgent = (apiKey: string) => new AnalysisAgent(apiKey);
