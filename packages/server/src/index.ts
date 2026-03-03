@@ -35,6 +35,41 @@ const AnalyzeRequestSchema = z.object({
     .optional()
 });
 
+// Schemas de conversação
+const StartConversationSchema = z.object({
+  userId: z.string().min(1),
+  message: z.string().min(1)
+});
+const RespondSchema = z.object({
+  message: z.string().min(1)
+});
+
+function extractApiKey(authHeader?: string): string {
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    return authHeader.substring(7);
+  }
+  return DEFAULT_API_KEY;
+}
+
+// Lazy-load InteractiveOrchestrator (depende de better-sqlite3 nativo)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let InteractiveOrchestratorClass: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const orchestrators = new Map<string, any>();
+
+async function getOrchestrator(apiKey: string) {
+  if (!InteractiveOrchestratorClass) {
+    const mod = await import("@gemini-mini-ide/analysis-agent");
+    InteractiveOrchestratorClass = mod.InteractiveOrchestrator;
+  }
+  let orchestrator = orchestrators.get(apiKey);
+  if (!orchestrator) {
+    orchestrator = new InteractiveOrchestratorClass(apiKey);
+    orchestrators.set(apiKey, orchestrator);
+  }
+  return orchestrator;
+}
+
 const app: FastifyInstance = Fastify({
   logger: {
     level: process.env["LOG_LEVEL"] ?? "info",
@@ -346,12 +381,158 @@ const start = async (): Promise<void> => {
     }
   });
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // ROTAS DE CONVERSAÇÃO INTERATIVA (inline para garantir registro)
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // POST /conversations/start — Inicia nova conversa
+  app.post("/conversations/start", async (request, reply) => {
+    const apiKey = extractApiKey(request.headers["authorization"]);
+    if (!apiKey) {
+      return reply.status(401).send({
+        error: "API Key não configurada",
+        message: "Configure OPENAI_API_KEY ou envie via header Authorization"
+      });
+    }
+    const parseResult = StartConversationSchema.safeParse(request.body);
+    if (!parseResult.success) {
+      return reply.status(400).send({ error: "Dados inválidos", details: parseResult.error.issues });
+    }
+    const { userId, message } = parseResult.data;
+    try {
+      const orchestrator = await getOrchestrator(apiKey);
+      const result = await orchestrator.startConversation(userId, message);
+      return reply.send(result);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha ao iniciar conversa");
+      return reply.status(502).send({ error: "Falha ao iniciar conversa", details: errorMessage });
+    }
+  });
+
+  // POST /conversations/:sessionId/respond — Responde ao agente
+  app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/respond", async (request, reply) => {
+    const apiKey = extractApiKey(request.headers["authorization"]);
+    if (!apiKey) {
+      return reply.status(401).send({ error: "API Key não configurada" });
+    }
+    const parseResult = RespondSchema.safeParse(request.body);
+    if (!parseResult.success) {
+      return reply.status(400).send({ error: "Dados inválidos", details: parseResult.error.issues });
+    }
+    const { sessionId } = request.params;
+    const { message } = parseResult.data;
+    try {
+      const orchestrator = await getOrchestrator(apiKey);
+      const result = await orchestrator.respondToAgent(sessionId, message);
+      return reply.send(result);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha ao processar resposta");
+      return reply.status(502).send({ error: "Falha ao processar resposta", details: errorMessage });
+    }
+  });
+
+  // GET /conversations/:sessionId — Estado da sessão
+  app.get<{ Params: { sessionId: string } }>("/conversations/:sessionId", async (request, reply) => {
+    const apiKey = extractApiKey(request.headers["authorization"]);
+    if (!apiKey) {
+      return reply.status(401).send({ error: "API Key não configurada" });
+    }
+    const { sessionId } = request.params;
+    try {
+      const orchestrator = await getOrchestrator(apiKey);
+      const session = orchestrator.getSession(sessionId);
+      if (!session) {
+        return reply.status(404).send({ error: "Sessão não encontrada" });
+      }
+      return reply.send(session);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha ao buscar sessão");
+      return reply.status(500).send({ error: "Falha ao buscar sessão", details: errorMessage });
+    }
+  });
+
+  // POST /conversations/:sessionId/skip — Pula agente atual
+  app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/skip", async (request, reply) => {
+    const apiKey = extractApiKey(request.headers["authorization"]);
+    if (!apiKey) {
+      return reply.status(401).send({ error: "API Key não configurada" });
+    }
+    const { sessionId } = request.params;
+    try {
+      const orchestrator = await getOrchestrator(apiKey);
+      const result = await orchestrator.skipCurrentAgent(sessionId);
+      return reply.send(result);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha ao pular agente");
+      return reply.status(502).send({ error: "Falha ao pular agente", details: errorMessage });
+    }
+  });
+
+  // POST /conversations/:sessionId/plan — Gera plano (arch + HUs) para revisão
+  app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/plan", async (request, reply) => {
+    const apiKey = extractApiKey(request.headers["authorization"]);
+    if (!apiKey) {
+      return reply.status(401).send({ error: "API Key não configurada" });
+    }
+    const { sessionId } = request.params;
+    try {
+      const orchestrator = await getOrchestrator(apiKey);
+      const plan = await orchestrator.generatePlan(sessionId);
+      return reply.send(plan);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha ao gerar plano");
+      return reply.status(502).send({ error: "Falha ao gerar plano", details: errorMessage });
+    }
+  });
+
+  // POST /conversations/:sessionId/generate — Gera código a partir do plano aprovado
+  app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/generate", async (request, reply) => {
+    const apiKey = extractApiKey(request.headers["authorization"]);
+    if (!apiKey) {
+      return reply.status(401).send({ error: "API Key não configurada" });
+    }
+    const { sessionId } = request.params;
+    try {
+      const orchestrator = await getOrchestrator(apiKey);
+      const result = await orchestrator.generateCodeFromPlan(sessionId);
+      return reply.send(result);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha ao gerar código");
+      return reply.status(502).send({ error: "Falha ao gerar código", details: errorMessage });
+    }
+  });
+
+  // POST /conversations/:sessionId/finalize — Gera resultado final (legado)
+  app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/finalize", async (request, reply) => {
+    const apiKey = extractApiKey(request.headers["authorization"]);
+    if (!apiKey) {
+      return reply.status(401).send({ error: "API Key não configurada" });
+    }
+    const { sessionId } = request.params;
+    try {
+      const orchestrator = await getOrchestrator(apiKey);
+      const result = await orchestrator.generateFinalResult(sessionId);
+      return reply.send(result);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha ao gerar resultado final");
+      return reply.status(502).send({ error: "Falha ao gerar resultado", details: errorMessage });
+    }
+  });
+
   // Inicia o servidor
   await app.listen({ port: PORT, host: "0.0.0.0" });
   app.log.info(`🚀 Server running at http://localhost:${PORT}`);
 };
 
 start().catch((err) => {
+  // eslint-disable-next-line no-console
   console.error("Failed to start server:", err);
   process.exit(1);
 });

@@ -8,6 +8,7 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "build": "pnpm -r build",
+    "rebuild": "pnpm -r exec rm -rf dist && pnpm -r exec rm -f tsconfig.tsbuildinfo && pnpm -r build",
     "dev": "pnpm --filter @mini-ide/ui dev",
     "start": "pnpm --filter @mini-ide/server start",
     "clean": "pnpm -r exec rm -rf dist node_modules",

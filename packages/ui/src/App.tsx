@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
 import { WorkspaceTabs } from './components/WorkspaceTabs';
@@ -14,6 +14,8 @@ import { ProjectWizard } from './components/wizard/ProjectWizard';
 import { QuickStartGallery } from './components/wizard/QuickStartGallery';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { HelpModal } from './components/help/HelpModal';
+import { ConversationChat } from './components/chat/ConversationChat';
+import type { ConversationChatHandle } from './components/chat/ConversationChat';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { api } from './services/api';
@@ -40,6 +42,10 @@ const MainLayout = () => {
   // Estados de Processamento
   const [isExporting, setIsExporting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Chat mode: 'classic' (one-shot) ou 'interactive' (conversacional)
+  const [chatMode, setChatMode] = useState<'classic' | 'interactive'>('interactive');
+  const conversationChatRef = useRef<ConversationChatHandle>(null);
 
   // Dados
   const [chatInput, setChatInput] = useState('');
@@ -74,6 +80,15 @@ const MainLayout = () => {
   const handleSendMessage = async () => {
     if (!chatInput.trim()) return;
 
+    // Se modo interativo, delega para o ConversationChat via ref
+    if (chatMode === 'interactive') {
+      const msg = chatInput;
+      setChatInput('');
+      conversationChatRef.current?.sendMessage(msg);
+      return;
+    }
+
+    // Modo clássico: pipeline one-shot
     const apiKey = sessionStorage.getItem("mini-ide-api-key");
     if (!apiKey) {
       showToast("Configure sua API Key nas Preferências para continuar.", "warning");
@@ -90,7 +105,7 @@ const MainLayout = () => {
     setIsAnalyzing(true);
     try {
       const context = generatedProject ? { files: generatedProject.engine?.files?.map(f => ({ path: f.path })) || [], summary: generatedProject.summary } : undefined; const response = await api.analyze(userMsg, context);
-      
+
       // STATE MERGING INTELLIGENCE (Lint Fixed)
       setGeneratedProject(prevProject => {
         const newFiles = response.engine?.files;
@@ -104,19 +119,19 @@ const MainLayout = () => {
                 requestId: response.requestId
             };
         }
-        
+
         // Se tem arquivos novos, é um novo projeto ou refatoração: substitui
         return response as GeneratedProject;
       });
-      
+
       const agentText = response.summary || "Análise concluída.";
       setChatHistory(prev => [...prev, { role: 'agent', text: agentText }]);
-      
+
       const fileCount = response.engine?.files?.length || 0;
       if (fileCount > 0) {
          showToast(`Projeto gerado com ${fileCount} arquivos!`, 'success');
       }
-      
+
     } catch (error: unknown) {
       // FIX: Tipagem segura para erro
       const errMsg = error instanceof Error ? error.message : 'Erro desconhecido';
@@ -206,16 +221,43 @@ const MainLayout = () => {
         </section>
 
         <aside className="w-96 flex-none flex flex-col m-3 ml-0 bg-[var(--bg-panel)] border border-[var(--border-main)] rounded-xl shadow-sm overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
-            {chatHistory.map((msg, idx) => (
-              <div key={idx} className={`p-3 rounded-lg border text-sm ${msg.role === "agent" ? "bg-[var(--bg-panel)] border-[var(--border-main)]" : "bg-[var(--bg-panel-hover)] border-[var(--brand-primary)]/30"}`}>
-                <strong className={`block text-xs mb-1 ${msg.role === "agent" ? "text-[var(--brand-primary)]" : "text-[var(--success)]"}`}>{msg.role === "agent" ? "Agente" : "Você"}</strong>
-                <div className="whitespace-pre-wrap">{msg.text}</div>
-              </div>
-            ))}
-            {isAnalyzing && <div className="text-xs text-[var(--text-muted)] animate-pulse">Processando...</div>}
+          {/* Chat mode toggle */}
+          <div className="flex-none flex border-b border-[var(--border-main)]">
+            <button
+              onClick={() => setChatMode('interactive')}
+              className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${chatMode === 'interactive' ? 'text-[var(--brand-primary)] border-b-2 border-[var(--brand-primary)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+            >
+              Chat Interativo
+            </button>
+            <button
+              onClick={() => setChatMode('classic')}
+              className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${chatMode === 'classic' ? 'text-[var(--brand-primary)] border-b-2 border-[var(--brand-primary)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+            >
+              Chat Classico
+            </button>
           </div>
-          <TokenMeter chatHistory={chatHistory} files={generatedProject?.engine?.files || []} />
+
+          {chatMode === 'interactive' ? (
+            <ConversationChat
+              ref={conversationChatRef}
+              onProjectGenerated={(result) => setGeneratedProject(result as GeneratedProject)}
+              onToast={(msg, type) => showToast(msg, type)}
+              hideInput={true}
+            />
+          ) : (
+            <>
+              <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
+                {chatHistory.map((msg, idx) => (
+                  <div key={idx} className={`p-3 rounded-lg border text-sm ${msg.role === "agent" ? "bg-[var(--bg-panel)] border-[var(--border-main)]" : "bg-[var(--bg-panel-hover)] border-[var(--brand-primary)]/30"}`}>
+                    <strong className={`block text-xs mb-1 ${msg.role === "agent" ? "text-[var(--brand-primary)]" : "text-[var(--success)]"}`}>{msg.role === "agent" ? "Agente" : "Voce"}</strong>
+                    <div className="whitespace-pre-wrap">{msg.text}</div>
+                  </div>
+                ))}
+                {isAnalyzing && <div className="text-xs text-[var(--text-muted)] animate-pulse">Processando...</div>}
+              </div>
+              <TokenMeter chatHistory={chatHistory} files={generatedProject?.engine?.files || []} />
+            </>
+          )}
         </aside>
       </main>
 
@@ -224,7 +266,7 @@ const MainLayout = () => {
           value={chatInput} 
           onChange={(e) => setChatInput(e.target.value)} 
           onKeyDown={handleKeyDown} 
-          placeholder="Digite aqui..." 
+          placeholder={chatMode === 'interactive' ? "Descreva seu projeto ou responda ao agente... (Ctrl+Enter)" : "Digite aqui..."}
           className="w-full h-full bg-[var(--bg-app)] border border-[var(--border-main)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--brand-primary)] resize-none" 
           disabled={isAnalyzing} 
         />

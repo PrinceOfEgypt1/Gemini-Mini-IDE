@@ -18,11 +18,13 @@
   },
   "dependencies": {
     "@gemini-mini-ide/shared": "workspace:*",
+    "better-sqlite3": "^12.6.2",
     "dotenv": "^16.3.1",
     "openai": "^4.28.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "typescript": "^5.3.3",
     "vitest": "^1.6.1"
   }
