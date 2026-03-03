@@ -3,7 +3,7 @@ import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import dotenv from "dotenv";
 import { z } from "zod";
-import { AnalysisAgent } from "@gemini-mini-ide/analysis-agent";
+import { AnalysisAgent, globalESAAOrchestrator } from "@gemini-mini-ide/analysis-agent";
 import { exportController } from "./controllers/export.controller.js";
 
 dotenv.config({ path: "../../.env" });
@@ -187,6 +187,199 @@ const start = async (): Promise<void> => {
 
   // Endpoint de exportação
   app.post("/export", exportController);
+
+  // ── ESAA Hardened v2 Endpoints ─────────────────────────────────────────────
+
+  // Health do sistema ESAA
+  app.get("/esaa/health", async (_request, reply) => {
+    return reply.send(globalESAAOrchestrator.healthStatus());
+  });
+
+  // Consulta de eventos
+  app.get("/esaa/events", async (request, reply) => {
+    const query = request.query as {
+      streamId?: string;
+      correlationId?: string;
+      type?: string;
+      sinceVersion?: string;
+      limit?: string;
+    };
+
+    const events = globalESAAOrchestrator.queryEvents({
+      streamId: query.streamId,
+      correlationId: query.correlationId,
+      type: query.type as Parameters<typeof globalESAAOrchestrator.queryEvents>[0]["type"],
+      sinceVersion: query.sinceVersion ? parseInt(query.sinceVersion) : undefined,
+      limit: query.limit ? parseInt(query.limit) : 100,
+    });
+
+    return reply.send({ events, total: events.length });
+  });
+
+  // Projeção operacional
+  app.get("/esaa/projections/operational", async (_request, reply) => {
+    const proj = globalESAAOrchestrator.getOperationalProjection();
+    return reply.send({
+      lastAppliedVersion: proj.lastAppliedVersion,
+      updatedAt: proj.updatedAt,
+      hash: proj.hash,
+      activeAgents: Object.values(proj.agents).filter(a => a.status === "ACTIVE").length,
+      quarantinedAgents: Object.values(proj.agents).filter(a => a.status === "QUARANTINED").length,
+      activeIntentions: Object.keys(proj.activeIntentions).length,
+      activeWorkspaces: Object.keys(proj.activeWorkspaces).length,
+      activePromotions: Object.keys(proj.activePromotions).length,
+      filesInProgress: Object.keys(proj.filesInProgress).length,
+    });
+  });
+
+  // Audit trail por correlationId
+  app.get("/esaa/projections/audit/:correlationId", async (request, reply) => {
+    const { correlationId } = request.params as { correlationId: string };
+    const audit = globalESAAOrchestrator.getAuditProjection();
+    const intentionIds = audit.correlationIndex[correlationId] ?? [];
+    const intentions = intentionIds
+      .map(id => audit.intentions[id])
+      .filter(Boolean)
+      .map(i => ({
+        intentionId: i.intentionId,
+        type: i.type,
+        agentId: i.agentId,
+        riskLevel: i.riskLevel,
+        proposedAt: i.proposedAt,
+        outcome: i.outcome,
+        filesGenerated: i.filesGenerated.length,
+        durationMs: i.durationMs,
+      }));
+
+    const promotions = Object.values(audit.promotions)
+      .filter(p => p.correlationId === correlationId)
+      .map(p => ({
+        batchId: p.batchId,
+        requestedAt: p.requestedAt,
+        outcome: p.outcome,
+        gateResults: p.gateResults,
+        promotedFiles: p.promotedFiles.length,
+      }));
+
+    return reply.send({ correlationId, intentions, promotions });
+  });
+
+  // Lista agentes
+  app.get("/esaa/agents", async (_request, reply) => {
+    const agents = globalESAAOrchestrator.store.listAgents() as Record<string, unknown>[];
+    const total = agents.length;
+    const active = agents.filter(a => a["status"] === "active").length;
+    const quarantined = agents.filter(a => a["status"] === "quarantined").length;
+    return reply.send({ agents, total, active, quarantined });
+  });
+
+  // Quarentenar agente
+  app.post("/esaa/agents/:agentId/quarantine", async (request, reply) => {
+    const { agentId } = request.params as { agentId: string };
+    const body = request.body as { reason: string; operatorId: string; triggeringEventId?: string };
+    const result = globalESAAOrchestrator.quarantineAgent(
+      agentId,
+      body.reason,
+      body.triggeringEventId ?? "manual"
+    );
+    return reply.send(result);
+  });
+
+  // Reintegrar agente
+  app.post("/esaa/agents/:agentId/reinstate", async (request, reply) => {
+    const { agentId } = request.params as { agentId: string };
+    const result = globalESAAOrchestrator.reinstateAgent(agentId);
+    return reply.send(result);
+  });
+
+  // Criar snapshots
+  app.post("/esaa/recovery/snapshot", async (_request, reply) => {
+    const result = globalESAAOrchestrator.createSnapshots();
+    return reply.send({ ...result, createdAt: new Date().toISOString() });
+  });
+
+  // Rollback para snapshot
+  app.post("/esaa/recovery/rollback", async (request, reply) => {
+    const body = request.body as {
+      snapshotId?: string;
+      correlationId?: string;
+      operatorId: string;
+    };
+
+    if (body.snapshotId) {
+      const result = globalESAAOrchestrator.rollbackToSnapshot(body.snapshotId);
+      return reply.send(result);
+    }
+
+    if (body.correlationId) {
+      const result = await globalESAAOrchestrator.recovery.rollbackLastPromotion(
+        body.correlationId,
+        body.operatorId ?? "API_OPERATOR"
+      );
+      return reply.send(result);
+    }
+
+    return reply.status(400).send({
+      error: "Forneça snapshotId ou correlationId"
+    });
+  });
+
+  // Replay de eventos
+  app.post("/esaa/recovery/replay", async (request, reply) => {
+    const body = request.body as {
+      full?: boolean;
+      fromVersion?: number;
+      operatorId: string;
+    };
+
+    let result;
+    if (body.full) {
+      result = await globalESAAOrchestrator.fullReplay();
+    } else if (body.fromVersion !== undefined) {
+      result = await globalESAAOrchestrator.recovery.replayFromVersion(
+        body.fromVersion,
+        body.operatorId ?? "API_OPERATOR"
+      );
+    } else {
+      return reply.status(400).send({
+        error: "Forneça full:true ou fromVersion"
+      });
+    }
+
+    return reply.send(result);
+  });
+
+  // Consulta de promoções
+  app.get("/esaa/promotions/:batchId", async (request, reply) => {
+    const { batchId } = request.params as { batchId: string };
+    const batch = globalESAAOrchestrator.store.getPromotionBatch(batchId);
+
+    if (!batch) {
+      return reply.status(404).send({ error: `Lote ${batchId} não encontrado` });
+    }
+
+    return reply.send(batch);
+  });
+
+  // Rollback de promoção
+  app.post("/esaa/promotions/:batchId/rollback", async (request, reply) => {
+    const { batchId } = request.params as { batchId: string };
+    const body = request.body as { reason: string; operatorId: string };
+
+    try {
+      await globalESAAOrchestrator.promotion.rollback(
+        batchId,
+        body.operatorId ?? "API_OPERATOR",
+        batchId,
+        body.reason
+      );
+      return reply.send({ success: true, batchId });
+    } catch (err) {
+      return reply.status(500).send({
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
 
   // ═══════════════════════════════════════════════════════════════════════
   // ROTAS DE CONVERSAÇÃO INTERATIVA (inline para garantir registro)

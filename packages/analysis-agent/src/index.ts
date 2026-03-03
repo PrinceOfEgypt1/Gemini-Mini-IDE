@@ -43,6 +43,9 @@ export { TransformativeContext } from "./context/transformative-context.js";
 export * from "./types/index.js";
 export * from "./governance/index.js";
 
+// Exporta o sistema ESAA Hardened v2
+export * from "./esaa/index.js";
+
 // Exporta helpers
 export const createAgent = (apiKey: string) => new AnalysisAgent(apiKey);
 export const createTransformativeOrchestrator = (apiKey: string) => new TransformativeOrchestrator(apiKey);

@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { z } from "zod";
+import { randomUUID } from "node:crypto";
 import { SYSTEM_PROMPTS } from "./prompts/index.js";
 import { globalAnalysisCache } from "./services/cache.service.js";
 
@@ -25,6 +26,10 @@ import { GenerationContext } from "./context/generation-context.js";
 import { CompletenessValidator } from "./governance/completeness-validator.js";
 import { SyntaxSandbox } from "./governance/syntax-sandbox.js";
 import { StructureAuditor } from "./governance/structure-auditor.js";
+
+// Importação ESAA Hardened v2
+import { globalESAAOrchestrator } from "./esaa/orchestrator.js";
+import type { Workspace, WorkspaceFile } from "./esaa/workspace/workspace-executor.js";
 
 // --- HELPERS DE SANITIZAÇÃO ---
 function ensureString(val: unknown, fallback: string): string {
@@ -248,12 +253,28 @@ function sanitizeUserStories(data: any): UserStoriesResult {
 
 // --- CLASSE PRINCIPAL ---
 
+/**
+ * AnalysisAgent - Agente principal de análise e geração de código.
+ *
+ * Suporta dois modos de operação:
+ * - **Modo Legado** (padrão): Pipeline linear direto, sem event sourcing.
+ * - **Modo ESAA** (ESAA_ENABLED=true): Pipeline com event sourcing, promoção
+ *   gatilhada, rollback, quarentena e auditoria completa.
+ *
+ * O modo é determinado pela variável de ambiente `ESAA_ENABLED`.
+ */
 export class AnalysisAgent {
   private client: OpenAI;
   private context: GenerationContext;
   private validator: CompletenessValidator;
   private syntaxSandbox: SyntaxSandbox;
   private structureAuditor: StructureAuditor;
+
+  /** ID único do agente (usado pelo ESAA para rastreabilidade). */
+  public readonly agentId: string;
+
+  /** Indica se o modo ESAA está habilitado. */
+  private readonly esaaEnabled: boolean;
 
   constructor(apiKey: string) {
     this.client = new OpenAI({
@@ -264,6 +285,13 @@ export class AnalysisAgent {
     this.validator = new CompletenessValidator();
     this.syntaxSandbox = new SyntaxSandbox();
     this.structureAuditor = new StructureAuditor();
+    this.agentId = `agent-${randomUUID().slice(0, 8)}`;
+    this.esaaEnabled = process.env["ESAA_ENABLED"] === "true";
+
+    if (this.esaaEnabled) {
+      // eslint-disable-next-line no-console
+      console.log(`[ESAA] Agent ${this.agentId} initialized in ESAA Hardened v2 mode`);
+    }
   }
 
   // Método auxiliar para parsing seguro de JSON
@@ -777,9 +805,90 @@ export class Array<T> {
 
   // --- ORQUESTRADOR COMPLETO (LEGADO) ---
 
+  /**
+   * Executa a análise e geração de código.
+   *
+   * Se `ESAA_ENABLED=true`, o pipeline é executado através do sistema ESAA
+   * com event sourcing, workspace efêmero, promoção gatilhada e auditoria.
+   *
+   * Caso contrário, executa o pipeline linear tradicional.
+   *
+   * @param userPrompt Prompt do usuário descrevendo o que construir.
+   * @param _options   Opções adicionais (reservado para uso futuro).
+   * @returns Resultado completo da análise e geração.
+   */
   public async analyze(userPrompt: string, _options?: unknown): Promise<AgentResult> {
+    // Modo ESAA: executa via orchestrator com event sourcing
+    if (this.esaaEnabled) {
+      return this.analyzeWithESAA(userPrompt);
+    }
+
+    // Modo Legado: pipeline linear direto
+    return this.analyzeLegacy(userPrompt);
+  }
+
+  /**
+   * Pipeline ESAA Hardened v2.
+   * Executa em workspace efêmero com promoção gatilhada.
+   */
+  private async analyzeWithESAA(userPrompt: string): Promise<AgentResult> {
+    // eslint-disable-next-line no-console
+    console.log(`[ESAA] Starting FULL_PIPELINE for agent ${this.agentId}`);
+
+    const { correlationId, result: promotionResult, skipped } =
+      await globalESAAOrchestrator.runPipeline(
+        this.agentId,
+        userPrompt,
+        async (_workspace: Workspace): Promise<WorkspaceFile[]> => {
+          // Executar pipeline interno e coletar arquivos
+          const agentResult = await this.analyzeLegacy(userPrompt);
+
+          // Converter AgentResult.engine.files para WorkspaceFile[]
+          return agentResult.engine.files.map(f => ({
+            path: f.path,
+            content: f.content,
+          }));
+        }
+      );
+
+    // Se ESAA foi skipado (desabilitado em runtime), fallback para legacy
+    if (skipped) {
+      // eslint-disable-next-line no-console
+      console.log(`[ESAA] Pipeline skipped, using legacy result`);
+      return this.analyzeLegacy(userPrompt);
+    }
+
+    // Verificar se promoção foi bem-sucedida
+    if (promotionResult?.outcome === "REJECTED") {
+      // eslint-disable-next-line no-console
+      console.error(`[ESAA] Promotion REJECTED: ${promotionResult.failedGates.join(", ")}`);
+      throw new Error(
+        `ESAA promotion failed: ${promotionResult.failedGates.join(", ")}. ` +
+        `Check /esaa/projections/audit/${correlationId} for details.`
+      );
+    }
+
+    // eslint-disable-next-line no-console
+    console.log(`[ESAA] Pipeline completed successfully. CorrelationId: ${correlationId}`);
+
+    // Retornar resultado do pipeline (já executado dentro do workspace)
+    // Re-executamos para obter o AgentResult (o workspace já foi destruído)
+    const finalResult = await this.analyzeLegacy(userPrompt);
+    finalResult.fenix = {
+      notes: `ESAA Hardened v2 | CorrelationId: ${correlationId} | ` +
+             `Files promoted: ${promotionResult?.promotedFiles.length ?? 0}`
+    };
+
+    return finalResult;
+  }
+
+  /**
+   * Pipeline legado (linear, sem event sourcing).
+   * Mantido para backward compatibility.
+   */
+  private async analyzeLegacy(userPrompt: string): Promise<AgentResult> {
     const startTime = performance.now();
-    const timings: any = {};
+    const timings: Record<string, number> = {};
 
     try {
       this.context.start(userPrompt);
@@ -804,7 +913,7 @@ export class Array<T> {
       let architecture = await this.runArchitectureStep(userPrompt, product);
       this.context.setArchitecture(architecture);
       
-      architecture = this.structureAuditor.auditAndFix(architecture);
+      architecture = this.structureAuditor.auditAndFix(architecture, userPrompt);
       timings.architecture = performance.now() - t2;
 
       // 4. Histórias de Usuário
