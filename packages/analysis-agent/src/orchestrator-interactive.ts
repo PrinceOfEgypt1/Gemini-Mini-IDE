@@ -47,6 +47,16 @@ export interface InteractionResult {
 }
 
 /**
+ * Options for configuring the InteractiveOrchestrator.
+ */
+export interface OrchestratorOptions {
+  /** LLM model to use (e.g., 'gpt-4o', 'gpt-4o-mini') */
+  model?: string;
+  /** Custom base URL for the LLM API (e.g., 'https://api.anthropic.com/v1') */
+  baseUrl?: string;
+}
+
+/**
  * Orquestrador Interativo — Gerencia o fluxo conversacional multi-turno.
  *
  * Cada agente do pipeline faz perguntas ao usuário, processa respostas e
@@ -66,9 +76,21 @@ export class InteractiveOrchestrator {
   private sessionManager: SessionManager;
   private agents: Map<AgentType, InteractiveAgent>;
   private engineeringAgent: AnalysisAgent;
+  private model: string;
 
-  constructor(apiKey: string, dbPath?: string) {
-    this.client = new OpenAI({ apiKey, timeout: 600000 });
+  constructor(apiKey: string, dbPath?: string, options?: OrchestratorOptions) {
+    const clientOptions: { apiKey: string; timeout: number; baseURL?: string } = {
+      apiKey,
+      timeout: 600000
+    };
+
+    // Set custom base URL if provided
+    if (options?.baseUrl) {
+      clientOptions.baseURL = options.baseUrl;
+    }
+
+    this.client = new OpenAI(clientOptions);
+    this.model = options?.model || "gpt-4o-mini";
 
     // Inicializa banco de dados e gerenciador de sessões
     const db = new SessionDatabase(dbPath);
@@ -77,14 +99,17 @@ export class InteractiveOrchestrator {
 
     // Inicializa agentes interativos
     this.agents = new Map<AgentType, InteractiveAgent>();
-    this.agents.set("user_profiler", new InteractiveUserProfilerAgent(this.client));
-    this.agents.set("emotional_intelligence", new InteractiveEmotionalIntelligenceAgent(this.client));
-    this.agents.set("adaptive_interaction", new InteractiveAdaptiveInteractionAgent(this.client));
-    this.agents.set("autonomous_decision", new InteractiveAutonomousDecisionAgent(this.client));
-    this.agents.set("experience_designer", new InteractiveExperienceDesignerAgent(this.client));
+    this.agents.set("user_profiler", new InteractiveUserProfilerAgent(this.client, this.model));
+    this.agents.set("emotional_intelligence", new InteractiveEmotionalIntelligenceAgent(this.client, this.model));
+    this.agents.set("adaptive_interaction", new InteractiveAdaptiveInteractionAgent(this.client, this.model));
+    this.agents.set("autonomous_decision", new InteractiveAutonomousDecisionAgent(this.client, this.model));
+    this.agents.set("experience_designer", new InteractiveExperienceDesignerAgent(this.client, this.model));
 
     // Agente de engenharia (pipeline existente)
-    this.engineeringAgent = new AnalysisAgent(apiKey);
+    this.engineeringAgent = new AnalysisAgent(apiKey, {
+      model: this.model,
+      baseUrl: options?.baseUrl
+    });
   }
 
   /**
@@ -529,7 +554,7 @@ Responda apenas com a mensagem, sem formatação adicional.`;
 
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: prompts[messageType] || "Informe o status atual." }

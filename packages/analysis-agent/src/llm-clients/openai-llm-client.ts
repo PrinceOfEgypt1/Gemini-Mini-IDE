@@ -38,12 +38,19 @@ export class OpenAILLMClient implements LLMClient {
       model?: string;
       maxRetries?: number;
       timeout?: number;
+      baseUrl?: string;
     }
   ) {
-    this.client = new OpenAI({
+    const clientOptions: { apiKey: string; timeout: number; baseURL?: string } = {
       apiKey,
       timeout: options?.timeout ?? 600000, // 10 minutes
-    });
+    };
+
+    if (options?.baseUrl) {
+      clientOptions.baseURL = options.baseUrl;
+    }
+
+    this.client = new OpenAI(clientOptions);
     this.model = options?.model ?? "gpt-4o-mini";
     this.maxRetries = options?.maxRetries ?? 3;
   }

@@ -61,7 +61,13 @@ interface ConversationChatProps {
 const getAuthHeaders = (): Record<string, string> => {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   const apiKey = sessionStorage.getItem('mini-ide-api-key');
+  const model = sessionStorage.getItem('mini-ide-model');
+  const baseUrl = sessionStorage.getItem('mini-ide-base-url');
+
   if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+  if (model) headers['X-LLM-Model'] = model;
+  if (baseUrl) headers['X-LLM-Base-URL'] = baseUrl;
+
   return headers;
 };
 

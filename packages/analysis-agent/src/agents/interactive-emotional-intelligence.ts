@@ -45,11 +45,13 @@ Responda APENAS com a pergunta, sem formatação adicional.`;
 export class InteractiveEmotionalIntelligenceAgent implements InteractiveAgent {
   agentType = "emotional_intelligence" as const;
   private client: OpenAI;
+  private model: string;
   private interactionCount = 0;
   private readonly maxInteractions = 3;
 
-  constructor(client: OpenAI) {
+  constructor(client: OpenAI, model?: string) {
     this.client = client;
+    this.model = model || "gpt-4o-mini";
   }
 
   async initiateConversation(context: ConversationContext): Promise<AgentMessage> {
@@ -57,7 +59,7 @@ export class InteractiveEmotionalIntelligenceAgent implements InteractiveAgent {
 
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: QUESTION_GENERATOR_SYSTEM },
           {
@@ -93,7 +95,7 @@ A pergunta deve ser aberta e acolhedora.`
 
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: EI_SYSTEM },
           {
@@ -143,7 +145,7 @@ Analise a resposta e gere feedback empático. Se precisar de mais informação e
   private async generateFallbackMessage(context: ConversationContext): Promise<string> {
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: "Gere uma resposta empática breve para continuar a conversa. Responda apenas com a frase." },
           { role: "user", content: `Contexto do projeto: ${context.originalUserPrompt}` }

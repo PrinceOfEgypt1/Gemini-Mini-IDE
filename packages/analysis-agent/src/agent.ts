@@ -258,6 +258,16 @@ function sanitizeUserStories(data: any): UserStoriesResult {
 // --- CLASSE PRINCIPAL ---
 
 /**
+ * Options for configuring the AnalysisAgent.
+ */
+export interface AnalysisAgentOptions {
+  /** LLM model to use (e.g., 'gpt-4o', 'gpt-4o-mini') */
+  model?: string;
+  /** Custom base URL for the LLM API (e.g., 'https://api.anthropic.com/v1') */
+  baseUrl?: string;
+}
+
+/**
  * AnalysisAgent - Agente principal de análise e geração de código.
  *
  * Suporta dois modos de operação:
@@ -270,6 +280,8 @@ function sanitizeUserStories(data: any): UserStoriesResult {
 export class AnalysisAgent {
   private client: OpenAI;
   private readonly apiKey: string;
+  private readonly model: string;
+  private readonly baseUrl?: string;
   private context: GenerationContext;
   private validator: CompletenessValidator;
   private syntaxSandbox: SyntaxSandbox;
@@ -281,12 +293,21 @@ export class AnalysisAgent {
   /** Indica se o modo ESAA está habilitado. */
   private readonly esaaEnabled: boolean;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, options?: AnalysisAgentOptions) {
     this.apiKey = apiKey;
-    this.client = new OpenAI({
+    this.model = options?.model || "gpt-4o-mini";
+    this.baseUrl = options?.baseUrl;
+
+    const clientOptions: { apiKey: string; timeout: number; baseURL?: string } = {
       apiKey,
       timeout: 600000 // 10 minutes timeout (large prompts can take time)
-    });
+    };
+
+    if (this.baseUrl) {
+      clientOptions.baseURL = this.baseUrl;
+    }
+
+    this.client = new OpenAI(clientOptions);
     this.context = new GenerationContext();
     this.validator = new CompletenessValidator();
     this.syntaxSandbox = new SyntaxSandbox();
@@ -355,7 +376,7 @@ export class AnalysisAgent {
       try {
         attempts++;
         const response = await this.client.chat.completions.create({
-          model: "gpt-4o-mini",
+          model: this.model,
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt }
@@ -611,7 +632,7 @@ export class Array<T> {
       }
 
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: SYSTEM_PROMPTS.CODE_GEN },
           { role: "user", content: promptWithFeedback }
@@ -847,8 +868,9 @@ export class Array<T> {
 
       // Criar cliente LLM e gerador incremental
       const llmClient = new OpenAILLMClient(this.apiKey, {
-        model: "gpt-4o-mini",
+        model: this.model,
         maxRetries: 3,
+        baseUrl: this.baseUrl,
       });
       const generator = new IncrementalGenerator(llmClient);
 

@@ -44,11 +44,13 @@ Responda APENAS com a pergunta, sem formatação adicional.`;
 export class InteractiveUserProfilerAgent implements InteractiveAgent {
   agentType = "user_profiler" as const;
   private client: OpenAI;
+  private model: string;
   private interactionCount = 0;
   private readonly maxInteractions = 4;
 
-  constructor(client: OpenAI) {
+  constructor(client: OpenAI, model?: string) {
     this.client = client;
+    this.model = model || "gpt-4o-mini";
   }
 
   async initiateConversation(context: ConversationContext): Promise<AgentMessage> {
@@ -56,7 +58,7 @@ export class InteractiveUserProfilerAgent implements InteractiveAgent {
 
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: QUESTION_GENERATOR_SYSTEM },
           {
@@ -92,7 +94,7 @@ Gere a PRIMEIRA pergunta para conhecer o usuário. Pergunte sobre:
 
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: PROFILER_SYSTEM },
           {
@@ -144,7 +146,7 @@ Se já tem dados suficientes ou atingiu o limite, use nextAction: "proceed_to_ne
   private async generateFallbackMessage(context: ConversationContext): Promise<string> {
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: "Gere uma resposta amigável breve para continuar a conversa. Responda apenas com a frase." },
           { role: "user", content: `Projeto: ${context.originalUserPrompt}` }

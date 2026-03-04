@@ -49,10 +49,12 @@ Responda APENAS com JSON:
 export class InteractiveAutonomousDecisionAgent implements InteractiveAgent {
   agentType = "autonomous_decision" as const;
   private client: OpenAI;
+  private model: string;
   private confirmed = false;
 
-  constructor(client: OpenAI) {
+  constructor(client: OpenAI, model?: string) {
     this.client = client;
+    this.model = model || "gpt-4o-mini";
   }
 
   async initiateConversation(context: ConversationContext): Promise<AgentMessage> {
@@ -60,7 +62,7 @@ export class InteractiveAutonomousDecisionAgent implements InteractiveAgent {
 
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: DECISION_SYSTEM },
           {
@@ -116,7 +118,7 @@ Termine perguntando se ele concorda.`
     // Processar ajustes
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: ADJUSTMENT_SYSTEM },
           {
@@ -167,7 +169,7 @@ Processe o feedback e ajuste as decisões. Gere resposta personalizada.`
   }> {
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: APPROVAL_DETECTOR_SYSTEM },
           {
@@ -206,7 +208,7 @@ Gere uma resposta apropriada para continuar.`
   private async generateFallbackDecisions(context: ConversationContext): Promise<string> {
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: "Gere uma breve apresentação de decisões técnicas para o projeto. Termine perguntando se concorda. Responda apenas com o texto." },
           { role: "user", content: `Projeto: ${context.originalUserPrompt}` }
@@ -224,7 +226,7 @@ Gere uma resposta apropriada para continuar.`
   private async generateFallbackAdjustment(context: ConversationContext): Promise<string> {
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: "Gere uma resposta breve confirmando ajustes nas decisões. Responda apenas com o texto." },
           { role: "user", content: `Projeto: ${context.originalUserPrompt}` }

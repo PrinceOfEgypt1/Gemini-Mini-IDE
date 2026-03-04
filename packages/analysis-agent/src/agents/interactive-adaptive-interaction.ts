@@ -41,10 +41,12 @@ Responda APENAS com a pergunta, sem formatação.`;
 export class InteractiveAdaptiveInteractionAgent implements InteractiveAgent {
   agentType = "adaptive_interaction" as const;
   private client: OpenAI;
+  private model: string;
   private answered = false;
 
-  constructor(client: OpenAI) {
+  constructor(client: OpenAI, model?: string) {
     this.client = client;
+    this.model = model || "gpt-4o-mini";
   }
 
   async initiateConversation(context: ConversationContext): Promise<AgentMessage> {
@@ -52,7 +54,7 @@ export class InteractiveAdaptiveInteractionAgent implements InteractiveAgent {
 
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: QUESTION_GENERATOR_SYSTEM },
           {
@@ -93,7 +95,7 @@ A pergunta deve ser contextualizada ao projeto e perfil.`
 
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: ADAPT_SYSTEM },
           {
@@ -135,7 +137,7 @@ Analise e defina a estratégia de interação. Gere feedback personalizado confi
   private async generateFallbackMessage(context: ConversationContext): Promise<string> {
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: "Gere uma resposta breve confirmando que entendeu as preferências do usuário. Responda apenas com a frase." },
           { role: "user", content: `Projeto: ${context.originalUserPrompt}` }
