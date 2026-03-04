@@ -49,6 +49,9 @@ export * from "./esaa/index.js";
 // Exporta o sistema de geração incremental
 export * from "./generation/index.js";
 
+// Exporta clientes LLM
+export * from "./llm-clients/index.js";
+
 // Exporta helpers
 export const createAgent = (apiKey: string) => new AnalysisAgent(apiKey);
 export const createTransformativeOrchestrator = (apiKey: string) => new TransformativeOrchestrator(apiKey);

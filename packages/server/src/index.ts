@@ -508,6 +508,30 @@ const start = async (): Promise<void> => {
     }
   });
 
+  // POST /conversations/:sessionId/generate-incremental — Gera código incrementalmente com governança
+  app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/generate-incremental", async (request, reply) => {
+    const apiKey = extractApiKey(request.headers["authorization"]);
+    if (!apiKey) {
+      return reply.status(401).send({ error: "API Key não configurada" });
+    }
+    const { sessionId } = request.params;
+    try {
+      const orchestrator = await getOrchestrator(apiKey);
+      const result = await orchestrator.generateCodeFromPlanIncremental(
+        sessionId,
+        (batchName: string, progress: number) => {
+          // Log progress (could be sent via SSE in future)
+          request.log.info({ batchName, progress }, "Incremental generation progress");
+        }
+      );
+      return reply.send(result);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha na geração incremental");
+      return reply.status(502).send({ error: "Falha na geração incremental", details: errorMessage });
+    }
+  });
+
   // POST /conversations/:sessionId/finalize — Gera resultado final (legado)
   app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/finalize", async (request, reply) => {
     const apiKey = extractApiKey(request.headers["authorization"]);

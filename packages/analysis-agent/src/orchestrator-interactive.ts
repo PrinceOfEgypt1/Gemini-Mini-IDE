@@ -349,6 +349,67 @@ export class InteractiveOrchestrator {
   }
 
   /**
+   * FASE 2 INCREMENTAL: Gera código com governança por lotes.
+   *
+   * Esta versão usa o IncrementalGenerator que:
+   * - Divide o manifesto em lotes lógicos
+   * - Valida cada lote antes de prosseguir
+   * - Mantém contexto entre lotes
+   * - Falha rápido se qualquer lote for inválido
+   *
+   * @param sessionId - ID da sessão
+   * @param onProgress - Callback opcional para progresso
+   * @returns Resultado completo ou erro
+   */
+  async generateCodeFromPlanIncremental(
+    sessionId: string,
+    onProgress?: (batchName: string, progress: number) => void
+  ): Promise<AgentResult> {
+    const session = this.sessionManager.getSession(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    const contextData = session.contextData;
+    const originalPrompt = (contextData["originalUserPrompt"] as string) || "";
+    const enrichedPrompt = this.buildEnrichedPrompt(originalPrompt, contextData);
+    const plan = contextData["planResult"] as PlanResult | undefined;
+
+    if (!plan) {
+      throw new Error("No plan found. Call generatePlan first.");
+    }
+
+    // Executa geração incremental com governança
+    const result = await this.engineeringAgent.generateFromPlanIncremental(
+      plan,
+      enrichedPrompt,
+      onProgress
+    );
+
+    // Marca sessão como completa
+    this.sessionManager.updateSessionPhase(sessionId, "completed", "code_gen");
+    this.sessionManager.updateSessionContext(sessionId, {
+      engineeringResult: {
+        summary: result.summary,
+        fileCount: result.engine?.files?.length || 0,
+        timestamp: new Date().toISOString(),
+        incremental: true,
+        quality: result.quality
+      }
+    });
+
+    this.sessionManager.addMessage(
+      sessionId,
+      "agent",
+      `Projeto gerado com sucesso (incremental)! ${result.engine?.files?.length || 0} arquivos criados. Completude: ${result.quality?.codeCompleteness || 100}%`,
+      "code_gen",
+      { type: "feedback", data: { fileCount: result.engine?.files?.length || 0, incremental: true } }
+    );
+
+    return result;
+  }
+
+  /**
    * Gera o resultado final (legado — roda tudo de uma vez).
    * Mantido para compatibilidade. Prefira generatePlan + generateCodeFromPlan.
    */
