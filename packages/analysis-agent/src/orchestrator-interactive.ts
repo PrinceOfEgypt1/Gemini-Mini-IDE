@@ -202,10 +202,16 @@ export class InteractiveOrchestrator {
       // Atualiza fase para engenharia
       this.sessionManager.updateSessionPhase(sessionId, "engineering_layer", "analysis");
 
+      const originalPrompt = (session.contextData["originalUserPrompt"] as string) || "";
+      const dynamicMessage = await this.generateDynamicMessage("collection_complete", {
+        originalPrompt,
+        userProfile: session.contextData["userProfileData"] as Record<string, unknown>
+      });
+
       const savedMessage = this.sessionManager.addMessage(
         sessionId,
         "agent",
-        "Perfeito! Coletei todas as informações necessárias. Agora vou gerar seu projeto completo. Isso pode levar alguns instantes...",
+        dynamicMessage,
         "analysis",
         { type: "feedback", data: {} }
       );
@@ -215,8 +221,7 @@ export class InteractiveOrchestrator {
         message: savedMessage,
         currentPhase: "engineering_layer",
         currentAgent: "analysis",
-        isComplete: false,
-        options: ["Gerar agora!", "Quero revisar algo antes"]
+        isComplete: false
       };
     }
 
@@ -259,11 +264,15 @@ export class InteractiveOrchestrator {
       throw new Error(`Session not found: ${sessionId}`);
     }
 
-    // Registra que o agente foi pulado
+    // Registra que o agente foi pulado com mensagem dinâmica
+    const skipMessage = await this.generateDynamicMessage("agent_skipped", {
+      agentName: session.currentAgent
+    });
+
     this.sessionManager.addMessage(
       sessionId,
       "agent",
-      `[${session.currentAgent}] Agente pulado pelo usuário.`,
+      skipMessage,
       session.currentAgent,
       { type: "feedback", data: { skipped: true } }
     );
@@ -293,11 +302,17 @@ export class InteractiveOrchestrator {
       planResult: plan
     });
 
-    // Registra mensagem com resumo do plano
+    // Registra mensagem com resumo do plano (gerada dinamicamente)
+    const planMessage = await this.generateDynamicMessage("plan_ready", {
+      epicCount: plan.epicCount,
+      userStoryCount: plan.userStoryCount,
+      fileCount: plan.manifestFileCount
+    });
+
     this.sessionManager.addMessage(
       sessionId,
       "agent",
-      `Plano gerado! ${plan.epicCount} épicos, ${plan.userStoryCount} user stories, ${plan.manifestFileCount} arquivos planejados.`,
+      planMessage,
       "analysis",
       { type: "feedback", data: { plan: true } }
     );
@@ -337,10 +352,14 @@ export class InteractiveOrchestrator {
       }
     });
 
+    const codeMessage = await this.generateDynamicMessage("code_generated", {
+      fileCount: result.engine?.files?.length || 0
+    });
+
     this.sessionManager.addMessage(
       sessionId,
       "agent",
-      `Projeto gerado com sucesso! ${result.engine?.files?.length || 0} arquivos criados.`,
+      codeMessage,
       "code_gen",
       { type: "feedback", data: { fileCount: result.engine?.files?.length || 0 } }
     );
@@ -398,10 +417,15 @@ export class InteractiveOrchestrator {
       }
     });
 
+    const incrementalMessage = await this.generateDynamicMessage("incremental_generated", {
+      fileCount: result.engine?.files?.length || 0,
+      completeness: result.quality?.codeCompleteness || 100
+    });
+
     this.sessionManager.addMessage(
       sessionId,
       "agent",
-      `Projeto gerado com sucesso (incremental)! ${result.engine?.files?.length || 0} arquivos criados. Completude: ${result.quality?.codeCompleteness || 100}%`,
+      incrementalMessage,
       "code_gen",
       { type: "feedback", data: { fileCount: result.engine?.files?.length || 0, incremental: true } }
     );
@@ -434,10 +458,14 @@ export class InteractiveOrchestrator {
       }
     });
 
+    const finalMessage = await this.generateDynamicMessage("code_generated", {
+      fileCount: result.engine?.files?.length || 0
+    });
+
     this.sessionManager.addMessage(
       sessionId,
       "agent",
-      `Projeto gerado com sucesso! ${result.engine?.files?.length || 0} arquivos criados.`,
+      finalMessage,
       "code_gen",
       { type: "feedback", data: { fileCount: result.engine?.files?.length || 0 } }
     );
@@ -469,6 +497,75 @@ export class InteractiveOrchestrator {
   // ============================================================================
   // MÉTODOS PRIVADOS
   // ============================================================================
+
+  /**
+   * Gera uma mensagem dinâmica via LLM baseada no contexto.
+   * Evita frases hardcoded e mantém a conversa natural.
+   */
+  private async generateDynamicMessage(
+    messageType: "plan_ready" | "code_generated" | "incremental_generated" | "collection_complete" | "agent_skipped",
+    context: {
+      epicCount?: number;
+      userStoryCount?: number;
+      fileCount?: number;
+      completeness?: number;
+      agentName?: string;
+      userProfile?: Record<string, unknown>;
+      originalPrompt?: string;
+    }
+  ): Promise<string> {
+    const systemPrompt = `Você é um assistente de desenvolvimento de software amigável e profissional.
+Gere uma mensagem curta (1-2 frases) e natural para informar o usuário sobre o status.
+Adapte o tom ao contexto. Seja conciso mas informativo.
+Responda apenas com a mensagem, sem formatação adicional.`;
+
+    const prompts: Record<string, string> = {
+      plan_ready: `O plano do projeto foi gerado com sucesso. Dados: ${context.epicCount} épicos, ${context.userStoryCount} user stories, ${context.fileCount} arquivos planejados. Informe o usuário de forma natural.`,
+      code_generated: `O código foi gerado com sucesso. Total de ${context.fileCount} arquivos criados. Informe o usuário de forma celebratória mas profissional.`,
+      incremental_generated: `O código foi gerado incrementalmente com governança. Total de ${context.fileCount} arquivos criados, completude de ${context.completeness}%. Destaque o processo incremental.`,
+      collection_complete: `Todas as informações foram coletadas dos agentes de descoberta. O projeto original era: "${context.originalPrompt}". Informe que agora vai gerar o projeto.`,
+      agent_skipped: `O agente "${context.agentName}" foi pulado pelo usuário. Confirme de forma breve.`
+    };
+
+    try {
+      const response = await this.client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompts[messageType] || "Informe o status atual." }
+        ],
+        temperature: 0.7,
+        max_tokens: 150
+      });
+
+      return response.choices[0]?.message?.content?.trim() || this.getFallbackMessage(messageType, context);
+    } catch {
+      return this.getFallbackMessage(messageType, context);
+    }
+  }
+
+  /**
+   * Fallback messages caso o LLM falhe (usado apenas em caso de erro de API).
+   */
+  private getFallbackMessage(
+    messageType: string,
+    context: { epicCount?: number; userStoryCount?: number; fileCount?: number; completeness?: number; agentName?: string }
+  ): string {
+    switch (messageType) {
+      case "plan_ready":
+        return `Plano pronto: ${context.epicCount} épicos, ${context.userStoryCount} histórias, ${context.fileCount} arquivos.`;
+      case "code_generated":
+        return `Código gerado: ${context.fileCount} arquivos.`;
+      case "incremental_generated":
+        return `Código gerado: ${context.fileCount} arquivos (${context.completeness}% completo).`;
+      case "collection_complete":
+        return `Informações coletadas. Iniciando geração...`;
+      case "agent_skipped":
+        return `${context.agentName}: pulado.`;
+      default:
+        return `Operação concluída.`;
+    }
+  }
 
   /**
    * Constrói o contexto para o agente atual.
