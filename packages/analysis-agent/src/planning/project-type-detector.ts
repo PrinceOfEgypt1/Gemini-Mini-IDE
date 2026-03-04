@@ -734,17 +734,11 @@ export class ProjectTypeDetector {
     const { estimatedMinFiles, primaryType, dataStructures } =
       detectionResult;
 
-    // Check total file count - allow 70% tolerance
-    const minAcceptable = Math.floor(estimatedMinFiles * 0.7);
-    if (manifestFileCount < minAcceptable) {
-      const deficit = minAcceptable - manifestFileCount;
-      errors.push(
-        `Manifest has ${manifestFileCount} files, but minimum acceptable is ${minAcceptable} (70% of ${estimatedMinFiles}) for a ${primaryType} project with ${dataStructures.length} data structures. Missing approximately ${deficit} files.`
-      );
-    } else if (manifestFileCount < estimatedMinFiles) {
+    // Check total file count
+    if (manifestFileCount < estimatedMinFiles) {
       const deficit = estimatedMinFiles - manifestFileCount;
-      warnings.push(
-        `Manifest has ${manifestFileCount} files, slightly below the ideal ${estimatedMinFiles} for a ${primaryType} project. Missing approximately ${deficit} files.`
+      errors.push(
+        `Manifest has ${manifestFileCount} files, but minimum expected is ${estimatedMinFiles} for a ${primaryType} project with ${dataStructures.length} data structures. Missing approximately ${deficit} files.`
       );
     }
 
@@ -764,14 +758,10 @@ export class ProjectTypeDetector {
       }
     }
 
-    // Check for multiple structures - warn instead of error if close
-    if (dataStructures.length >= 3 && manifestFileCount < 70) {
+    // Check for multiple structures
+    if (dataStructures.length >= 3 && manifestFileCount < 100) {
       errors.push(
-        `Projects with ${dataStructures.length} data structures require at least 70 files. Current: ${manifestFileCount}`
-      );
-    } else if (dataStructures.length >= 3 && manifestFileCount < 100) {
-      warnings.push(
-        `Projects with ${dataStructures.length} data structures typically have 100+ files. Current: ${manifestFileCount}`
+        `Projects with ${dataStructures.length} data structures typically require 100+ files. Current: ${manifestFileCount}`
       );
     }
 
