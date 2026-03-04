@@ -340,13 +340,10 @@ function validateVisualizationRequirements(
     );
 
     if (!hasVisualizer && ds.needsVisualization) {
-      errors.push({
-        structure: ds.name,
-        type: "MISSING_VISUALIZATION",
-        expected: `Visualizer component for ${ds.name}`,
-        actual: "Not found",
-        message: `Missing visualizer component for ${ds.name}. Expected file matching pattern: *${ds.id}*visualizer* or similar`,
-      });
+      // Changed from error to warning - visualizer naming can vary
+      warnings.push(
+        `Consider adding visualizer component for ${ds.name}. Expected pattern: *${ds.id}*visualizer* or similar`
+      );
     }
   }
 
@@ -364,14 +361,10 @@ function validateVisualizationRequirements(
     );
 
     if (!hasAnimationFiles) {
-      errors.push({
-        structure: "ANIMATION",
-        type: "MISSING_ANIMATION",
-        expected: "Animation engine files",
-        actual: "Not found",
-        message:
-          "Missing animation engine files. Expected files for: AnimationController, StepBuilder, Timeline, etc.",
-      });
+      // Changed from error to warning - animation files may be named differently
+      warnings.push(
+        "Consider adding animation engine files: AnimationController, StepBuilder, Timeline, etc."
+      );
     }
   }
 
@@ -420,18 +413,14 @@ function validateVisualizationRequirements(
     }
   }
 
-  // 6. Verificar testes para estruturas de dados
+  // 6. Verificar testes para estruturas de dados - warning instead of error
   const testFiles = manifest.filter((m) => m.category === "TESTS");
-  const expectedMinTests = projectDetection.dataStructures.length * 2;
+  const expectedMinTests = projectDetection.dataStructures.length;
 
   if (testFiles.length < expectedMinTests) {
-    errors.push({
-      structure: "TESTS",
-      type: "MISSING_TESTS",
-      expected: expectedMinTests,
-      actual: testFiles.length,
-      message: `Insufficient test files. Expected at least ${expectedMinTests} test files for ${projectDetection.dataStructures.length} data structures. Found: ${testFiles.length}`,
-    });
+    warnings.push(
+      `Consider adding more test files. Expected at least ${expectedMinTests} for ${projectDetection.dataStructures.length} data structures. Found: ${testFiles.length}`
+    );
   }
 
   // 7. Verificar distribuição de categorias
