@@ -17,11 +17,12 @@ REGRAS:
 2. Adapte o tom ao contexto do projeto
 3. Não use frases prontas - seja genuíno e contextual
 4. Extraia: emoção primária, intensidade, motivações, medos, necessidade de encorajamento
+5. IMPORTANTE: Se você ou outro agente ofereceu explicar algo e o usuário aceitou, forneça a explicação no feedback.
 
 Retorne JSON com:
 {
   "understood": true/false,
-  "feedback": "resposta empática contextualizada",
+  "feedback": "resposta empática contextualizada E explicação se prometida",
   "dataExtracted": {
     "primaryEmotion": "string",
     "emotionalIntensity": 0-1,
@@ -93,6 +94,12 @@ A pergunta deve ser aberta e acolhedora.`
   async processUserResponse(userMessage: string, context: ConversationContext): Promise<AgentResponse> {
     this.interactionCount++;
 
+    // Extrai histórico recente para contexto
+    const recentMessages = context.previousMessages?.slice(-6) || [];
+    const conversationContext = recentMessages
+      .map(m => `${m.role === "agent" ? "Agente" : "Usuário"}: ${m.content}`)
+      .join("\n");
+
     try {
       const response = await this.client.chat.completions.create({
         model: this.model,
@@ -101,9 +108,15 @@ A pergunta deve ser aberta e acolhedora.`
           {
             role: "user",
             content: `Projeto: "${context.originalUserPrompt}"
-Resposta do usuário: "${userMessage}"
+
+HISTÓRICO DA CONVERSA:
+${conversationContext}
+
+Resposta atual do usuário: "${userMessage}"
 Dados emocionais anteriores: ${JSON.stringify(context.accumulatedData["emotionalData"] || {})}
 Interação ${this.interactionCount} de ${this.maxInteractions}
+
+IMPORTANTE: Verifique se alguma explicação foi prometida e não entregue. Se sim, forneça-a.
 
 Analise a resposta e gere feedback empático. Se precisar de mais informação e ainda não atingiu o limite, gere próxima pergunta.`
           }

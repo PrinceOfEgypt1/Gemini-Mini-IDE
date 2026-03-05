@@ -18,11 +18,14 @@ REGRAS:
 1. Adapte suas perguntas ao contexto do projeto
 2. Não use frases prontas - personalize cada resposta
 3. Extraia: nível de conhecimento, faixa etária, estilo de comunicação, preferência de autonomia
+4. IMPORTANTE: Se você ofereceu explicar algo e o usuário aceitou (ex: "sim", "claro", "por favor"),
+   VOCÊ DEVE fornecer essa explicação no campo "feedback" antes de fazer a próxima pergunta.
+   Nunca avance sem cumprir uma promessa de explicação.
 
 Retorne JSON:
 {
   "understood": true/false,
-  "feedback": "resposta amigável e contextualizada",
+  "feedback": "resposta amigável E explicação se prometida",
   "dataExtracted": {
     "knowledgeLevel": "beginner|intermediate|advanced|expert",
     "ageGroup": "child|teen|adult|senior",
@@ -92,6 +95,12 @@ Gere a PRIMEIRA pergunta para conhecer o usuário. Pergunte sobre:
   async processUserResponse(userMessage: string, context: ConversationContext): Promise<AgentResponse> {
     this.interactionCount++;
 
+    // Extrai histórico recente para contexto (especialmente última pergunta do agente)
+    const recentMessages = context.previousMessages?.slice(-4) || [];
+    const conversationContext = recentMessages
+      .map(m => `${m.role === "agent" ? "Agente" : "Usuário"}: ${m.content}`)
+      .join("\n");
+
     try {
       const response = await this.client.chat.completions.create({
         model: this.model,
@@ -100,9 +109,16 @@ Gere a PRIMEIRA pergunta para conhecer o usuário. Pergunte sobre:
           {
             role: "user",
             content: `Projeto: "${context.originalUserPrompt}"
-Resposta do usuário: "${userMessage}"
+
+HISTÓRICO RECENTE DA CONVERSA:
+${conversationContext}
+
+Resposta atual do usuário: "${userMessage}"
 Dados já coletados: ${JSON.stringify(context.accumulatedData["userProfileData"] || {})}
 Interação ${this.interactionCount} de ${this.maxInteractions}
+
+IMPORTANTE: Verifique se na última mensagem do agente foi oferecida alguma explicação.
+Se sim e o usuário aceitou, FORNEÇA a explicação completa no campo "feedback".
 
 Analise a resposta e extraia informações de perfil.
 Se precisar de mais informações e ainda não atingiu o limite, gere próxima pergunta.
