@@ -268,32 +268,11 @@ export function validateManifest(
     }
   }
 
-  // 3. Detectar tipo de projeto e validar quantidade de arquivos
+  // 3. Detectar tipo de projeto para validações semânticas
   const projectDetection = projectTypeDetector.detect(userPrompt);
 
-  // 4. Validar quantidade mínima de arquivos
-  const fileCountValidation = projectTypeDetector.validateManifestFileCount(
-    manifest.length,
-    projectDetection
-  );
-
-  if (!fileCountValidation.valid) {
-    for (const error of fileCountValidation.errors) {
-      errors.push({
-        structure: "MANIFEST",
-        type: "INSUFFICIENT_FILES",
-        expected: projectDetection.estimatedMinFiles,
-        actual: manifest.length,
-        message: error
-      });
-    }
-  }
-
-  for (const warning of fileCountValidation.warnings) {
-    warnings.push(warning);
-  }
-
-  // 5. Validar requisitos específicos para projetos de visualização
+  // 4. Validar requisitos específicos para projetos de visualização
+  // (visualizadores, animação, testes, categorias — verificações semânticas, não contagem arbitrária)
   if (
     projectDetection.primaryType === "VISUALIZATION" ||
     projectDetection.primaryType === "EDUCATIONAL"

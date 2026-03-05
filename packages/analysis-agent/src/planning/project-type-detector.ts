@@ -302,80 +302,6 @@ export class ProjectTypeDetector {
     /operations/i,
   ];
 
-  // ==================== FILE COUNT CONSTANTS ====================
-
-  /**
-   * Base files per data structure
-   * - Structure class (domain pure)
-   * - Use cases / operations
-   * - Types/interfaces (may be shared)
-   */
-  private readonly FILES_PER_STRUCTURE = 3;
-
-  /**
-   * Visualization files per data structure
-   * - Visualizer component
-   */
-  private readonly VISUALIZATION_FILES_PER_STRUCTURE = 1;
-
-  /**
-   * Test files per data structure
-   * - Unit tests for structure
-   */
-  private readonly TEST_FILES_PER_STRUCTURE = 1;
-
-  // Note: PAGE_FILES_PER_STRUCTURE is included in the calculation implicitly
-
-  /**
-   * Base configuration files (package.json, tsconfig, vite.config, etc.)
-   */
-  private readonly BASE_CONFIG_FILES = 8;
-
-  /**
-   * Core application files (main, app, routes, styles, etc.)
-   */
-  private readonly CORE_APP_FILES = 5;
-
-  /**
-   * Types and utils files
-   */
-  private readonly TYPES_UTILS_FILES = 4;
-
-  /**
-   * Layout and common components
-   */
-  private readonly LAYOUT_COMMON_COMPONENTS = 6;
-
-  /**
-   * Simulator console components (operation panel, controls, timeline, etc.)
-   */
-  private readonly SIMULATOR_COMPONENTS = 4;
-
-  /**
-   * Animation engine files
-   */
-  private readonly ANIMATION_ENGINE_FILES = 5;
-
-  /**
-   * Store/state management files
-   */
-  private readonly STORE_FILES = 2;
-
-  /**
-   * Operation framework files
-   */
-  private readonly OPERATION_FRAMEWORK_FILES = 3;
-
-  /**
-   * Documentation files minimum
-   */
-  private readonly DOC_FILES_MIN = 1;
-
-  /**
-   * Documentation files for visualization projects
-   */
-  private readonly DOC_FILES_VISUALIZATION = 3;
-
   // ==================== MAIN DETECTION METHOD ====================
 
   /**
@@ -403,31 +329,17 @@ export class ProjectTypeDetector {
 
     // 3. Detect project flags
     const flags = this.detectFlags(userPrompt, dataStructures, primaryType);
-    rationale.push(`Flags: ${JSON.stringify(flags)}`);
 
     // 4. Count operations
     const operationsCount = this.countOperations(userPrompt, dataStructures);
-    rationale.push(`Operations count: ${operationsCount}`);
-
-    // 5. Calculate file breakdown
-    const fileBreakdown = this.calculateFileBreakdown(
-      primaryType,
-      dataStructures,
-      flags
-    );
-    rationale.push(`File breakdown: ${JSON.stringify(fileBreakdown)}`);
-
-    // 6. Calculate total minimum files
-    const estimatedMinFiles = this.calculateTotalFiles(fileBreakdown);
-    rationale.push(`Estimated minimum files: ${estimatedMinFiles}`);
 
     return {
       primaryType,
       secondaryTypes,
       dataStructures,
       operationsCount,
-      estimatedMinFiles,
-      fileBreakdown,
+      estimatedMinFiles: 0,
+      fileBreakdown: { config: 0, domain: 0, application: 0, infrastructure: 0, tests: 0, docs: 0, devops: 0 },
       confidence,
       rationale,
       flags,
@@ -610,214 +522,9 @@ export class ProjectTypeDetector {
     return total;
   }
 
-  // ==================== FILE BREAKDOWN CALCULATION ====================
-
-  /**
-   * Calculates the expected file count breakdown by category
-   */
-  private calculateFileBreakdown(
-    projectType: ProjectType,
-    dataStructures: DetectedDataStructure[],
-    flags: ProjectFlags
-  ): FileBreakdown {
-    const numStructures = dataStructures.length;
-    const isVisualization =
-      projectType === "VISUALIZATION" || projectType === "EDUCATIONAL";
-
-    // Base configuration files
-    const config = this.BASE_CONFIG_FILES;
-
-    // Domain files: structure implementations + types + frames
-    const domain = numStructures * this.FILES_PER_STRUCTURE;
-
-    // Application files: operations + registry + inputs + pseudocode + core app
-    let application = this.CORE_APP_FILES;
-    if (isVisualization) {
-      // Operation framework files
-      application += this.OPERATION_FRAMEWORK_FILES;
-      // Store files
-      application += this.STORE_FILES;
-      // Layout and common components
-      application += this.LAYOUT_COMMON_COMPONENTS;
-      // Simulator components
-      application += this.SIMULATOR_COMPONENTS;
-      // Types and utils
-      application += this.TYPES_UTILS_FILES;
-      // Pages (one per structure + home)
-      application += numStructures + 1;
-    }
-
-    // Infrastructure files (minimal for visualization projects)
-    const infrastructure = 2;
-
-    // Test files
-    let tests = numStructures * this.TEST_FILES_PER_STRUCTURE;
-    if (isVisualization) {
-      tests += 2; // registry integrity + smoke tests
-    }
-
-    // Documentation files
-    const docs = isVisualization ? this.DOC_FILES_VISUALIZATION : this.DOC_FILES_MIN;
-
-    // DevOps files
-    const devops = 3; // Basic CI/CD
-
-    // Visualization files (if applicable)
-    let visualization = 0;
-    if (isVisualization) {
-      visualization = numStructures * this.VISUALIZATION_FILES_PER_STRUCTURE;
-    }
-
-    // Animation engine files (if applicable)
-    let animation = 0;
-    if (flags.needsAnimation) {
-      animation = this.ANIMATION_ENGINE_FILES;
-    }
-
-    return {
-      config,
-      domain,
-      application,
-      infrastructure,
-      tests,
-      docs,
-      devops,
-      visualization,
-      animation,
-    };
-  }
-
-  // ==================== TOTAL FILES CALCULATION ====================
-
-  /**
-   * Calculates the total minimum file count from breakdown
-   */
-  private calculateTotalFiles(breakdown: FileBreakdown): number {
-    return (
-      breakdown.config +
-      breakdown.domain +
-      breakdown.application +
-      breakdown.infrastructure +
-      breakdown.tests +
-      breakdown.docs +
-      breakdown.devops +
-      (breakdown.visualization || 0) +
-      (breakdown.animation || 0)
-    );
-  }
-
-  // ==================== VALIDATION METHODS ====================
-
-  /**
-   * Validates if a manifest meets the minimum file requirements
-   *
-   * @param manifestFileCount - Number of files in the manifest
-   * @param detectionResult - Detection result from detect()
-   * @returns Validation result with errors if any
-   */
-  public validateManifestFileCount(
-    manifestFileCount: number,
-    detectionResult: ProjectTypeDetectionResult
-  ): {
-    valid: boolean;
-    errors: string[];
-    warnings: string[];
-  } {
-    const errors: string[] = [];
-    const warnings: string[] = [];
-    const { estimatedMinFiles, primaryType, dataStructures } =
-      detectionResult;
-
-    // Check total file count
-    if (manifestFileCount < estimatedMinFiles) {
-      const deficit = estimatedMinFiles - manifestFileCount;
-      errors.push(
-        `Manifest has ${manifestFileCount} files, but minimum expected is ${estimatedMinFiles} for a ${primaryType} project with ${dataStructures.length} data structures. Missing approximately ${deficit} files.`
-      );
-    }
-
-    // Check minimum thresholds for visualization projects
-    if (primaryType === "VISUALIZATION" || primaryType === "EDUCATIONAL") {
-      const minVisualizationFiles = 30 + dataStructures.length * 3;
-      if (manifestFileCount < minVisualizationFiles) {
-        errors.push(
-          `Visualization/Educational projects require at least ${minVisualizationFiles} files for proper architecture separation. Current: ${manifestFileCount}`
-        );
-      }
-
-      // Warn if significantly below estimate
-      if (manifestFileCount < estimatedMinFiles * 0.6) {
-        warnings.push(
-          `File count (${manifestFileCount}) is significantly below the expected minimum (${estimatedMinFiles}). This may indicate missing components.`
-        );
-      }
-    }
-
-    // Check for multiple structures
-    if (dataStructures.length >= 3 && manifestFileCount < 30 + dataStructures.length * 3) {
-      errors.push(
-        `Projects with ${dataStructures.length} data structures typically require ${30 + dataStructures.length * 3}+ files. Current: ${manifestFileCount}`
-      );
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors,
-      warnings,
-    };
-  }
-
-  /**
-   * Generates a file count estimation summary
-   */
-  public generateEstimationSummary(
-    detectionResult: ProjectTypeDetectionResult
-  ): string {
-    const { primaryType, dataStructures, estimatedMinFiles, fileBreakdown, flags } =
-      detectionResult;
-
-    const lines: string[] = [
-      `## Project Type Analysis`,
-      ``,
-      `**Type:** ${primaryType}`,
-      `**Data Structures:** ${dataStructures.length}`,
-      `**Estimated Minimum Files:** ${estimatedMinFiles}`,
-      ``,
-      `### File Breakdown:`,
-      `- Config: ${fileBreakdown.config}`,
-      `- Domain: ${fileBreakdown.domain}`,
-      `- Application: ${fileBreakdown.application}`,
-      `- Infrastructure: ${fileBreakdown.infrastructure}`,
-      `- Tests: ${fileBreakdown.tests}`,
-      `- Docs: ${fileBreakdown.docs}`,
-      `- DevOps: ${fileBreakdown.devops}`,
-    ];
-
-    if (fileBreakdown.visualization) {
-      lines.push(`- Visualization: ${fileBreakdown.visualization}`);
-    }
-    if (fileBreakdown.animation) {
-      lines.push(`- Animation: ${fileBreakdown.animation}`);
-    }
-
-    lines.push(``, `### Data Structures:`);
-    for (const ds of dataStructures) {
-      lines.push(`- ${ds.name}: ${ds.minMethods} methods`);
-      if (ds.requiredAlgorithms.length > 0) {
-        lines.push(`  - Required algorithms: ${ds.requiredAlgorithms.join(", ")}`);
-      }
-    }
-
-    lines.push(``, `### Special Requirements:`);
-    if (flags.needsAnimation) lines.push(`- Animation engine required`);
-    if (flags.needsPseudocode) lines.push(`- Pseudocode display required`);
-    if (flags.needsLogging) lines.push(`- Operation logging required`);
-    if (flags.needsPlaybackControls) lines.push(`- Playback controls required`);
-    if (flags.needsStepExecution) lines.push(`- Step-by-step execution required`);
-    if (flags.isEducational) lines.push(`- Educational/didactic features required`);
-
-    return lines.join("\n");
-  }
+  // No hardcoded file counts. Validation is done semantically
+  // (methods present, visualizers present, tests present, etc.)
+  // not by arbitrary file count thresholds.
 }
 
 /**

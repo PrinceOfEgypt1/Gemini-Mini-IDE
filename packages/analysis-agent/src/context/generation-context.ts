@@ -157,37 +157,30 @@ ${this._userPrompt}
     if (this._projectTypeDetection) {
       const detection = this._projectTypeDetection;
       parts.push(`
-## DETECÇÃO DE TIPO DE PROJETO (CRÍTICO - LEIA COM ATENÇÃO)
+## DETECÇÃO DE TIPO DE PROJETO
 
-⚠️ **TIPO DE PROJETO DETECTADO:** ${detection.primaryType}
-⚠️ **QUANTIDADE MÍNIMA DE ARQUIVOS ESPERADA:** ${detection.estimatedMinFiles}
-
-${detection.primaryType === "VISUALIZATION" || detection.primaryType === "EDUCATIONAL" ? `
-🚨 **ATENÇÃO:** Este é um projeto de VISUALIZAÇÃO/EDUCACIONAL.
-Você DEVE gerar NO MÍNIMO ${detection.estimatedMinFiles} arquivos para atender os requisitos.
-Se gerar menos de ${Math.floor(detection.estimatedMinFiles * 0.8)} arquivos, sua resposta será REJEITADA.
-
-**Requisitos especiais detectados:**
-${detection.flags.needsAnimation ? "- ✅ Motor de animação (10 arquivos)" : ""}
-${detection.flags.needsPseudocode ? "- ✅ Painel de pseudocódigo" : ""}
-${detection.flags.needsLogging ? "- ✅ Sistema de logging" : ""}
-${detection.flags.needsPlaybackControls ? "- ✅ Controles de playback (play/pause/step)" : ""}
-${detection.flags.needsStepExecution ? "- ✅ Execução passo a passo" : ""}
-` : ""}
+**TIPO:** ${detection.primaryType}
 
 **Estruturas de dados detectadas (${detection.dataStructures.length}):**
-${detection.dataStructures.map(ds => `- ${ds.name}: ${ds.minMethods}+ métodos obrigatórios`).join("\n")}
+${detection.dataStructures.map(ds => {
+  let line = `- ${ds.name}: ${ds.minMethods}+ métodos obrigatórios`;
+  if (ds.requiredAlgorithms.length > 0) {
+    line += ` (algoritmos: ${ds.requiredAlgorithms.join(", ")})`;
+  }
+  return line;
+}).join("\n")}
 
-**Arquivos esperados por categoria:**
-- Config: ${detection.fileBreakdown.config}
-- Domain: ${detection.fileBreakdown.domain}
-- Application: ${detection.fileBreakdown.application}
-- Infrastructure: ${detection.fileBreakdown.infrastructure}
-- Tests: ${detection.fileBreakdown.tests}
-- Docs: ${detection.fileBreakdown.docs}
-- DevOps: ${detection.fileBreakdown.devops}
-${detection.fileBreakdown.visualization ? `- Visualization: ${detection.fileBreakdown.visualization}` : ""}
-${detection.fileBreakdown.animation ? `- Animation: ${detection.fileBreakdown.animation}` : ""}
+**Para CADA estrutura, gere os seguintes arquivos:**
+- Arquivo DOMAIN com a classe da estrutura (listar TODOS os métodos no purpose)
+- Arquivo APPLICATION com os use cases / operações
+- Arquivo UI com o componente visualizador
+- Arquivo TESTS com os testes unitários
+
+**Requisitos especiais:**
+${detection.flags.needsAnimation ? "- Motor de animação (AnimationController, StepBuilder)" : ""}
+${detection.flags.needsPseudocode ? "- Painel de pseudocódigo" : ""}
+${detection.flags.needsPlaybackControls ? "- Controles de playback (play/pause/step)" : ""}
+${detection.flags.needsStepExecution ? "- Execução passo a passo" : ""}
 `);
     }
 
