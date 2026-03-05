@@ -66,6 +66,7 @@ export class OpenAILLMClient implements LLMClient {
     const fileSpecs = this.extractFileSpecs(prompt);
 
     if (fileSpecs.length === 0) {
+      // eslint-disable-next-line no-console
       console.warn("[OpenAILLMClient] No file specs found in prompt");
       return [];
     }
@@ -107,12 +108,14 @@ export class OpenAILLMClient implements LLMClient {
           throw new Error(`Missing files in response: ${missing.join(", ")}`);
         }
 
+        // eslint-disable-next-line no-console
         console.log(
           `[OpenAILLMClient] Generated ${files.length} files (attempt ${attempt})`
         );
         return files;
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
+        // eslint-disable-next-line no-console
         console.warn(
           `[OpenAILLMClient] Attempt ${attempt}/${this.maxRetries} failed:`,
           lastError.message
@@ -311,6 +314,7 @@ IMPORTANT:
       );
 
       if (!isExpected) {
+        // eslint-disable-next-line no-console
         console.warn(`[OpenAILLMClient] Unexpected file in response: ${path}`);
       }
 

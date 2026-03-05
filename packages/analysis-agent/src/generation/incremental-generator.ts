@@ -645,9 +645,11 @@ export class IncrementalGenerator {
     const allFiles: BatchGeneratedFile[] = [];
     const errors: string[] = [];
 
+    // eslint-disable-next-line no-console
     console.log(`[IncrementalGenerator] Starting generation: ${batches.length} batches, ${architecture.manifest.length} total files`);
 
     for (const batch of batches) {
+      // eslint-disable-next-line no-console
       console.log(`[IncrementalGenerator] Processing batch: ${batch.name} (${batch.files.length} files)`);
 
       // Report progress
@@ -664,6 +666,7 @@ export class IncrementalGenerator {
       result.validationPassed = validation.valid;
 
       if (!validation.valid) {
+        // eslint-disable-next-line no-console
         console.error(`[IncrementalGenerator] Batch ${batch.name} validation failed:`, validation.errors);
         result.errors.push(...validation.errors);
 
@@ -687,6 +690,7 @@ export class IncrementalGenerator {
       batchResults.push(result);
       allFiles.push(...result.filesGenerated);
 
+      // eslint-disable-next-line no-console
       console.log(`[IncrementalGenerator] Batch ${batch.name} completed: ${result.filesGenerated.length} files`);
     }
 
