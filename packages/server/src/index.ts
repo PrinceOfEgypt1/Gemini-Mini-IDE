@@ -44,13 +44,6 @@ const RespondSchema = z.object({
   message: z.string().min(1)
 });
 
-function extractApiKey(authHeader?: string): string {
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    return authHeader.substring(7);
-  }
-  return DEFAULT_API_KEY;
-}
-
 interface LLMConfig {
   apiKey: string;
   model?: string;
