@@ -25,7 +25,7 @@ import {
 import { GenerationContext } from "./context/generation-context.js";
 import { CompletenessValidator } from "./governance/completeness-validator.js";
 import { SyntaxSandbox } from "./governance/syntax-sandbox.js";
-import { StructureAuditor } from "./governance/structure-auditor.js";
+
 
 // Importação ESAA Hardened v2
 import { globalESAAOrchestrator } from "./esaa/orchestrator.js";
@@ -293,7 +293,7 @@ export class AnalysisAgent {
   private context: GenerationContext;
   private validator: CompletenessValidator;
   private syntaxSandbox: SyntaxSandbox;
-  private structureAuditor: StructureAuditor;
+  
 
   /** ID único do agente (usado pelo ESAA para rastreabilidade). */
   public readonly agentId: string;
@@ -319,7 +319,7 @@ export class AnalysisAgent {
     this.context = new GenerationContext();
     this.validator = new CompletenessValidator();
     this.syntaxSandbox = new SyntaxSandbox();
-    this.structureAuditor = new StructureAuditor();
+    
     this.agentId = `agent-${randomUUID().slice(0, 8)}`;
     this.esaaEnabled = process.env["ESAA_ENABLED"] === "true";
 
@@ -737,7 +737,7 @@ export class Array<T> {
       console.log("Step 3: Architecture...");
       let architecture = await this.runArchitectureStep(userPrompt, product);
       this.context.setArchitecture(architecture);
-      architecture = this.structureAuditor.auditAndFix(architecture);
+      
 
       // 4. Histórias de Usuário
       // eslint-disable-next-line no-console
@@ -1063,7 +1063,7 @@ export class Array<T> {
       let architecture = await this.runArchitectureStep(userPrompt, product);
       this.context.setArchitecture(architecture);
       
-      architecture = this.structureAuditor.auditAndFix(architecture, userPrompt);
+      
       timings.architecture = performance.now() - t2;
 
       // 4. Histórias de Usuário
