@@ -307,80 +307,74 @@ export class ProjectTypeDetector {
   /**
    * Base files per data structure
    * - Structure class (domain pure)
-   * - Types/interfaces
-   * - Animation frames
-   * - Operations registry
-   * - Operations implementation
-   * - Input schemas
-   * - Pseudocode definitions
+   * - Use cases / operations
+   * - Types/interfaces (may be shared)
    */
-  private readonly FILES_PER_STRUCTURE = 7;
+  private readonly FILES_PER_STRUCTURE = 3;
 
   /**
    * Visualization files per data structure
    * - Visualizer component
-   * - View component
    */
-  private readonly VISUALIZATION_FILES_PER_STRUCTURE = 2;
+  private readonly VISUALIZATION_FILES_PER_STRUCTURE = 1;
 
   /**
    * Test files per data structure
    * - Unit tests for structure
-   * - Integration tests for operations
    */
-  private readonly TEST_FILES_PER_STRUCTURE = 2;
+  private readonly TEST_FILES_PER_STRUCTURE = 1;
 
   // Note: PAGE_FILES_PER_STRUCTURE is included in the calculation implicitly
 
   /**
    * Base configuration files (package.json, tsconfig, vite.config, etc.)
    */
-  private readonly BASE_CONFIG_FILES = 12;
+  private readonly BASE_CONFIG_FILES = 8;
 
   /**
    * Core application files (main, app, routes, styles, etc.)
    */
-  private readonly CORE_APP_FILES = 8;
+  private readonly CORE_APP_FILES = 5;
 
   /**
    * Types and utils files
    */
-  private readonly TYPES_UTILS_FILES = 8;
+  private readonly TYPES_UTILS_FILES = 4;
 
   /**
    * Layout and common components
    */
-  private readonly LAYOUT_COMMON_COMPONENTS = 14;
+  private readonly LAYOUT_COMMON_COMPONENTS = 6;
 
   /**
    * Simulator console components (operation panel, controls, timeline, etc.)
    */
-  private readonly SIMULATOR_COMPONENTS = 7;
+  private readonly SIMULATOR_COMPONENTS = 4;
 
   /**
    * Animation engine files
    */
-  private readonly ANIMATION_ENGINE_FILES = 10;
+  private readonly ANIMATION_ENGINE_FILES = 5;
 
   /**
    * Store/state management files
    */
-  private readonly STORE_FILES = 3;
+  private readonly STORE_FILES = 2;
 
   /**
    * Operation framework files
    */
-  private readonly OPERATION_FRAMEWORK_FILES = 6;
+  private readonly OPERATION_FRAMEWORK_FILES = 3;
 
   /**
    * Documentation files minimum
    */
-  private readonly DOC_FILES_MIN = 2;
+  private readonly DOC_FILES_MIN = 1;
 
   /**
    * Documentation files for visualization projects
    */
-  private readonly DOC_FILES_VISUALIZATION = 8;
+  private readonly DOC_FILES_VISUALIZATION = 3;
 
   // ==================== MAIN DETECTION METHOD ====================
 
@@ -744,14 +738,15 @@ export class ProjectTypeDetector {
 
     // Check minimum thresholds for visualization projects
     if (primaryType === "VISUALIZATION" || primaryType === "EDUCATIONAL") {
-      if (manifestFileCount < 80) {
+      const minVisualizationFiles = 30 + dataStructures.length * 3;
+      if (manifestFileCount < minVisualizationFiles) {
         errors.push(
-          `Visualization/Educational projects require at least 80 files for proper architecture separation. Current: ${manifestFileCount}`
+          `Visualization/Educational projects require at least ${minVisualizationFiles} files for proper architecture separation. Current: ${manifestFileCount}`
         );
       }
 
       // Warn if significantly below estimate
-      if (manifestFileCount < estimatedMinFiles * 0.7) {
+      if (manifestFileCount < estimatedMinFiles * 0.6) {
         warnings.push(
           `File count (${manifestFileCount}) is significantly below the expected minimum (${estimatedMinFiles}). This may indicate missing components.`
         );
@@ -759,9 +754,9 @@ export class ProjectTypeDetector {
     }
 
     // Check for multiple structures
-    if (dataStructures.length >= 3 && manifestFileCount < 100) {
+    if (dataStructures.length >= 3 && manifestFileCount < 30 + dataStructures.length * 3) {
       errors.push(
-        `Projects with ${dataStructures.length} data structures typically require 100+ files. Current: ${manifestFileCount}`
+        `Projects with ${dataStructures.length} data structures typically require ${30 + dataStructures.length * 3}+ files. Current: ${manifestFileCount}`
       );
     }
 

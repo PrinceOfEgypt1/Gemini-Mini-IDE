@@ -151,10 +151,18 @@ function sanitizeRichArchitecture(data: any): RichArchitecture {
     "TYPE": "DOMAIN",
     "HOOKS": "APPLICATION",
     "HOOK": "APPLICATION",
-    "MIDDLEWARE": "APPLICATION"
+    "MIDDLEWARE": "APPLICATION",
+    "PRESENTATION": "UI",
+    "VIEW": "UI",
+    "VIEWS": "UI",
+    "COMPONENT": "UI",
+    "COMPONENTS": "UI",
+    "PAGE": "UI",
+    "PAGES": "UI",
+    "VISUALIZER": "UI"
   };
 
-  const validCategories = ["DOMAIN", "APPLICATION", "INFRASTRUCTURE", "DEVOPS", "CONFIG", "TESTS", "DOCS"];
+  const validCategories = ["DOMAIN", "APPLICATION", "INFRASTRUCTURE", "DEVOPS", "CONFIG", "TESTS", "DOCS", "ANIMATION", "UI", "STORE"];
 
   const manifestRaw = Array.isArray(data["manifest"]) ? data["manifest"] : [];
   const manifest: RichManifestItem[] = manifestRaw.map((file: any) => {
@@ -496,7 +504,18 @@ export class AnalysisAgent {
         return architecture;
       }
 
-      // Manifest inválido
+      // Manifest inválido - invalidar cache para não reusar resultado ruim
+      if (attempt === 1) {
+        const cacheKey = globalAnalysisCache.generateKey(
+          SYSTEM_PROMPTS.ARCHITECTURE,
+          contextWithFeedback,
+          "gpt-4o-mini",
+          temperature,
+          attempt
+        );
+        globalAnalysisCache.invalidate(cacheKey);
+      }
+
       // eslint-disable-next-line no-console
       console.error(`[Validator] ❌ Manifest inválido na tentativa ${attempt}:`);
       for (const error of validation.errors) {
@@ -770,7 +789,7 @@ export class Array<T> {
       console.log(`Step 5: Engine (Generating ${plan.architect.manifest.length} files)...`);
 
       const orderMap: Record<string, number> = {
-        "CONFIG": 1, "DOMAIN": 2, "APPLICATION": 3, "INFRASTRUCTURE": 4, "DEVOPS": 5, "TESTS": 6, "DOCS": 7
+        "CONFIG": 1, "DOMAIN": 2, "APPLICATION": 3, "ANIMATION": 4, "UI": 5, "STORE": 6, "INFRASTRUCTURE": 7, "DEVOPS": 8, "TESTS": 9, "DOCS": 10
       };
 
       const sortedManifest = [...plan.architect.manifest].sort((a, b) => {
@@ -1060,7 +1079,7 @@ export class Array<T> {
       console.log(`Step 5: Engine (Generating ${architecture.manifest.length} files)...`);
       
       const orderMap: Record<string, number> = { 
-        "CONFIG": 1, "DOMAIN": 2, "APPLICATION": 3, "INFRASTRUCTURE": 4, "DEVOPS": 5, "TESTS": 6, "DOCS": 7 
+        "CONFIG": 1, "DOMAIN": 2, "APPLICATION": 3, "ANIMATION": 4, "UI": 5, "STORE": 6, "INFRASTRUCTURE": 7, "DEVOPS": 8, "TESTS": 9, "DOCS": 10 
       };
       
       const sortedManifest = [...architecture.manifest].sort((a, b) => {
