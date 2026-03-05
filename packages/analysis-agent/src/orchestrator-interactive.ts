@@ -44,6 +44,7 @@ export interface InteractionResult {
   currentAgent: AgentType;
   isComplete: boolean;
   options?: string[];
+  planResult?: PlanResult;
 }
 
 /**
@@ -168,7 +169,20 @@ export class InteractiveOrchestrator {
     // Registra mensagem do usuário
     this.sessionManager.addMessage(sessionId, "user", userResponse);
 
-    // Obtém o agente atual
+    // Se estamos na fase de engenharia (analysis), disparar generatePlan
+    if (session.currentAgent === "analysis") {
+      const planResult = await this.generatePlan(sessionId);
+      return {
+        sessionId,
+        message: session.messages[session.messages.length - 1]!,
+        currentPhase: "engineering_layer",
+        currentAgent: "analysis",
+        isComplete: false,
+        planResult
+      };
+    }
+
+    // Obtém o agente atual (fase interativa)
     const agent = this.agents.get(session.currentAgent);
     if (!agent) {
       throw new Error(`Agent not found: ${session.currentAgent}`);
