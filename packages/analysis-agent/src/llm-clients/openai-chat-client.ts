@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { ILLMClient } from "./llm-client.interface.js";
 
 export class OpenAIChatClient implements ILLMClient {
@@ -21,14 +20,14 @@ export class OpenAIChatClient implements ILLMClient {
   }
 
   async chatCompletion(
-    messages: ChatCompletionMessageParam[],
+    messages: { role: "system" | "user" | "assistant"; content: string; }[],
     options?: {
       model?: string;
       temperature?: number;
       seed?: number;
       response_format?: { type: "json_object" | "text" };
     }
-  ): Promise<any> {
+  ): Promise<{ content: string; }> {
     const response = await this.openai.chat.completions.create({
       model: options?.model || this.defaultModel,
       messages,
@@ -36,6 +35,6 @@ export class OpenAIChatClient implements ILLMClient {
       seed: options?.seed,
       response_format: options?.response_format,
     });
-    return response;
+    return { content: response.choices[0]?.message?.content || "" };
   }
 }

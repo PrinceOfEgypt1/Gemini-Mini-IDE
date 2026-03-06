@@ -1,13 +1,23 @@
-import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-
 export interface ILLMClient {
   chatCompletion(
-    messages: ChatCompletionMessageParam[],
+    messages: { role: "system" | "user" | "assistant"; content: string; }[],
     options?: {
       model?: string;
       temperature?: number;
       seed?: number;
       response_format?: { type: "json_object" | "text" };
     }
-  ): Promise<any>;
+  ): Promise<{ content: string; }>;
+}
+
+export interface IIncrementalLLMClient {
+  incrementalCompletion(
+    messages: { role: "system" | "user" | "assistant"; content: string; }[],
+    options?: {
+      model?: string;
+      temperature?: number;
+      seed?: number;
+      response_format?: { type: "json_object" | "text" };
+    }
+  ): AsyncIterable<{ content: string; }>;
 }
