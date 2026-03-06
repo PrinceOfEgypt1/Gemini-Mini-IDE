@@ -11,3 +11,11 @@ bundles/
 *.log.*
 *.tsbuildinfo
 data/
+
+# Sandbox temporary directories
+/tmp/mini-ide-sandbox-*
+
+# Legacy artifacts
+CODE_EXPORT.txt
+logs/
+.trash-*/

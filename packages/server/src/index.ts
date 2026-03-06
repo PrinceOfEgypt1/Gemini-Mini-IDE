@@ -114,7 +114,7 @@ const start = async (): Promise<void> => {
   await app.register(cors, {
     origin: true,
     methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-LLM-Model", "X-LLM-Base-URL", "X-Dry-Run"]
+    allowedHeaders: ["Content-Type", "Authorization", "X-LLM-Model", "X-LLM-Base-URL", "X-Dry-Run", "X-Session-Id"]
   });
 
   // Rate limiting: 100 requests por minuto por IP
@@ -568,6 +568,31 @@ const start = async (): Promise<void> => {
       request.log.error({ err }, "Falha ao gerar resultado final");
       return reply.status(502).send({ error: "Falha ao gerar resultado", details: errorMessage });
     }
+  });
+
+  // SSE endpoint para streaming de progresso de geração
+  app.get<{ Params: { sessionId: string } }>("/generation/progress/:sessionId", async (request, reply) => {
+    const { sessionId } = request.params;
+
+    reply.raw.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+      "Access-Control-Allow-Origin": "*"
+    });
+
+    // Heartbeat para manter conexão viva
+    const heartbeat = setInterval(() => {
+      reply.raw.write(": heartbeat\n\n");
+    }, 15000);
+
+    // Envia evento de conexão estabelecida
+    reply.raw.write(`data: ${JSON.stringify({ type: "connected", sessionId })}\n\n`);
+
+    // Cleanup quando cliente desconecta
+    request.raw.on("close", () => {
+      clearInterval(heartbeat);
+    });
   });
 
   // Inicia o servidor

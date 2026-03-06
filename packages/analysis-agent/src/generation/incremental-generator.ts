@@ -16,6 +16,9 @@
  */
 
 import type { RichManifestItem, RichArchitecture } from "../types/rich-schemas.js";
+import type { SandboxExecutor } from "../execution/sandbox-executor.js";
+import type { VirtualFilesystem } from "../execution/virtual-filesystem.js";
+import type { TodoTracker } from "../execution/todo-tracker.js";
 
 // ============================================================================
 // TYPES
@@ -612,15 +615,37 @@ export class ContextAccumulator {
 // INCREMENTAL GENERATOR
 // ============================================================================
 
+/**
+ * LLM client interface for code generation
+ */
 export interface LLMClient {
-  generateCode(prompt: string, context: string): Promise<BatchGeneratedFile[]>;
+  generateCode(prompt: string, context: string, domainExamples?: string): Promise<BatchGeneratedFile[]>;
+}
+
+/**
+ * Options for IncrementalGenerator
+ */
+export interface IncrementalGeneratorOptions {
+  sandbox?: SandboxExecutor;
+  vfs?: VirtualFilesystem;
+  todo?: TodoTracker;
 }
 
 export class IncrementalGenerator {
   private readonly batcher = new ManifestBatcher();
   private readonly validator = new BatchValidator();
+  private readonly sandbox?: SandboxExecutor;
+  private readonly vfs?: VirtualFilesystem;
+  private readonly todo?: TodoTracker;
 
-  constructor(private readonly llmClient: LLMClient) {}
+  constructor(
+    private readonly llmClient: LLMClient,
+    options?: IncrementalGeneratorOptions
+  ) {
+    this.sandbox = options?.sandbox;
+    this.vfs = options?.vfs;
+    this.todo = options?.todo;
+  }
 
   /**
    * Generates code incrementally from a manifest.
@@ -640,6 +665,11 @@ export class IncrementalGenerator {
     const startTime = Date.now();
     const batches = this.batcher.createBatches(architecture.manifest);
     const accumulator = new ContextAccumulator(architecture, userStories, userPrompt);
+
+    // Initialize todo tracker if available
+    if (this.todo) {
+      this.todo.initFromManifest(architecture.manifest);
+    }
 
     const batchResults: BatchResult[] = [];
     const allFiles: BatchGeneratedFile[] = [];
@@ -664,6 +694,61 @@ export class IncrementalGenerator {
       // Validate the batch
       const validation = this.validator.validate(batch, result, accumulator.getContext());
       result.validationPassed = validation.valid;
+
+      // Real compilation check (if sandbox available)
+      if (this.sandbox && validation.valid) {
+        // Write batch files to sandbox
+        for (const file of result.filesGenerated) {
+          await this.sandbox.writeFile(file.path, file.content);
+        }
+
+        // Also write to VFS
+        if (this.vfs) {
+          for (const file of result.filesGenerated) {
+            this.vfs.set(file.path, file.content, {
+              category: batch.files.find(f => f.path === file.path)?.category,
+              purpose: batch.files.find(f => f.path === file.path)?.purpose,
+            });
+          }
+        }
+
+        // Run typecheck
+        const typecheckResult = await this.sandbox.typecheck();
+        if (!typecheckResult.success) {
+          const tscErrors = (typecheckResult.stdout + typecheckResult.stderr)
+            .split('\n')
+            .filter(line => line.includes('error TS'))
+            .slice(0, 10)
+            .join('\n');
+
+          // eslint-disable-next-line no-console
+          console.error(`[IncrementalGenerator] TypeScript compilation errors in batch ${batch.name}:\n${tscErrors}`);
+          result.errors.push(`TypeScript compilation failed: ${tscErrors}`);
+          result.validationPassed = false;
+
+          // DON'T fail fast — log errors but continue to next batch
+          // This allows partial compilation success
+        }
+      } else if (this.vfs && validation.valid) {
+        // If no sandbox but VFS available, still store files
+        for (const file of result.filesGenerated) {
+          this.vfs.set(file.path, file.content, {
+            category: batch.files.find(f => f.path === file.path)?.category,
+            purpose: batch.files.find(f => f.path === file.path)?.purpose,
+          });
+        }
+      }
+
+      // Update todo tracker
+      if (this.todo) {
+        for (const file of result.filesGenerated) {
+          if (result.validationPassed) {
+            this.todo.complete(file.path);
+          } else {
+            this.todo.fail(file.path, result.errors[0] || "Validation failed");
+          }
+        }
+      }
 
       if (!validation.valid) {
         // eslint-disable-next-line no-console
@@ -773,6 +858,19 @@ export class IncrementalGenerator {
     lines.push(`4. Match the purpose description exactly`);
     lines.push(`5. For data structures: implement ALL methods listed in purpose`);
     lines.push("");
+
+    // Add VFS context if available
+    if (this.vfs && this.vfs.stats.totalFiles > 0) {
+      lines.push("## Available Exports (from previously generated files)");
+      lines.push(this.vfs.buildContextSummary(3000));
+      lines.push("");
+    }
+
+    // Add todo tracker progress if available
+    if (this.todo) {
+      lines.push(this.todo.toContextString());
+      lines.push("");
+    }
 
     return lines.join("\n");
   }

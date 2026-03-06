@@ -12,6 +12,14 @@ import { ADAPTIVE_INTERACTION_PROMPT } from './adaptive-interaction.js';
 import { AUTONOMOUS_DECISION_PROMPT } from './autonomous-decision.js';
 import { EXPERIENCE_DESIGN_PROMPT } from './experience-design.js';
 
+// Domain-specific examples for code generation
+export { selectDomainExamples } from './domain-specific/index.js';
+export {
+  ANIMATION_EXAMPLES,
+  VISUALIZATION_EXAMPLES,
+  DATA_STRUCTURES_EXAMPLES
+} from './domain-specific/index.js';
+
 export const SYSTEM_PROMPTS = {
   // Prompts originais (Camada de Engenharia)
   DETECT_INTENT: DETECT_INTENT_PROMPT,
