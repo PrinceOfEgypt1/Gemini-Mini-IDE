@@ -885,6 +885,15 @@ export class Array<T> {
   ): Promise<AgentResult> {
     const startTime = performance.now();
 
+    // Import execution components dynamically to avoid circular deps
+    const { SandboxExecutor } = await import("./execution/sandbox-executor.js");
+    const { VirtualFilesystem } = await import("./execution/virtual-filesystem.js");
+    const { TodoTracker } = await import("./execution/todo-tracker.js");
+
+    const sandbox = new SandboxExecutor();
+    const vfs = new VirtualFilesystem();
+    const todo = new TodoTracker();
+
     try {
       // Restaurar contexto do plano
       this.context.start(userPrompt);
@@ -898,13 +907,18 @@ export class Array<T> {
       // eslint-disable-next-line no-console
       console.log(`[IncrementalGeneration] Starting with ${plan.architect.manifest.length} files`);
 
+      // Initialize sandbox with project dependencies
+      // eslint-disable-next-line no-console
+      console.log(`[IncrementalGeneration] Initializing sandbox with stack: ${JSON.stringify(plan.architect.stack)}`);
+      await sandbox.initialize(plan.architect.stack);
+
       // Criar cliente LLM e gerador incremental
       const llmClient = new OpenAILLMClient(this.apiKey, {
         model: this.model,
         maxRetries: 3,
         baseUrl: this.baseUrl,
       });
-      const generator = new IncrementalGenerator(llmClient);
+      const generator = new IncrementalGenerator(llmClient, { sandbox, vfs, todo });
 
       // Executar geração incremental
       const result: IncrementalGenerationResult = await generator.generate(
@@ -963,6 +977,9 @@ export class Array<T> {
       // eslint-disable-next-line no-console
       console.error("Critical Error in Incremental Generation:", error);
       throw error;
+    } finally {
+      // Always cleanup sandbox
+      await sandbox.cleanup();
     }
   }
 
