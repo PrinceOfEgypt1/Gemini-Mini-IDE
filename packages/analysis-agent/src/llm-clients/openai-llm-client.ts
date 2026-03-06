@@ -1,13 +1,14 @@
 /**
  * @fileoverview OpenAI LLM Client for Incremental Code Generation
  *
- * Implements the LLMClient interface for use with IncrementalGenerator.
- * Uses OpenAI's API to generate code batch by batch with full context.
+ * Implements the IIncrementalLLMClient interface for use with IncrementalGenerator.
+ * Uses OpenAI's API to generate code batch by batch with streaming support.
  */
 
 import OpenAI from "openai";
+import { IIncrementalLLMClient } from "./llm-client.interface.js";
+import type { LLMClient as LegacyLLMClient, BatchGeneratedFile } from "../generation/incremental-generator.js";
 import { createHash } from "node:crypto";
-import type { LLMClient, BatchGeneratedFile } from "../generation/incremental-generator.js";
 
 /**
  * File specification extracted from batch prompt
@@ -23,45 +24,64 @@ interface FileSpec {
  * OpenAI-based LLM client for incremental code generation.
  *
  * Features:
+ * - Streaming support for real-time code generation
  * - Structured JSON output for reliable file extraction
  * - Retry logic with temperature variation
  * - Context-aware prompts including previously generated files
  */
-export class OpenAILLMClient implements LLMClient {
-  private client: OpenAI;
-  private model: string;
+export class OpenAILLMClient implements IIncrementalLLMClient, LegacyLLMClient {
+  private openai: OpenAI;
+  private defaultModel: string;
   private maxRetries: number;
 
-  constructor(
-    apiKey: string,
-    options?: {
-      model?: string;
-      maxRetries?: number;
-      timeout?: number;
-      baseUrl?: string;
-    }
-  ) {
+  constructor(apiKey: string, options?: { baseUrl?: string; model?: string; maxRetries?: number; timeout?: number }) {
     const clientOptions: { apiKey: string; timeout: number; baseURL?: string } = {
       apiKey,
-      timeout: options?.timeout ?? 600000, // 10 minutes
+      timeout: options?.timeout ?? 600000 // 10 minutes timeout (large prompts can take time)
     };
 
     if (options?.baseUrl) {
       clientOptions.baseURL = options.baseUrl;
     }
 
-    this.client = new OpenAI(clientOptions);
-    this.model = options?.model ?? "gpt-4o-mini";
+    this.openai = new OpenAI(clientOptions);
+    this.defaultModel = options?.model || "gpt-4o-mini";
     this.maxRetries = options?.maxRetries ?? 3;
   }
 
   /**
-   * Generates code for a batch of files.
-   *
-   * @param prompt - The batch prompt with file specifications
-   * @param context - Context including previously generated files
-   * @param domainExamples - Optional domain-specific code examples
-   * @returns Array of generated files with path, content, and hash
+   * Incremental completion with streaming support.
+   * Implements IIncrementalLLMClient interface.
+   */
+  async *incrementalCompletion(
+    messages: { role: "system" | "user" | "assistant"; content: string; }[],
+    options?: {
+      model?: string;
+      temperature?: number;
+      seed?: number;
+      response_format?: { type: "json_object" | "text" };
+    }
+  ): AsyncIterable<{ content: string; }> {
+    const response = await this.openai.chat.completions.create({
+      model: options?.model || this.defaultModel,
+      messages,
+      temperature: options?.temperature,
+      seed: options?.seed,
+      response_format: options?.response_format,
+      stream: true, // Important for incremental generation
+    });
+
+    for await (const chunk of response) {
+      const content = chunk.choices[0]?.delta?.content || "";
+      if (content) {
+        yield { content };
+      }
+    }
+  }
+
+  /**
+   * Legacy generateCode method for backward compatibility.
+   * Implements LLMClient interface from incremental-generator.
    */
   async generateCode(
     prompt: string,
@@ -86,8 +106,8 @@ export class OpenAILLMClient implements LLMClient {
         // Dynamic temperature: start deterministic, increase on retries
         const temperature = attempt === 1 ? 0.0 : 0.3 + (attempt - 1) * 0.2;
 
-        const response = await this.client.chat.completions.create({
-          model: this.model,
+        const response = await this.openai.chat.completions.create({
+          model: this.defaultModel,
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
@@ -138,8 +158,6 @@ export class OpenAILLMClient implements LLMClient {
 
   /**
    * Builds the system prompt for code generation
-   *
-   * @param domainExamples - Optional domain-specific code examples to include
    */
   private buildSystemPrompt(domainExamples?: string): string {
     const basePrompt = `You are an expert code generator. You generate COMPLETE, WORKING, PRODUCTION-READY code.

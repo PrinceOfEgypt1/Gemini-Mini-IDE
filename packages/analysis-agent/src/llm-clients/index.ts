@@ -5,3 +5,5 @@
  */
 
 export { OpenAILLMClient } from "./openai-llm-client.js";
+export * from "./llm-client.interface.js";
+export * from "./openai-chat-client.js";
