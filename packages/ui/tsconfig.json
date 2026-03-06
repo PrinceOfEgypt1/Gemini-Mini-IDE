@@ -26,5 +26,17 @@
     "declarationMap": true
   },
   "include": ["src"],
+  "exclude": [
+    "src/AppRefactored.tsx",
+    "src/components/layout/**",
+    "src/components/animation/**",
+    "src/components/common/Animated*.tsx",
+    "src/components/common/animated-index.ts",
+    "src/components/wizard/ProjectWizardRefactored.tsx",
+    "src/hooks/useProjectState.ts",
+    "src/hooks/useChatState.ts",
+    "src/hooks/useUIState.ts",
+    "src/hooks/useProjectActions.ts"
+  ],
   "references": [{ "path": "../shared" }]
 }
