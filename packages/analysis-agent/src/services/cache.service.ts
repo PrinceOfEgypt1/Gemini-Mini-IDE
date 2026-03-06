@@ -57,7 +57,7 @@ export class CacheService {
   ): string {
     // Incrementar CACHE_VERSION sempre que a lógica do agent mudar
     // para invalidar caches antigos e evitar retornar resultados desatualizados
-    const CACHE_VERSION = "v17.0"; // Bumped: Refactored User Stories Planner (structured artifacts, clamps, delta retry)
+    const CACHE_VERSION = "v18.0"; // Bumped: Fixed categories, method listing, file thresholds, cache invalidation
     const content = `${CACHE_VERSION}:${model}:${temperature}:${retryAttempt}:${systemPrompt}:${userPrompt}`;
     return createHash("sha256").update(content).digest("hex");
   }
@@ -82,6 +82,13 @@ export class CacheService {
     
     this.cache.set(key, { timestamp: Date.now(), data });
     this.saveToDisk(); // Persiste a cada escrita
+  }
+
+  invalidate(key: string): void {
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+      this.saveToDisk();
+    }
   }
 
   stats(): { size: number; ttlMinutes: number } {

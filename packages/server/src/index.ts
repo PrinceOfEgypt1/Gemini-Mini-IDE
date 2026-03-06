@@ -44,11 +44,26 @@ const RespondSchema = z.object({
   message: z.string().min(1)
 });
 
-function extractApiKey(authHeader?: string): string {
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    return authHeader.substring(7);
-  }
-  return DEFAULT_API_KEY;
+interface LLMConfig {
+  apiKey: string;
+  model?: string;
+  baseUrl?: string;
+}
+
+function extractLLMConfig(headers: Record<string, string | string[] | undefined>): LLMConfig {
+  const authHeader = headers["authorization"];
+  const apiKey = authHeader && typeof authHeader === "string" && authHeader.startsWith("Bearer ")
+    ? authHeader.substring(7)
+    : DEFAULT_API_KEY;
+
+  const model = headers["x-llm-model"];
+  const baseUrl = headers["x-llm-base-url"];
+
+  return {
+    apiKey,
+    model: typeof model === "string" ? model : undefined,
+    baseUrl: typeof baseUrl === "string" ? baseUrl : undefined
+  };
 }
 
 // Lazy-load InteractiveOrchestrator (depende de better-sqlite3 nativo)
@@ -57,15 +72,20 @@ let InteractiveOrchestratorClass: any = null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const orchestrators = new Map<string, any>();
 
-async function getOrchestrator(apiKey: string) {
+async function getOrchestrator(config: LLMConfig) {
   if (!InteractiveOrchestratorClass) {
     const mod = await import("@gemini-mini-ide/analysis-agent");
     InteractiveOrchestratorClass = mod.InteractiveOrchestrator;
   }
-  let orchestrator = orchestrators.get(apiKey);
+  // Cache key includes model and baseUrl to support different configurations
+  const cacheKey = `${config.apiKey}:${config.model || "default"}:${config.baseUrl || "default"}`;
+  let orchestrator = orchestrators.get(cacheKey);
   if (!orchestrator) {
-    orchestrator = new InteractiveOrchestratorClass(apiKey);
-    orchestrators.set(apiKey, orchestrator);
+    orchestrator = new InteractiveOrchestratorClass(config.apiKey, undefined, {
+      model: config.model,
+      baseUrl: config.baseUrl
+    });
+    orchestrators.set(cacheKey, orchestrator);
   }
   return orchestrator;
 }
@@ -94,7 +114,7 @@ const start = async (): Promise<void> => {
   await app.register(cors, {
     origin: true,
     methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-LLM-Base-URL", "X-Dry-Run"]
+    allowedHeaders: ["Content-Type", "Authorization", "X-LLM-Model", "X-LLM-Base-URL", "X-Dry-Run"]
   });
 
   // Rate limiting: 100 requests por minuto por IP
@@ -387,8 +407,8 @@ const start = async (): Promise<void> => {
 
   // POST /conversations/start — Inicia nova conversa
   app.post("/conversations/start", async (request, reply) => {
-    const apiKey = extractApiKey(request.headers["authorization"]);
-    if (!apiKey) {
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    if (!llmConfig.apiKey) {
       return reply.status(401).send({
         error: "API Key não configurada",
         message: "Configure OPENAI_API_KEY ou envie via header Authorization"
@@ -400,7 +420,7 @@ const start = async (): Promise<void> => {
     }
     const { userId, message } = parseResult.data;
     try {
-      const orchestrator = await getOrchestrator(apiKey);
+      const orchestrator = await getOrchestrator(llmConfig);
       const result = await orchestrator.startConversation(userId, message);
       return reply.send(result);
     } catch (err: unknown) {
@@ -412,8 +432,8 @@ const start = async (): Promise<void> => {
 
   // POST /conversations/:sessionId/respond — Responde ao agente
   app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/respond", async (request, reply) => {
-    const apiKey = extractApiKey(request.headers["authorization"]);
-    if (!apiKey) {
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }
     const parseResult = RespondSchema.safeParse(request.body);
@@ -423,7 +443,7 @@ const start = async (): Promise<void> => {
     const { sessionId } = request.params;
     const { message } = parseResult.data;
     try {
-      const orchestrator = await getOrchestrator(apiKey);
+      const orchestrator = await getOrchestrator(llmConfig);
       const result = await orchestrator.respondToAgent(sessionId, message);
       return reply.send(result);
     } catch (err: unknown) {
@@ -435,13 +455,13 @@ const start = async (): Promise<void> => {
 
   // GET /conversations/:sessionId — Estado da sessão
   app.get<{ Params: { sessionId: string } }>("/conversations/:sessionId", async (request, reply) => {
-    const apiKey = extractApiKey(request.headers["authorization"]);
-    if (!apiKey) {
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }
     const { sessionId } = request.params;
     try {
-      const orchestrator = await getOrchestrator(apiKey);
+      const orchestrator = await getOrchestrator(llmConfig);
       const session = orchestrator.getSession(sessionId);
       if (!session) {
         return reply.status(404).send({ error: "Sessão não encontrada" });
@@ -456,13 +476,13 @@ const start = async (): Promise<void> => {
 
   // POST /conversations/:sessionId/skip — Pula agente atual
   app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/skip", async (request, reply) => {
-    const apiKey = extractApiKey(request.headers["authorization"]);
-    if (!apiKey) {
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }
     const { sessionId } = request.params;
     try {
-      const orchestrator = await getOrchestrator(apiKey);
+      const orchestrator = await getOrchestrator(llmConfig);
       const result = await orchestrator.skipCurrentAgent(sessionId);
       return reply.send(result);
     } catch (err: unknown) {
@@ -474,13 +494,13 @@ const start = async (): Promise<void> => {
 
   // POST /conversations/:sessionId/plan — Gera plano (arch + HUs) para revisão
   app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/plan", async (request, reply) => {
-    const apiKey = extractApiKey(request.headers["authorization"]);
-    if (!apiKey) {
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }
     const { sessionId } = request.params;
     try {
-      const orchestrator = await getOrchestrator(apiKey);
+      const orchestrator = await getOrchestrator(llmConfig);
       const plan = await orchestrator.generatePlan(sessionId);
       return reply.send(plan);
     } catch (err: unknown) {
@@ -492,13 +512,13 @@ const start = async (): Promise<void> => {
 
   // POST /conversations/:sessionId/generate — Gera código a partir do plano aprovado
   app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/generate", async (request, reply) => {
-    const apiKey = extractApiKey(request.headers["authorization"]);
-    if (!apiKey) {
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }
     const { sessionId } = request.params;
     try {
-      const orchestrator = await getOrchestrator(apiKey);
+      const orchestrator = await getOrchestrator(llmConfig);
       const result = await orchestrator.generateCodeFromPlan(sessionId);
       return reply.send(result);
     } catch (err: unknown) {
@@ -508,15 +528,39 @@ const start = async (): Promise<void> => {
     }
   });
 
-  // POST /conversations/:sessionId/finalize — Gera resultado final (legado)
-  app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/finalize", async (request, reply) => {
-    const apiKey = extractApiKey(request.headers["authorization"]);
-    if (!apiKey) {
+  // POST /conversations/:sessionId/generate-incremental — Gera código incrementalmente com governança
+  app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/generate-incremental", async (request, reply) => {
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }
     const { sessionId } = request.params;
     try {
-      const orchestrator = await getOrchestrator(apiKey);
+      const orchestrator = await getOrchestrator(llmConfig);
+      const result = await orchestrator.generateCodeFromPlanIncremental(
+        sessionId,
+        (batchName: string, progress: number) => {
+          // Log progress (could be sent via SSE in future)
+          request.log.info({ batchName, progress }, "Incremental generation progress");
+        }
+      );
+      return reply.send(result);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha na geração incremental");
+      return reply.status(502).send({ error: "Falha na geração incremental", details: errorMessage });
+    }
+  });
+
+  // POST /conversations/:sessionId/finalize — Gera resultado final (legado)
+  app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/finalize", async (request, reply) => {
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    if (!llmConfig.apiKey) {
+      return reply.status(401).send({ error: "API Key não configurada" });
+    }
+    const { sessionId } = request.params;
+    try {
+      const orchestrator = await getOrchestrator(llmConfig);
       const result = await orchestrator.generateFinalResult(sessionId);
       return reply.send(result);
     } catch (err: unknown) {

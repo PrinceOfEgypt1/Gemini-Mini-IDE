@@ -1,8 +1,9 @@
 /**
  * @fileoverview Versão interativa do User Profiler Agent.
- * Constrói perfil do usuário via conversa iterativa.
+ * Constrói perfil do usuário via conversa dinâmica.
+ * Todas as perguntas são geradas pelo LLM.
  * @module agents/interactive-user-profiler
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import OpenAI from "openai";
@@ -10,109 +11,184 @@ import type { InteractiveAgent, ConversationContext, AgentMessage, AgentResponse
 import type { UserProfile } from "../types/transformative-schemas.js";
 import { UserProfileSchema } from "../types/transformative-schemas.js";
 
-const PROFILER_SYSTEM = `Você é um Assistente Amigável de Perfil. Analise a resposta do usuário e extraia informações de perfil.
-Retorne JSON com: { "understood": true/false, "feedback": "resposta amigável", "dataExtracted": { campos do perfil }, "nextAction": "continue"|"proceed_to_next", "nextQuestion": "próxima pergunta ou vazio" }`;
+const PROFILER_SYSTEM = `Você é um Assistente Amigável que constrói perfis de usuário.
+Analise a resposta e extraia informações de perfil.
+
+REGRAS:
+1. Adapte suas perguntas ao contexto do projeto
+2. Não use frases prontas - personalize cada resposta
+3. Extraia: nível de conhecimento, faixa etária, estilo de comunicação, preferência de autonomia
+4. IMPORTANTE: Se você ofereceu explicar algo e o usuário aceitou (ex: "sim", "claro", "por favor"),
+   VOCÊ DEVE fornecer essa explicação no campo "feedback" antes de fazer a próxima pergunta.
+   Nunca avance sem cumprir uma promessa de explicação.
+
+Retorne JSON:
+{
+  "understood": true/false,
+  "feedback": "resposta amigável E explicação se prometida",
+  "dataExtracted": {
+    "knowledgeLevel": "beginner|intermediate|advanced|expert",
+    "ageGroup": "child|teen|adult|senior",
+    "communicationStyle": "technical|casual|formal|simple",
+    "autonomyPreference": "guided|collaborative|autonomous"
+  },
+  "nextAction": "continue"|"proceed_to_next",
+  "nextQuestion": "próxima pergunta contextualizada (se nextAction=continue)"
+}`;
+
+const QUESTION_GENERATOR_SYSTEM = `Você gera perguntas amigáveis para conhecer o usuário.
+Contextualize ao projeto dele.
+Responda APENAS com a pergunta, sem formatação adicional.`;
 
 /**
  * Versão interativa do UserProfilerAgent.
- * Faz 3-4 perguntas para construir perfil completo do usuário.
+ * Todas as interações são geradas dinamicamente pelo LLM.
  */
 export class InteractiveUserProfilerAgent implements InteractiveAgent {
   agentType = "user_profiler" as const;
   private client: OpenAI;
-  private questionIndex = 0;
+  private model: string;
+  private interactionCount = 0;
+  private readonly maxInteractions = 4;
 
-  private readonly questions = [
-    "Olá! Para te ajudar da melhor forma, me conta: qual é o seu nível de experiência com tecnologia? (Pode ser desde 'nunca usei um computador' até 'sou desenvolvedor sênior')",
-    "Legal! E qual é a sua faixa etária aproximada? Isso me ajuda a adaptar a linguagem.",
-    "Como você prefere que eu me comunique? De forma mais técnica e direta, ou mais simples e explicativa?",
-    "Última pergunta: você prefere que eu tome as decisões técnicas por você, ou quer participar de cada escolha?"
-  ];
-
-  constructor(client: OpenAI) {
+  constructor(client: OpenAI, model?: string) {
     this.client = client;
+    this.model = model || "gpt-4o-mini";
   }
 
   async initiateConversation(context: ConversationContext): Promise<AgentMessage> {
-    this.questionIndex = 0;
-    const hasMessages = context.previousMessages.some(m => m.agentType === "user_profiler");
-    if (hasMessages) {
-      this.questionIndex = Math.min(
-        context.previousMessages.filter(m => m.agentType === "user_profiler" && m.role === "agent").length,
-        this.questions.length - 1
-      );
+    this.interactionCount = 0;
+
+    try {
+      const response = await this.client.chat.completions.create({
+        model: this.model,
+        messages: [
+          { role: "system", content: QUESTION_GENERATOR_SYSTEM },
+          {
+            role: "user",
+            content: `Projeto do usuário: "${context.originalUserPrompt}"
+
+Gere a PRIMEIRA pergunta para conhecer o usuário. Pergunte sobre:
+- Nível de experiência com tecnologia
+- De forma amigável e contextualizada ao projeto`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 200
+      });
+
+      const question = response.choices[0]?.message?.content?.trim() ||
+        "Para te ajudar melhor, qual seu nível de experiência com tecnologia?";
+
+      return {
+        type: "question",
+        content: question
+      };
+    } catch {
+      return {
+        type: "question",
+        content: "Para te ajudar melhor, qual seu nível de experiência com tecnologia?"
+      };
     }
-    return {
-      type: "question",
-      content: this.questions[0]!,
-      options: this.questionIndex === 0
-        ? ["Sou iniciante", "Tenho conhecimento intermediário", "Sou avançado/expert"]
-        : undefined
-    };
   }
 
   async processUserResponse(userMessage: string, context: ConversationContext): Promise<AgentResponse> {
+    this.interactionCount++;
+
+    // Extrai histórico recente para contexto (especialmente última pergunta do agente)
+    const recentMessages = context.previousMessages?.slice(-4) || [];
+    const conversationContext = recentMessages
+      .map(m => `${m.role === "agent" ? "Agente" : "Usuário"}: ${m.content}`)
+      .join("\n");
+
     try {
-      const prompt = `Mensagem do usuário: "${userMessage}"
-Pergunta feita: "${this.questions[this.questionIndex]}"
-Dados já coletados: ${JSON.stringify(context.accumulatedData["userProfileData"] || {})}
-Pergunta número: ${this.questionIndex + 1} de ${this.questions.length}
-
-Analise a resposta e extraia informações de perfil. Se é a última pergunta ou já tem dados suficientes, use nextAction: "proceed_to_next".`;
-
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: PROFILER_SYSTEM },
-          { role: "user", content: prompt }
+          {
+            role: "user",
+            content: `Projeto: "${context.originalUserPrompt}"
+
+HISTÓRICO RECENTE DA CONVERSA:
+${conversationContext}
+
+Resposta atual do usuário: "${userMessage}"
+Dados já coletados: ${JSON.stringify(context.accumulatedData["userProfileData"] || {})}
+Interação ${this.interactionCount} de ${this.maxInteractions}
+
+IMPORTANTE: Verifique se na última mensagem do agente foi oferecida alguma explicação.
+Se sim e o usuário aceitou, FORNEÇA a explicação completa no campo "feedback".
+
+Analise a resposta e extraia informações de perfil.
+Se precisar de mais informações e ainda não atingiu o limite, gere próxima pergunta.
+Se já tem dados suficientes ou atingiu o limite, use nextAction: "proceed_to_next".`
+          }
         ],
-        temperature: 0.2,
+        temperature: 0.3,
         response_format: { type: "json_object" }
       });
 
-      const content = response.choices[0]?.message?.content || "{}";
-      const parsed = JSON.parse(content.replace(/```json\s*/g, "").replace(/```\s*$/g, "").trim());
+      const parsed = JSON.parse(
+        (response.choices[0]?.message?.content || "{}").replace(/```json\s*/g, "").replace(/```\s*$/g, "").trim()
+      );
 
-      this.questionIndex++;
-      const isLastQuestion = this.questionIndex >= this.questions.length;
-      const nextAction = isLastQuestion || parsed.nextAction === "proceed_to_next" ? "proceed_to_next" : "continue";
-
-      const nextQuestion = !isLastQuestion ? this.questions[this.questionIndex] : undefined;
+      const isDone = this.interactionCount >= this.maxInteractions || parsed.nextAction === "proceed_to_next";
 
       return {
         understood: parsed.understood !== false,
-        feedback: parsed.feedback || "Entendido!",
-        dataExtracted: { userProfileData: { ...(context.accumulatedData["userProfileData"] as Record<string, unknown> || {}), ...parsed.dataExtracted } },
-        nextAction: nextAction as AgentResponse["nextAction"],
-        agentMessage: nextQuestion ? { type: "question", content: nextQuestion } : undefined
-      };
-    } catch {
-      this.questionIndex++;
-      return {
-        understood: true,
-        feedback: "Entendido! Vamos continuar.",
-        dataExtracted: {},
-        nextAction: this.questionIndex >= this.questions.length ? "proceed_to_next" : "continue",
-        agentMessage: this.questionIndex < this.questions.length
-          ? { type: "question", content: this.questions[this.questionIndex]! }
+        feedback: parsed.feedback,
+        dataExtracted: {
+          userProfileData: {
+            ...(context.accumulatedData["userProfileData"] as Record<string, unknown> || {}),
+            ...parsed.dataExtracted
+          }
+        },
+        nextAction: isDone ? "proceed_to_next" : "continue",
+        agentMessage: !isDone && parsed.nextQuestion
+          ? { type: "question", content: parsed.nextQuestion }
           : undefined
       };
+    } catch {
+      return {
+        understood: true,
+        feedback: await this.generateFallbackMessage(context),
+        dataExtracted: {},
+        nextAction: this.interactionCount >= this.maxInteractions ? "proceed_to_next" : "continue"
+      };
+    }
+  }
+
+  private async generateFallbackMessage(context: ConversationContext): Promise<string> {
+    try {
+      const response = await this.client.chat.completions.create({
+        model: this.model,
+        messages: [
+          { role: "system", content: "Gere uma resposta amigável breve para continuar a conversa. Responda apenas com a frase." },
+          { role: "user", content: `Projeto: ${context.originalUserPrompt}` }
+        ],
+        temperature: 0.7,
+        max_tokens: 100
+      });
+      return response.choices[0]?.message?.content?.trim() || "Entendi, vamos continuar.";
+    } catch {
+      return "Entendi, vamos continuar.";
     }
   }
 
   canProceedToNext(context: ConversationContext): boolean {
-    return this.questionIndex >= this.questions.length || !!context.accumulatedData["userProfileData"];
+    return this.interactionCount >= this.maxInteractions || !!context.accumulatedData["userProfileData"];
   }
 
   generateSummary(context: ConversationContext): string {
     const data = context.accumulatedData["userProfileData"];
-    if (!data) return "Perfil do usuário: dados insuficientes, usando padrões.";
+    if (!data) return "Perfil não mapeado.";
 
     const validation = UserProfileSchema.safeParse(data);
     if (validation.success) {
       const p = validation.data as UserProfile;
       return `Perfil: ${p.knowledgeLevel}, ${p.communicationStyle}, autonomia: ${p.autonomyPreference}`;
     }
-    return `Perfil parcial coletado: ${JSON.stringify(data)}`;
+    return `Perfil parcial coletado.`;
   }
 }

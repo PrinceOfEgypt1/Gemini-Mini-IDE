@@ -9,7 +9,7 @@ import { z } from "zod";
 export type ComplexityLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 export type Priority = "P0" | "P1" | "P2" | "P3";
 export type Criticality = "HIGH" | "MEDIUM" | "LOW";
-export type FileCategory = "DOMAIN" | "APPLICATION" | "INFRASTRUCTURE" | "DEVOPS" | "CONFIG" | "TESTS" | "DOCS";
+export type FileCategory = "DOMAIN" | "APPLICATION" | "INFRASTRUCTURE" | "DEVOPS" | "CONFIG" | "TESTS" | "DOCS" | "ANIMATION" | "UI" | "STORE";
 export type EpicCategory = "CORE" | "AUTH & SECURITY" | "ADMIN" | "OBSERVABILITY" | "INTEGRATION" | "INFRASTRUCTURE";
 export type IntentType = "NEW_PROJECT" | "QUESTION" | "REFINEMENT";
 
@@ -148,7 +148,7 @@ export const RichManifestItemSchema = z.object({
   path: z.string(),
   purpose: z.string(),
   criticality: z.enum(["HIGH", "MEDIUM", "LOW"]),
-  category: z.enum(["DOMAIN", "APPLICATION", "INFRASTRUCTURE", "DEVOPS", "CONFIG", "TESTS", "DOCS"])
+  category: z.enum(["DOMAIN", "APPLICATION", "INFRASTRUCTURE", "DEVOPS", "CONFIG", "TESTS", "DOCS", "ANIMATION", "UI", "STORE"])
 });
 
 export const RichArchitectureSchema = z.object({

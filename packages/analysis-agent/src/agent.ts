@@ -25,11 +25,15 @@ import {
 import { GenerationContext } from "./context/generation-context.js";
 import { CompletenessValidator } from "./governance/completeness-validator.js";
 import { SyntaxSandbox } from "./governance/syntax-sandbox.js";
-import { StructureAuditor } from "./governance/structure-auditor.js";
+
 
 // Importação ESAA Hardened v2
 import { globalESAAOrchestrator } from "./esaa/orchestrator.js";
 import type { Workspace, WorkspaceFile } from "./esaa/workspace/workspace-executor.js";
+
+// Importação do Sistema de Geração Incremental
+import { IncrementalGenerator, type IncrementalGenerationResult } from "./generation/incremental-generator.js";
+import { OpenAILLMClient } from "./llm-clients/openai-llm-client.js";
 
 // --- HELPERS DE SANITIZAÇÃO ---
 function ensureString(val: unknown, fallback: string): string {
@@ -147,10 +151,18 @@ function sanitizeRichArchitecture(data: any): RichArchitecture {
     "TYPE": "DOMAIN",
     "HOOKS": "APPLICATION",
     "HOOK": "APPLICATION",
-    "MIDDLEWARE": "APPLICATION"
+    "MIDDLEWARE": "APPLICATION",
+    "PRESENTATION": "UI",
+    "VIEW": "UI",
+    "VIEWS": "UI",
+    "COMPONENT": "UI",
+    "COMPONENTS": "UI",
+    "PAGE": "UI",
+    "PAGES": "UI",
+    "VISUALIZER": "UI"
   };
 
-  const validCategories = ["DOMAIN", "APPLICATION", "INFRASTRUCTURE", "DEVOPS", "CONFIG", "TESTS", "DOCS"];
+  const validCategories = ["DOMAIN", "APPLICATION", "INFRASTRUCTURE", "DEVOPS", "CONFIG", "TESTS", "DOCS", "ANIMATION", "UI", "STORE"];
 
   const manifestRaw = Array.isArray(data["manifest"]) ? data["manifest"] : [];
   const manifest: RichManifestItem[] = manifestRaw.map((file: any) => {
@@ -254,6 +266,16 @@ function sanitizeUserStories(data: any): UserStoriesResult {
 // --- CLASSE PRINCIPAL ---
 
 /**
+ * Options for configuring the AnalysisAgent.
+ */
+export interface AnalysisAgentOptions {
+  /** LLM model to use (e.g., 'gpt-4o', 'gpt-4o-mini') */
+  model?: string;
+  /** Custom base URL for the LLM API (e.g., 'https://api.anthropic.com/v1') */
+  baseUrl?: string;
+}
+
+/**
  * AnalysisAgent - Agente principal de análise e geração de código.
  *
  * Suporta dois modos de operação:
@@ -265,10 +287,13 @@ function sanitizeUserStories(data: any): UserStoriesResult {
  */
 export class AnalysisAgent {
   private client: OpenAI;
+  private readonly apiKey: string;
+  private readonly model: string;
+  private readonly baseUrl?: string;
   private context: GenerationContext;
   private validator: CompletenessValidator;
   private syntaxSandbox: SyntaxSandbox;
-  private structureAuditor: StructureAuditor;
+  
 
   /** ID único do agente (usado pelo ESAA para rastreabilidade). */
   public readonly agentId: string;
@@ -276,15 +301,25 @@ export class AnalysisAgent {
   /** Indica se o modo ESAA está habilitado. */
   private readonly esaaEnabled: boolean;
 
-  constructor(apiKey: string) {
-    this.client = new OpenAI({
+  constructor(apiKey: string, options?: AnalysisAgentOptions) {
+    this.apiKey = apiKey;
+    this.model = options?.model || "gpt-4o-mini";
+    this.baseUrl = options?.baseUrl;
+
+    const clientOptions: { apiKey: string; timeout: number; baseURL?: string } = {
       apiKey,
       timeout: 600000 // 10 minutes timeout (large prompts can take time)
-    });
+    };
+
+    if (this.baseUrl) {
+      clientOptions.baseURL = this.baseUrl;
+    }
+
+    this.client = new OpenAI(clientOptions);
     this.context = new GenerationContext();
     this.validator = new CompletenessValidator();
     this.syntaxSandbox = new SyntaxSandbox();
-    this.structureAuditor = new StructureAuditor();
+    
     this.agentId = `agent-${randomUUID().slice(0, 8)}`;
     this.esaaEnabled = process.env["ESAA_ENABLED"] === "true";
 
@@ -349,7 +384,7 @@ export class AnalysisAgent {
       try {
         attempts++;
         const response = await this.client.chat.completions.create({
-          model: "gpt-4o-mini",
+          model: this.model,
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt }
@@ -469,7 +504,18 @@ export class AnalysisAgent {
         return architecture;
       }
 
-      // Manifest inválido
+      // Manifest inválido - invalidar cache para não reusar resultado ruim
+      if (attempt === 1) {
+        const cacheKey = globalAnalysisCache.generateKey(
+          SYSTEM_PROMPTS.ARCHITECTURE,
+          contextWithFeedback,
+          "gpt-4o-mini",
+          temperature,
+          attempt
+        );
+        globalAnalysisCache.invalidate(cacheKey);
+      }
+
       // eslint-disable-next-line no-console
       console.error(`[Validator] ❌ Manifest inválido na tentativa ${attempt}:`);
       for (const error of validation.errors) {
@@ -605,7 +651,7 @@ export class Array<T> {
       }
 
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: this.model,
         messages: [
           { role: "system", content: SYSTEM_PROMPTS.CODE_GEN },
           { role: "user", content: promptWithFeedback }
@@ -691,7 +737,7 @@ export class Array<T> {
       console.log("Step 3: Architecture...");
       let architecture = await this.runArchitectureStep(userPrompt, product);
       this.context.setArchitecture(architecture);
-      architecture = this.structureAuditor.auditAndFix(architecture);
+      
 
       // 4. Histórias de Usuário
       // eslint-disable-next-line no-console
@@ -743,7 +789,7 @@ export class Array<T> {
       console.log(`Step 5: Engine (Generating ${plan.architect.manifest.length} files)...`);
 
       const orderMap: Record<string, number> = {
-        "CONFIG": 1, "DOMAIN": 2, "APPLICATION": 3, "INFRASTRUCTURE": 4, "DEVOPS": 5, "TESTS": 6, "DOCS": 7
+        "CONFIG": 1, "DOMAIN": 2, "APPLICATION": 3, "ANIMATION": 4, "UI": 5, "STORE": 6, "INFRASTRUCTURE": 7, "DEVOPS": 8, "TESTS": 9, "DOCS": 10
       };
 
       const sortedManifest = [...plan.architect.manifest].sort((a, b) => {
@@ -799,6 +845,110 @@ export class Array<T> {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("Critical Error in Code Generation Phase:", error);
+      throw error;
+    }
+  }
+
+  // --- FASE 2 INCREMENTAL: GERAÇÃO COM GOVERNANÇA ---
+
+  /**
+   * Gera código incrementalmente a partir de um PlanResult.
+   *
+   * Esta versão usa o IncrementalGenerator que:
+   * - Divide o manifesto em lotes lógicos
+   * - Valida cada lote antes de prosseguir
+   * - Mantém contexto entre lotes
+   * - Falha rápido se qualquer lote for inválido
+   *
+   * @param plan - Resultado do planejamento aprovado
+   * @param userPrompt - Prompt original do usuário
+   * @param onProgress - Callback opcional para progresso
+   * @returns Resultado com todos os arquivos ou erro
+   */
+  public async generateFromPlanIncremental(
+    plan: PlanResult,
+    userPrompt: string,
+    onProgress?: (batchName: string, progress: number) => void
+  ): Promise<AgentResult> {
+    const startTime = performance.now();
+
+    try {
+      // Restaurar contexto do plano
+      this.context.start(userPrompt);
+      this.context.setAnalysis(plan.analysis);
+      this.context.setProduct(plan.product);
+      this.context.setArchitecture(plan.architect);
+      for (const story of plan.userStories) {
+        this.context.addUserStories([story]);
+      }
+
+      // eslint-disable-next-line no-console
+      console.log(`[IncrementalGeneration] Starting with ${plan.architect.manifest.length} files`);
+
+      // Criar cliente LLM e gerador incremental
+      const llmClient = new OpenAILLMClient(this.apiKey, {
+        model: this.model,
+        maxRetries: 3,
+        baseUrl: this.baseUrl,
+      });
+      const generator = new IncrementalGenerator(llmClient);
+
+      // Executar geração incremental
+      const result: IncrementalGenerationResult = await generator.generate(
+        plan.architect,
+        plan.userStories,
+        userPrompt,
+        onProgress
+      );
+
+      // Verificar sucesso
+      if (!result.success) {
+        // eslint-disable-next-line no-console
+        console.error("[IncrementalGeneration] Generation failed:", result.errors);
+        throw new Error(
+          `Incremental generation failed: ${result.errors.join("; ")}. ` +
+          `Generated ${result.generatedFiles}/${result.totalFiles} files.`
+        );
+      }
+
+      const totalTime = performance.now() - startTime;
+
+      // eslint-disable-next-line no-console
+      console.log(
+        `[IncrementalGeneration] Completed: ${result.generatedFiles} files in ${Math.round(totalTime)}ms`
+      );
+
+      return {
+        summary: plan.analysis.summary,
+        requestId: "req-" + Date.now(),
+        timestamp: new Date().toISOString(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        timings: {
+          codeGen: totalTime,
+          total: totalTime,
+        } as any,
+        analysis: plan.analysis,
+        product: plan.product,
+        architect: plan.architect,
+        userStories: plan.userStories,
+        engine: {
+          files: result.allFiles.map((f) => ({
+            path: f.path,
+            content: f.content,
+            language: this.detectLanguage(f.path),
+          })),
+        },
+        quality: {
+          validationErrors: result.errors,
+          codeCompleteness: Math.round((result.generatedFiles / result.totalFiles) * 100),
+        },
+        fenix: {
+          notes: `Generated by Gemini-Mini-IDE v2.1 (Incremental) - ${result.batches.length} batches`,
+        },
+      };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Critical Error in Incremental Generation:", error);
       throw error;
     }
   }
@@ -913,7 +1063,7 @@ export class Array<T> {
       let architecture = await this.runArchitectureStep(userPrompt, product);
       this.context.setArchitecture(architecture);
       
-      architecture = this.structureAuditor.auditAndFix(architecture, userPrompt);
+      
       timings.architecture = performance.now() - t2;
 
       // 4. Histórias de Usuário
@@ -929,7 +1079,7 @@ export class Array<T> {
       console.log(`Step 5: Engine (Generating ${architecture.manifest.length} files)...`);
       
       const orderMap: Record<string, number> = { 
-        "CONFIG": 1, "DOMAIN": 2, "APPLICATION": 3, "INFRASTRUCTURE": 4, "DEVOPS": 5, "TESTS": 6, "DOCS": 7 
+        "CONFIG": 1, "DOMAIN": 2, "APPLICATION": 3, "ANIMATION": 4, "UI": 5, "STORE": 6, "INFRASTRUCTURE": 7, "DEVOPS": 8, "TESTS": 9, "DOCS": 10 
       };
       
       const sortedManifest = [...architecture.manifest].sort((a, b) => {

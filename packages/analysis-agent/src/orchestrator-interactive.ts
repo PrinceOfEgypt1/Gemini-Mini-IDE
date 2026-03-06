@@ -44,6 +44,17 @@ export interface InteractionResult {
   currentAgent: AgentType;
   isComplete: boolean;
   options?: string[];
+  planResult?: PlanResult;
+}
+
+/**
+ * Options for configuring the InteractiveOrchestrator.
+ */
+export interface OrchestratorOptions {
+  /** LLM model to use (e.g., 'gpt-4o', 'gpt-4o-mini') */
+  model?: string;
+  /** Custom base URL for the LLM API (e.g., 'https://api.anthropic.com/v1') */
+  baseUrl?: string;
 }
 
 /**
@@ -66,9 +77,21 @@ export class InteractiveOrchestrator {
   private sessionManager: SessionManager;
   private agents: Map<AgentType, InteractiveAgent>;
   private engineeringAgent: AnalysisAgent;
+  private model: string;
 
-  constructor(apiKey: string, dbPath?: string) {
-    this.client = new OpenAI({ apiKey, timeout: 600000 });
+  constructor(apiKey: string, dbPath?: string, options?: OrchestratorOptions) {
+    const clientOptions: { apiKey: string; timeout: number; baseURL?: string } = {
+      apiKey,
+      timeout: 600000
+    };
+
+    // Set custom base URL if provided
+    if (options?.baseUrl) {
+      clientOptions.baseURL = options.baseUrl;
+    }
+
+    this.client = new OpenAI(clientOptions);
+    this.model = options?.model || "gpt-4o-mini";
 
     // Inicializa banco de dados e gerenciador de sessões
     const db = new SessionDatabase(dbPath);
@@ -77,14 +100,17 @@ export class InteractiveOrchestrator {
 
     // Inicializa agentes interativos
     this.agents = new Map<AgentType, InteractiveAgent>();
-    this.agents.set("user_profiler", new InteractiveUserProfilerAgent(this.client));
-    this.agents.set("emotional_intelligence", new InteractiveEmotionalIntelligenceAgent(this.client));
-    this.agents.set("adaptive_interaction", new InteractiveAdaptiveInteractionAgent(this.client));
-    this.agents.set("autonomous_decision", new InteractiveAutonomousDecisionAgent(this.client));
-    this.agents.set("experience_designer", new InteractiveExperienceDesignerAgent(this.client));
+    this.agents.set("user_profiler", new InteractiveUserProfilerAgent(this.client, this.model));
+    this.agents.set("emotional_intelligence", new InteractiveEmotionalIntelligenceAgent(this.client, this.model));
+    this.agents.set("adaptive_interaction", new InteractiveAdaptiveInteractionAgent(this.client, this.model));
+    this.agents.set("autonomous_decision", new InteractiveAutonomousDecisionAgent(this.client, this.model));
+    this.agents.set("experience_designer", new InteractiveExperienceDesignerAgent(this.client, this.model));
 
     // Agente de engenharia (pipeline existente)
-    this.engineeringAgent = new AnalysisAgent(apiKey);
+    this.engineeringAgent = new AnalysisAgent(apiKey, {
+      model: this.model,
+      baseUrl: options?.baseUrl
+    });
   }
 
   /**
@@ -143,7 +169,20 @@ export class InteractiveOrchestrator {
     // Registra mensagem do usuário
     this.sessionManager.addMessage(sessionId, "user", userResponse);
 
-    // Obtém o agente atual
+    // Se estamos na fase de engenharia (analysis), disparar generatePlan
+    if (session.currentAgent === "analysis") {
+      const planResult = await this.generatePlan(sessionId);
+      return {
+        sessionId,
+        message: session.messages[session.messages.length - 1]!,
+        currentPhase: "engineering_layer",
+        currentAgent: "analysis",
+        isComplete: false,
+        planResult
+      };
+    }
+
+    // Obtém o agente atual (fase interativa)
     const agent = this.agents.get(session.currentAgent);
     if (!agent) {
       throw new Error(`Agent not found: ${session.currentAgent}`);
@@ -202,10 +241,16 @@ export class InteractiveOrchestrator {
       // Atualiza fase para engenharia
       this.sessionManager.updateSessionPhase(sessionId, "engineering_layer", "analysis");
 
+      const originalPrompt = (session.contextData["originalUserPrompt"] as string) || "";
+      const dynamicMessage = await this.generateDynamicMessage("collection_complete", {
+        originalPrompt,
+        userProfile: session.contextData["userProfileData"] as Record<string, unknown>
+      });
+
       const savedMessage = this.sessionManager.addMessage(
         sessionId,
         "agent",
-        "Perfeito! Coletei todas as informações necessárias. Agora vou gerar seu projeto completo. Isso pode levar alguns instantes...",
+        dynamicMessage,
         "analysis",
         { type: "feedback", data: {} }
       );
@@ -215,8 +260,7 @@ export class InteractiveOrchestrator {
         message: savedMessage,
         currentPhase: "engineering_layer",
         currentAgent: "analysis",
-        isComplete: false,
-        options: ["Gerar agora!", "Quero revisar algo antes"]
+        isComplete: false
       };
     }
 
@@ -259,11 +303,15 @@ export class InteractiveOrchestrator {
       throw new Error(`Session not found: ${sessionId}`);
     }
 
-    // Registra que o agente foi pulado
+    // Registra que o agente foi pulado com mensagem dinâmica
+    const skipMessage = await this.generateDynamicMessage("agent_skipped", {
+      agentName: session.currentAgent
+    });
+
     this.sessionManager.addMessage(
       sessionId,
       "agent",
-      `[${session.currentAgent}] Agente pulado pelo usuário.`,
+      skipMessage,
       session.currentAgent,
       { type: "feedback", data: { skipped: true } }
     );
@@ -293,11 +341,17 @@ export class InteractiveOrchestrator {
       planResult: plan
     });
 
-    // Registra mensagem com resumo do plano
+    // Registra mensagem com resumo do plano (gerada dinamicamente)
+    const planMessage = await this.generateDynamicMessage("plan_ready", {
+      epicCount: plan.epicCount,
+      userStoryCount: plan.userStoryCount,
+      fileCount: plan.manifestFileCount
+    });
+
     this.sessionManager.addMessage(
       sessionId,
       "agent",
-      `Plano gerado! ${plan.epicCount} épicos, ${plan.userStoryCount} user stories, ${plan.manifestFileCount} arquivos planejados.`,
+      planMessage,
       "analysis",
       { type: "feedback", data: { plan: true } }
     );
@@ -337,12 +391,82 @@ export class InteractiveOrchestrator {
       }
     });
 
+    const codeMessage = await this.generateDynamicMessage("code_generated", {
+      fileCount: result.engine?.files?.length || 0
+    });
+
     this.sessionManager.addMessage(
       sessionId,
       "agent",
-      `Projeto gerado com sucesso! ${result.engine?.files?.length || 0} arquivos criados.`,
+      codeMessage,
       "code_gen",
       { type: "feedback", data: { fileCount: result.engine?.files?.length || 0 } }
+    );
+
+    return result;
+  }
+
+  /**
+   * FASE 2 INCREMENTAL: Gera código com governança por lotes.
+   *
+   * Esta versão usa o IncrementalGenerator que:
+   * - Divide o manifesto em lotes lógicos
+   * - Valida cada lote antes de prosseguir
+   * - Mantém contexto entre lotes
+   * - Falha rápido se qualquer lote for inválido
+   *
+   * @param sessionId - ID da sessão
+   * @param onProgress - Callback opcional para progresso
+   * @returns Resultado completo ou erro
+   */
+  async generateCodeFromPlanIncremental(
+    sessionId: string,
+    onProgress?: (batchName: string, progress: number) => void
+  ): Promise<AgentResult> {
+    const session = this.sessionManager.getSession(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    const contextData = session.contextData;
+    const originalPrompt = (contextData["originalUserPrompt"] as string) || "";
+    const enrichedPrompt = this.buildEnrichedPrompt(originalPrompt, contextData);
+    const plan = contextData["planResult"] as PlanResult | undefined;
+
+    if (!plan) {
+      throw new Error("No plan found. Call generatePlan first.");
+    }
+
+    // Executa geração incremental com governança
+    const result = await this.engineeringAgent.generateFromPlanIncremental(
+      plan,
+      enrichedPrompt,
+      onProgress
+    );
+
+    // Marca sessão como completa
+    this.sessionManager.updateSessionPhase(sessionId, "completed", "code_gen");
+    this.sessionManager.updateSessionContext(sessionId, {
+      engineeringResult: {
+        summary: result.summary,
+        fileCount: result.engine?.files?.length || 0,
+        timestamp: new Date().toISOString(),
+        incremental: true,
+        quality: result.quality
+      }
+    });
+
+    const incrementalMessage = await this.generateDynamicMessage("incremental_generated", {
+      fileCount: result.engine?.files?.length || 0,
+      completeness: result.quality?.codeCompleteness || 100
+    });
+
+    this.sessionManager.addMessage(
+      sessionId,
+      "agent",
+      incrementalMessage,
+      "code_gen",
+      { type: "feedback", data: { fileCount: result.engine?.files?.length || 0, incremental: true } }
     );
 
     return result;
@@ -373,10 +497,14 @@ export class InteractiveOrchestrator {
       }
     });
 
+    const finalMessage = await this.generateDynamicMessage("code_generated", {
+      fileCount: result.engine?.files?.length || 0
+    });
+
     this.sessionManager.addMessage(
       sessionId,
       "agent",
-      `Projeto gerado com sucesso! ${result.engine?.files?.length || 0} arquivos criados.`,
+      finalMessage,
       "code_gen",
       { type: "feedback", data: { fileCount: result.engine?.files?.length || 0 } }
     );
@@ -408,6 +536,75 @@ export class InteractiveOrchestrator {
   // ============================================================================
   // MÉTODOS PRIVADOS
   // ============================================================================
+
+  /**
+   * Gera uma mensagem dinâmica via LLM baseada no contexto.
+   * Evita frases hardcoded e mantém a conversa natural.
+   */
+  private async generateDynamicMessage(
+    messageType: "plan_ready" | "code_generated" | "incremental_generated" | "collection_complete" | "agent_skipped",
+    context: {
+      epicCount?: number;
+      userStoryCount?: number;
+      fileCount?: number;
+      completeness?: number;
+      agentName?: string;
+      userProfile?: Record<string, unknown>;
+      originalPrompt?: string;
+    }
+  ): Promise<string> {
+    const systemPrompt = `Você é um assistente de desenvolvimento de software amigável e profissional.
+Gere uma mensagem curta (1-2 frases) e natural para informar o usuário sobre o status.
+Adapte o tom ao contexto. Seja conciso mas informativo.
+Responda apenas com a mensagem, sem formatação adicional.`;
+
+    const prompts: Record<string, string> = {
+      plan_ready: `O plano do projeto foi gerado com sucesso. Dados: ${context.epicCount} épicos, ${context.userStoryCount} user stories, ${context.fileCount} arquivos planejados. Informe o usuário de forma natural.`,
+      code_generated: `O código foi gerado com sucesso. Total de ${context.fileCount} arquivos criados. Informe o usuário de forma celebratória mas profissional.`,
+      incremental_generated: `O código foi gerado incrementalmente com governança. Total de ${context.fileCount} arquivos criados, completude de ${context.completeness}%. Destaque o processo incremental.`,
+      collection_complete: `Todas as informações foram coletadas dos agentes de descoberta. O projeto original era: "${context.originalPrompt}". Informe que agora vai gerar o projeto.`,
+      agent_skipped: `O agente "${context.agentName}" foi pulado pelo usuário. Confirme de forma breve.`
+    };
+
+    try {
+      const response = await this.client.chat.completions.create({
+        model: this.model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompts[messageType] || "Informe o status atual." }
+        ],
+        temperature: 0.7,
+        max_tokens: 150
+      });
+
+      return response.choices[0]?.message?.content?.trim() || this.getFallbackMessage(messageType, context);
+    } catch {
+      return this.getFallbackMessage(messageType, context);
+    }
+  }
+
+  /**
+   * Fallback messages caso o LLM falhe (usado apenas em caso de erro de API).
+   */
+  private getFallbackMessage(
+    messageType: string,
+    context: { epicCount?: number; userStoryCount?: number; fileCount?: number; completeness?: number; agentName?: string }
+  ): string {
+    switch (messageType) {
+      case "plan_ready":
+        return `Plano pronto: ${context.epicCount} épicos, ${context.userStoryCount} histórias, ${context.fileCount} arquivos.`;
+      case "code_generated":
+        return `Código gerado: ${context.fileCount} arquivos.`;
+      case "incremental_generated":
+        return `Código gerado: ${context.fileCount} arquivos (${context.completeness}% completo).`;
+      case "collection_complete":
+        return `Informações coletadas. Iniciando geração...`;
+      case "agent_skipped":
+        return `${context.agentName}: pulado.`;
+      default:
+        return `Operação concluída.`;
+    }
+  }
 
   /**
    * Constrói o contexto para o agente atual.
