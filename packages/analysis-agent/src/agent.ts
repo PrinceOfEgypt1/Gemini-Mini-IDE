@@ -305,7 +305,7 @@ export class AnalysisAgent {
 
   constructor(apiKey: string, options?: AnalysisAgentOptions) {
     this.apiKey = apiKey;
-    this.model = options?.model || "gpt-4o-mini";
+    this.model = options?.model || process.env["MINI_IDE_MODEL"] || "gpt-4o-mini";
     this.baseUrl = options?.baseUrl;
 
     const clientOptions: { apiKey: string; timeout: number; baseURL?: string } = {
