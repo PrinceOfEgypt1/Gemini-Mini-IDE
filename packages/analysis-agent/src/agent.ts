@@ -24,6 +24,7 @@ import {
 // Importação de Contexto e Governança
 import { GenerationContext } from "./context/generation-context.js";
 import { CompletenessValidator } from "./governance/completeness-validator.js";
+import { ContractValidator } from "./governance/contract-validator.js";
 import { SyntaxSandbox } from "./governance/syntax-sandbox.js";
 
 
@@ -292,6 +293,7 @@ export class AnalysisAgent {
   private readonly baseUrl?: string;
   private context: GenerationContext;
   private validator: CompletenessValidator;
+  private contractValidator: ContractValidator;
   private syntaxSandbox: SyntaxSandbox;
   
 
@@ -318,6 +320,7 @@ export class AnalysisAgent {
     this.client = new OpenAI(clientOptions);
     this.context = new GenerationContext();
     this.validator = new CompletenessValidator();
+    this.contractValidator = new ContractValidator();
     this.syntaxSandbox = new SyntaxSandbox();
     
     this.agentId = `agent-${randomUUID().slice(0, 8)}`;
@@ -686,8 +689,18 @@ export class Array<T> {
           continue;
         }
 
+        // 3. Validação de Contrato (TERCEIRO - Verifica se cumpriu o que prometeu no manifest)
+        const contract = this.contractValidator.validate(content, fileSpec.description, fileSpec.path);
+        if (!contract.isValid) {
+          const violationMsgs = contract.violations.map(v => `  - [${v.type}] ${v.message}`).join('\n');
+          lastError = `Contract Violation: ${fileSpec.path}\nO código não entregou o que foi prometido na descrição:\n${violationMsgs}\n\nGere o arquivo novamente incluindo TODAS as classes, métodos e interfaces prometidas.`;
+          // eslint-disable-next-line no-console
+          console.warn(`[VALIDATION_FAIL_CONTRACT] ${fileSpec.path}:\n${violationMsgs}`);
+          continue;
+        }
+
         // eslint-disable-next-line no-console
-        console.log(`[VALIDATION_OK] ${fileSpec.path}`);
+        console.log(`[VALIDATION_OK] ${fileSpec.path} (exports: ${contract.exports.join(', ') || 'none'})`);
 
         // Sucesso! Método corrigido para addGeneratedFile
         this.context.addGeneratedFile({
