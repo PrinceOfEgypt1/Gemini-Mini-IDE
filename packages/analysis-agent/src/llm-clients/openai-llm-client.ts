@@ -60,9 +60,14 @@ export class OpenAILLMClient implements LLMClient {
    *
    * @param prompt - The batch prompt with file specifications
    * @param context - Context including previously generated files
+   * @param domainExamples - Optional domain-specific code examples
    * @returns Array of generated files with path, content, and hash
    */
-  async generateCode(prompt: string, context: string): Promise<BatchGeneratedFile[]> {
+  async generateCode(
+    prompt: string,
+    context: string,
+    domainExamples?: string
+  ): Promise<BatchGeneratedFile[]> {
     const fileSpecs = this.extractFileSpecs(prompt);
 
     if (fileSpecs.length === 0) {
@@ -71,7 +76,7 @@ export class OpenAILLMClient implements LLMClient {
       return [];
     }
 
-    const systemPrompt = this.buildSystemPrompt();
+    const systemPrompt = this.buildSystemPrompt(domainExamples);
     const userPrompt = this.buildUserPrompt(prompt, context, fileSpecs);
 
     let lastError: Error | null = null;
@@ -133,9 +138,11 @@ export class OpenAILLMClient implements LLMClient {
 
   /**
    * Builds the system prompt for code generation
+   *
+   * @param domainExamples - Optional domain-specific code examples to include
    */
-  private buildSystemPrompt(): string {
-    return `You are an expert code generator. You generate COMPLETE, WORKING, PRODUCTION-READY code.
+  private buildSystemPrompt(domainExamples?: string): string {
+    const basePrompt = `You are an expert code generator. You generate COMPLETE, WORKING, PRODUCTION-READY code.
 
 CRITICAL RULES:
 1. Generate FULL implementations - NO placeholders, NO "TODO", NO "..."
@@ -161,6 +168,18 @@ IMPORTANT:
 - Each file must have complete, working code
 - Do not skip any file
 - Content must be valid for the file type`;
+
+    if (domainExamples && domainExamples.trim().length > 0) {
+      return `${basePrompt}
+
+# REFERENCE CODE EXAMPLES
+The following examples demonstrate patterns and conventions for this type of project.
+Use them as reference for style, structure, and implementation patterns.
+
+${domainExamples}`;
+    }
+
+    return basePrompt;
   }
 
   /**
