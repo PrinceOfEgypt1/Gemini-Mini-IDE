@@ -234,9 +234,23 @@ project/
 \`\`\`
 
 **Proporção de Arquivos:**
-- Para cada arquivo de código, DEVE existir um arquivo de teste
-- Documentação DEVE cobrir arquitetura, setup, e uso
-- Config files DEVEM ser completos e funcionais
+    - Para CADA arquivo de código, DEVE existir um arquivo de teste correspondente.
+    - Documentação DEVE cobrir arquitetura, setup, e uso de forma exaustiva.
+    - Config files DEVEM ser completos, funcionais e otimizados para produção.
+
+───────────────────────────────────────────────────────────────────────────────
+## ZERO TOLERÂNCIA: ANTI-IA-LAZINESS (PROTOCOLO NASA)
+───────────────────────────────────────────────────────────────────────────────
+
+**REGRA ABSOLUTA:** A geração de código DEVE ser completa, funcional e sem placeholders.
+
+❌ **NÃO** gere código incompleto ou com "TODO"s para o usuário implementar.
+❌ **NÃO** inclua comentários como "// Implementar lógica aqui" ou "// TODO: Adicionar funcionalidade X".
+❌ **NÃO** deixe funções ou métodos vazios ou com implementações mínimas que não atendam ao requisito.
+❌ **NÃO** simplifique requisitos complexos. Se um requisito implica múltiplos arquivos (ex: uma estrutura de dados com sua UI, testes, operações), GERE TODOS eles.
+❌ **NÃO** assuma que o usuário completará o código. O output DEVE ser um produto final funcional.
+
+**Consequência da Violação:** Qualquer violação destas regras resultará em falha da validação e rejeição do lote de código. A qualidade Padrão NASA exige completude e funcionalidade desde a primeira entrega.
 
 ───────────────────────────────────────────────────────────────────────────────
 ## COMPLETUDE DO MANIFEST
