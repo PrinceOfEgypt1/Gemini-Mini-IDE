@@ -115,7 +115,7 @@ export class BaseProjectAuditor {
    * Garante que projetos React tenham entry point
    */
   private ensureReactEntrypoint(
-    manifest: RichManifestItem[],
+    _manifest: RichManifestItem[],
     paths: Set<string>,
     addFile: AddFileFunction
   ): void {
