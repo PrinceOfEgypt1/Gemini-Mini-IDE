@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  quality:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type Check
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  critical-files:
+    name: Critical Files Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for critical file changes
+        id: critical
+        run: |
+          CRITICAL_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep -E "(agent\.ts|governance/|validators/|prompts/)" || true)
+          if [ -n "$CRITICAL_FILES" ]; then
+            echo "critical=true" >> $GITHUB_OUTPUT
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            echo "$CRITICAL_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "critical=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment on critical changes
+        if: steps.critical.outputs.critical == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const files = `${{ steps.critical.outputs.files }}`;
+            const body = `## ⚠️ Arquivos Críticos Modificados
+
+            Esta PR modifica os seguintes arquivos críticos que requerem revisão especial:
+
+            \`\`\`
+            ${files}
+            \`\`\`
+
+            **Checklist obrigatório:**
+            - [ ] Justificativa documentada
+            - [ ] Sem regressão de funcionalidade
+            - [ ] Testes de regressão adicionados
+            - [ ] ADR atualizado (se arquitetural)
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  large-diff:
+    name: Large Diff Warning
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check diff size
+        id: diff
+        run: |
+          DELETED=$(git diff --numstat ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | awk '{sum+=$2} END {print sum}')
+          echo "deleted=${DELETED:-0}" >> $GITHUB_OUTPUT
+
+      - name: Warn on large deletions
+        if: steps.diff.outputs.deleted > 200
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deleted = ${{ steps.diff.outputs.deleted }};
+            const body = `## ⚠️ Large Deletion Warning
+
+            Esta PR remove **${deleted} linhas** de código.
+
+            PRs com grandes deleções requerem justificativa adicional:
+            - [ ] Documentar o que foi removido e por quê
+            - [ ] Confirmar que funcionalidade não foi perdida
+            - [ ] Verificar que testes ainda cobrem casos importantes
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

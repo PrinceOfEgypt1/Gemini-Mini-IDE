@@ -5,7 +5,6 @@ import {
   useChatState,
   useUIState,
   useProjectActions,
-  type GeneratedProject,
 } from './hooks';
 import {
   Header,
@@ -87,6 +86,7 @@ const MainLayout = () => {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSendMessage = async () => {
     if (!chatState.chatInput.trim()) return;
 
@@ -142,12 +142,6 @@ const MainLayout = () => {
       );
     } finally {
       projectState.setIsAnalyzing(false);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.ctrlKey) {
-      handleSendMessage();
     }
   };
 

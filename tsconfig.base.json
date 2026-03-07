@@ -14,9 +14,9 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "@mini-ide/shared": ["packages/shared/src/index.ts"],
-      "@mini-ide/analysis-agent": ["packages/analysis-agent/src/index.ts"],
-      "@mini-ide/server": ["packages/server/src/index.ts"]
+      "@gemini-mini-ide/shared": ["packages/shared/src/index.ts"],
+      "@gemini-mini-ide/analysis-agent": ["packages/analysis-agent/src/index.ts"],
+      "@gemini-mini-ide/server": ["packages/server/src/index.ts"]
     }
   }
 }

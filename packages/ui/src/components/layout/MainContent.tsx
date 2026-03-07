@@ -34,7 +34,7 @@ export const MainContent: React.FC<MainContentProps> = ({
   projectFiles,
   projectHUs,
   selectedFile,
-  onFileSelect,
+  onFileSelect: _onFileSelect,
   discoveryData,
   isExporting,
   onExportClick,

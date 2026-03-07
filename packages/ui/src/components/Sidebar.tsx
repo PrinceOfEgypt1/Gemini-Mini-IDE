@@ -2,7 +2,7 @@ import React from 'react';
 import { FileTree } from './FileTree';
 import { buildFileTree } from '../utils/fileTree';
 
-// Interface para tipagem (idealmente viria de @mini-ide/shared)
+// Interface para tipagem (idealmente viria de @gemini-mini-ide/shared)
 interface GeneratedFile {
   path: string;
   content: string;
