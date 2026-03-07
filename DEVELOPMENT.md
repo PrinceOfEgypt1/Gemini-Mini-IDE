@@ -1,67 +1,192 @@
-# Gemini Mini-IDE — Manual de Engenharia
+# Gemini Mini-IDE — Engineering Manual
 
-> **Versão do Documento:** 10.0 (Visualization Complete)
-> **Versão do Software:** v0.15.1 (UI Powered)
-> **Data:** 2025-11-24
-> **Pipeline:** 🟢 Verde (Lint, Types, Tests, Build, Smoke)
-
----
-
-# 🗺️ Plano de Desenvolvimento Mestre
-
-Estratégia: **Monorepo Strict Types** $\to$ **Backend First** $\to$ **UI Driven**.
-
-## 1. Fases Concluídas (Histórico Técnico Completo)
-
-### ✅ Fase 1-4: Fundação e Backend Core
-- **Objetivo:** Estabelecer infraestrutura e lógica base.
-- **Artefatos:** Monorepo (PNPM), Fastify Server, CLI, Mocks iniciais.
-- **Status:** Configuração de TypeScript Estrito e ESLint (desafio superado de versões).
-
-### ✅ Fase 5-9: Core UI e Explorador
-- **Objetivo:** Criar interface React moderna e responsiva.
-- **Artefatos:** Tailwind CSS v3, Componentes Base (Button, Modal), Discovery Notes (Regex Local).
-- **Status:** Implementação do fluxo de chat e análise preliminar.
-
-### ✅ Fase 10-11: Engenharia e Consolidação
-- **Objetivo:** Transformar JSON em arquivos reais.
-- **Artefatos:** ConsolidatorService, Archiver (ZIP), Wizard de Criação.
-- **Status:** Resolução do conflito de dependências ("Inferno das Dependências") com limpeza de lockfile.
-
-### ✅ Fase 12: Experiência do Usuário & Segurança (Produto)
-**Objetivo:** Transformar a ferramenta técnica em um produto amigável e seguro.
-- **Artefatos:** `tour.ts`, `HelpModal.tsx`, `QuickStartGallery.tsx`.
-- **HUs Entregues:** 14.1 a 14.5 (migradas).
-
-### ✅ Fase 13: Acessibilidade e Polimento Visual
-**Objetivo:** Sistema de Temas (Dark/Light) e refinamentos.
-- **Artefatos:** `ThemeContext.tsx`, `tailwind.config.js` (v3).
-- **HUs Entregues:** 9.8, 9.14, 9.18.
-
-### ✅ Fase 14: Inteligência Real (O Cérebro)
-**Objetivo:** Conectar Backend à OpenAI/DeepSeek com segurança.
-- **Artefatos:** `agent.ts` (OpenAI SDK), `server/src/index.ts` (Security Headers).
-- **HUs Entregues:** 12.7, 14.6, 14.7, 14.8.
-
-### ✅ Fase 15: Visualização Interativa (UI Powered)
-**Objetivo:** Transformar dados JSON em UI rica e navegável.
-- **Sidebar:** Implementada árvore recursiva (`FileTree.tsx`) conectada ao JSON.
-- **Code Viewer:** Visualizador de código estilo IDE com numeração de linhas (`FileViewer.tsx`).
-- **HUs:** Cards visuais com parser resiliente para RF/RNF/Segurança (`UserStoryCard.tsx`).
-- **Docs:** Renderização Markdown completa na aba Docs (`DocsPanel.tsx`).
-- **Status:** Pipeline Verde. Integração total Backend -> Frontend.
+> **Document Version:** 11.0 (Generic Governance)
+> **Software Version:** v0.16.0 (Repository Recovery)
+> **Date:** 2026-03-07
+> **Pipeline:** CI/CD via GitHub Actions (lint, typecheck, test, build)
 
 ---
 
-## 2. Roadmap Futuro (Backlog Pendente)
+# Architecture Overview
 
-### 🚧 Fase 16: Refinamento de Inteligência e Testes
-**Objetivo:** Garantir que a IA forneça dados estruturados para preencher 100% da UI.
-- Refinar Prompt da Persona Product (HU 16.1).
-- Gerar arquivos de teste físicos para aba Tests (HU 16.2).
+**Strategy:** Monorepo with strict types, Clean Architecture, Generic Governance.
 
-### 📅 Fase 17: Persistência Real
-**Objetivo:** Banco de Dados (SQLite/Postgres) para salvar histórico.
+## Package Structure
 
-### 📅 Fase 18: Deploy & DevOps
-**Objetivo:** Docker e CI/CD em nuvem.
+```
+packages/
+├── analysis-agent/     # Core analysis engine (agent.ts, governance, validators)
+├── ui/                 # React frontend (Vite + Tailwind)
+├── server/            # Fastify backend API
+├── shared/            # Shared types and utilities
+└── cli/               # Command-line interface
+```
+
+All packages use namespace `@gemini-mini-ide/*`.
+
+---
+
+## Governance System
+
+The governance system ensures code quality without being coupled to any specific domain.
+
+### Generic Validators
+
+| Validator | Purpose | Domain-Agnostic? |
+|-----------|---------|------------------|
+| `BaseProjectAuditor` | Injects essential files (README, package.json, tsconfig, CI) | Yes |
+| `CategoryValidator` | Validates architectural category distribution | Yes |
+| `CompletenessValidator` | Anti-lazy validation (no placeholders, stubs) | Yes |
+| `ContractValidator` | Validates code delivers promised functionality | Yes |
+| `ManifestValidator` | Validates file manifest structure | Yes |
+
+### What the Governance System Does NOT Do
+
+- Inject domain-specific files (no animation, visualization, data structure files)
+- Require specific method counts or implementations
+- Hardcode references to "Prompt 7" or any specific use case
+- Prescribe exact file structures beyond universal requirements
+
+### Files Protected by CODEOWNERS
+
+```
+packages/analysis-agent/src/agent.ts    @core-maintainers
+packages/analysis-agent/src/governance/ @core-maintainers
+packages/analysis-agent/src/validators/ @core-maintainers
+packages/analysis-agent/src/prompts/    @core-maintainers
+```
+
+---
+
+## Testing Strategy
+
+### Test Categories
+
+1. **Unit Tests**: Individual validator and auditor logic
+2. **Generality Tests**: Multi-prompt tests ensuring NO overfitting
+3. **Integration Tests**: Full pipeline validation
+
+### Running Tests
+
+```bash
+# All tests
+pnpm test
+
+# Specific package
+pnpm --filter @gemini-mini-ide/analysis-agent test
+
+# Watch mode
+pnpm --filter @gemini-mini-ide/analysis-agent test:watch
+```
+
+### Generality Test Suite
+
+Located at `packages/analysis-agent/src/governance/generality.test.ts`:
+
+- Tests Web App, API, Library, CLI, Dashboard prompts
+- Verifies NO hardcoded data structure references
+- Ensures validators work for ANY project type
+
+---
+
+## Development Workflow
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm 8+
+
+### Setup
+
+```bash
+git clone <repo>
+cd Gemini-Mini-IDE
+pnpm install
+```
+
+### Development Commands
+
+```bash
+# Start backend (port 3200)
+pnpm --filter @gemini-mini-ide/server start
+
+# Start frontend (port 5173)
+pnpm --filter @gemini-mini-ide/ui dev
+
+# Run linting
+pnpm lint
+
+# Run type checking
+pnpm typecheck
+
+# Run tests
+pnpm test
+
+# Build all packages
+pnpm build
+```
+
+---
+
+## CI/CD Pipeline
+
+GitHub Actions workflow (`.github/workflows/ci.yml`):
+
+1. **Lint**: ESLint across all packages
+2. **Typecheck**: TypeScript strict mode
+3. **Test**: Vitest with coverage
+4. **Build**: Production builds
+5. **Critical Files Detection**: Warns on changes to governance files
+6. **Large Deletion Warning**: Alerts on >200 lines deleted
+
+---
+
+## Key Technical Decisions
+
+### ADR-001: Overfitting Removal (2026-03-07)
+
+Removed domain-specific code that was coupled to "Prompt 7" (data structures visualization):
+
+**Correctly Removed (~70%):**
+- Hardcoded data structure patterns
+- Visualization-specific validators
+- Animation-specific requirements
+
+**Recovered (~10%):**
+- Generic governance mechanisms
+- Universal file validation
+- Category distribution checks
+
+See `docs/adr/001-remocao-overfitting-prompt7.md` for details.
+
+---
+
+## Documentation
+
+| Document | Purpose |
+|----------|---------|
+| `README.md` | Quick start and overview |
+| `DEVELOPMENT.md` | This file - engineering details |
+| `docs/AI_POLICY.md` | Guidelines for AI-assisted development |
+| `docs/REVIEW_CHECKLIST.md` | Code review checklist |
+| `docs/adr/*.md` | Architecture Decision Records |
+
+---
+
+## Future Roadmap
+
+- [ ] UI/UX Premium (animations, micro-interactions)
+- [ ] Real-time collaboration
+- [ ] Plugin system for custom validators
+- [ ] Database persistence (SQLite/Postgres)
+- [ ] Docker deployment
+
+---
+
+## Contributing
+
+1. Create feature branch from `main`
+2. Follow existing code patterns
+3. Add tests for new functionality
+4. Ensure pipeline passes
+5. Request review from core maintainers for governance changes
