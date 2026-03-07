@@ -5,7 +5,6 @@ import {
   useChatState,
   useUIState,
   useProjectActions,
-  type GeneratedProject,
 } from './hooks';
 import {
   Header,
@@ -22,33 +21,20 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { startOnboardingTour } from './services/tour';
 import { parseDiscoveryMessage, type DiscoveryData } from './utils/discoveryParser';
 
-/**
- * Componente principal da aplicação com arquitetura modular e animações cinematográficas.
- * 
- * Melhorias implementadas:
- * - Decomposição em hooks especializados (useProjectState, useChatState, useUIState)
- * - Separação de componentes de layout em módulos independentes
- * - Animações cinematográficas com Framer Motion
- * - Melhor gerenciamento de estado e ações
- * - Código mais legível e mantível
- */
 const MainLayout = () => {
   const { showToast } = useToast();
 
-  // Hooks de Estado
   const projectState = useProjectState();
   const chatState = useChatState();
   const uiState = useUIState();
   const projectActions = useProjectActions();
 
-  // Estado de descoberta
   const [discoveryData, setDiscoveryData] = React.useState<DiscoveryData>({
     intent: [],
     reqs: [],
     constraints: [],
   });
 
-  // Efeito de inicialização
   useEffect(() => {
     const hasSeenTour = localStorage.getItem('mini-ide-tour-seen');
     if (!hasSeenTour) {
@@ -60,7 +46,6 @@ const MainLayout = () => {
     }
   }, [uiState.isQuickStartOpen]);
 
-  // Handlers
   const handleExportZip = async () => {
     await projectActions.handleExportZip(
       projectState.generatedProject,
@@ -145,19 +130,13 @@ const MainLayout = () => {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.ctrlKey) {
-      handleSendMessage();
-    }
-  };
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
         duration: 0.6,
-        ease: 'easeOut',
+        ease: 'easeOut' as const,
       },
     },
   };
@@ -172,7 +151,6 @@ const MainLayout = () => {
       initial="hidden"
       animate="visible"
     >
-      {/* Header */}
       <Header
         onCreateClick={() => uiState.setIsWizardOpen(true)}
         onQuickStartClick={() => uiState.setIsQuickStartOpen(true)}
@@ -180,12 +158,9 @@ const MainLayout = () => {
         onHelpClick={() => uiState.setIsHelpOpen(true)}
       />
 
-      {/* Main Content */}
       <main className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
         <SidebarLayout files={projectFiles} onSelectFile={handleFileSelect} />
 
-        {/* Main Content Area */}
         <AnimatePresence mode="wait">
           <MainContent
             activeTab={uiState.activeTab}
@@ -200,7 +175,6 @@ const MainLayout = () => {
           />
         </AnimatePresence>
 
-        {/* Chat Panel */}
         <ChatPanel
           chatMode={chatState.chatMode}
           onChatModeChange={chatState.setChatMode}
@@ -209,13 +183,11 @@ const MainLayout = () => {
         />
       </main>
 
-      {/* Modals */}
       <AnimatePresence>
         {uiState.isWizardOpen && (
           <ProjectWizard
             isOpen={uiState.isWizardOpen}
             onClose={() => uiState.setIsWizardOpen(false)}
-            onProjectGenerated={(result) => projectState.setGeneratedProject(result)}
           />
         )}
 
@@ -223,10 +195,11 @@ const MainLayout = () => {
           <QuickStartGallery
             isOpen={uiState.isQuickStartOpen}
             onClose={() => uiState.setIsQuickStartOpen(false)}
-            onTemplateSelect={(prompt) => {
+            onSelectTemplate={(prompt: string) => {
               chatState.setChatInput(prompt);
               document.querySelector('textarea')?.focus();
             }}
+            onStartTour={() => startOnboardingTour()}
           />
         )}
 
@@ -248,9 +221,6 @@ const MainLayout = () => {
   );
 };
 
-/**
- * Aplicação principal com provedores de contexto.
- */
 export const App = () => {
   return (
     <ThemeProvider>
