@@ -114,14 +114,25 @@ jobs:
             console.log('All required exports present');
           "
 
-      - name: Verify server starts
+      - name: Verify server starts (BLOCKING)
         run: |
           cd packages/server
+          # Start server in background with timeout
           timeout 10s node dist/index.js &
+          SERVER_PID=$!
           sleep 3
-          curl -f http://localhost:3000/health || echo "Health check skipped (no endpoint)"
-          pkill -f "node dist/index.js" || true
-        continue-on-error: true
+
+          # Check if server process is still running (basic smoke test)
+          if kill -0 $SERVER_PID 2>/dev/null; then
+            echo "Server started successfully"
+            # Attempt health check but don't fail if endpoint doesn't exist
+            curl -f http://localhost:3000/health 2>/dev/null || echo "Note: /health endpoint not available (acceptable)"
+            pkill -f "node dist/index.js" || true
+            exit 0
+          else
+            echo "CRITICAL: Server failed to start"
+            exit 1
+          fi
 
   # ===========================================================================
   # CRITICAL FILES GUARD - BLOCKING

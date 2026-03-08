@@ -51,14 +51,23 @@ This document honestly tracks incomplete work and known limitations.
 
 ## 4. Domain-Specific Prompts
 
-**Status**: Placeholder structure only
+**Status**: Optional code - NOT integrated into main pipeline
 
-**Issue**: `packages/analysis-agent/src/prompts/domain-specific/` contains:
-- Empty README
-- No actual domain-specific prompt implementations
+**Clarification**: `packages/analysis-agent/src/prompts/domain-specific/` contains:
+- `animation.ts` - Animation/Framer Motion code examples (~247 lines)
+- `visualization.ts` - Visualization UI component examples (~224 lines)
+- `data-structures.ts` - Data structure implementation examples (~275 lines)
+- `index.ts` - `selectDomainExamples()` function with domain detection logic
+- `README.md` - Documentation explaining optional nature
 
-**Resolution Path**: Implement domain-specific prompts as needed.
+**Important**: This code is **EXPORTED** but **NOT USED** by the main code generation pipeline.
+The `selectDomainExamples` function is available but never called by `code-gen.ts` or `architecture.ts`.
+The main prompts are generic and work for any project type.
+
+**Current State**: Optional extension point for future use. No overfitting to specific domains.
+
+**Resolution Path**: Keep as optional extension or remove if not needed.
 
 ---
 
-Last Updated: 2026-03-08
+Last Updated: 2026-03-08 (Rodada 3)

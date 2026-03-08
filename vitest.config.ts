@@ -7,7 +7,7 @@ export default defineConfig({
     // Exception: type-only packages should use package-level config
     passWithNoTests: false,
     environment: 'node',
-    include: ['packages/*/src/**/*.test.ts', 'packages/*/test/**/*.test.ts', 'packages/*/test/**/*.test.tsx'],
+    include: ['packages/*/src/**/*.test.ts', 'packages/*/src/**/*.test.tsx', 'packages/*/test/**/*.test.ts', 'packages/*/test/**/*.test.tsx'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/coverage/**'],
     // Fail fast on first test failure in CI
     bail: process.env.CI ? 1 : 0,
