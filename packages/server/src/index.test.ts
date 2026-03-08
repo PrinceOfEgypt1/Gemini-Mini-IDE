@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-describe('@mini-ide/server', () => {
+describe('@gemini-mini-ide/server', () => {
   it('deve exportar configurações corretas', () => {
     // Teste de sanidade - verifica se o ambiente está OK
     expect(process.env).toBeDefined();

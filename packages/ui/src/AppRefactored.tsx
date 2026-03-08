@@ -72,6 +72,7 @@ const MainLayout = () => {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSendMessage = async () => {
     if (!chatState.chatInput.trim()) return;
 

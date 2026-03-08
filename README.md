@@ -18,14 +18,14 @@ Porta 3200. Swagger em http://localhost:3200/docs
 ```bash
 # Terminal 1
 export DEEPSEEK_API_KEY="sua-chave" # Opcional
-pnpm --filter @mini-ide/server start
+pnpm --filter @gemini-mini-ide/server start
 ```
 
 ### 2. Iniciar a Interface (Frontend)
 Porta 5173.
 ```bash
 # Terminal 2
-pnpm --filter @mini-ide/ui dev
+pnpm --filter @gemini-mini-ide/ui dev
 ```
 
 ### 3. CLI
