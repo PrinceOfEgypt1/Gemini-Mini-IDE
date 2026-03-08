@@ -281,12 +281,12 @@ Antes de retornar, para CADA requisito do prompt:
 - [ ] Existem testes para todas as funcionalidades?
 - [ ] A documentação está completa?
 
-🚨 **REGRA CRÍTICA PARA ARQUIVOS DE ESTRUTURA DE DADOS (DOMAIN):**
-Para CADA arquivo de estrutura de dados no manifest, o campo "purpose" DEVE:
-1. Listar TODOS os métodos explicitamente no formato: "with methods: method1, method2, ... (N methods)"
-2. Ter NO MÍNIMO 10 métodos listados por estrutura (ou o número exigido pelo usuário)
-3. Exemplo correto: "Array data structure with methods: insert, remove, search, update, clear, getSize, traverse, reverse, sort, getMin, getMax (11 methods)"
-4. Se o usuário listou métodos específicos, incluir TODOS eles
+🚨 **REGRA CRÍTICA PARA ARQUIVOS DE DOMÍNIO (DOMAIN):**
+Para CADA arquivo de domínio no manifest, o campo "purpose" DEVE:
+1. Descrever claramente a responsabilidade da entidade
+2. Listar as principais operações/métodos quando relevante
+3. Ser específico ao domínio do projeto do usuário
+4. Se o usuário listou funcionalidades específicas, incluir TODAS elas
 
 🚨 **REGRA CRÍTICA PARA CATEGORIAS:**
 Use SOMENTE estas categorias: DOMAIN, APPLICATION, INFRASTRUCTURE, UI, ANIMATION, STORE, DEVOPS, CONFIG, TESTS, DOCS
@@ -338,7 +338,7 @@ Use SOMENTE estas categorias: DOMAIN, APPLICATION, INFRASTRUCTURE, UI, ANIMATION
   "manifest": [
     {
       "path": "string (caminho completo do arquivo)",
-      "purpose": "string — PARA ARQUIVOS DE ESTRUTURA DE DADOS (category=DOMAIN), OBRIGATÓRIO listar TODOS os métodos no formato: 'Classe X with methods: method1, method2, method3, ... (N methods)'. Exemplo: 'Array data structure with methods: insert, remove, search, update, clear, getSize, traverse, reverse, sort, getMin, getMax (11 methods)'. Para outros arquivos, descreva o propósito detalhado.",
+      "purpose": "string — Descrição detalhada do propósito do arquivo. Para arquivos de domínio, inclua as principais responsabilidades e operações. Seja específico ao contexto do projeto.",
       "criticality": "HIGH|MEDIUM|LOW",
       "category": "DOMAIN|APPLICATION|INFRASTRUCTURE|UI|ANIMATION|STORE|DEVOPS|CONFIG|TESTS|DOCS"
     }

@@ -186,13 +186,13 @@ Output:
   "explanation": "Testes unitários com happy path e edge cases, usando Vitest, padrão AAA."
 }
 
-**EXEMPLO 3 - Estrutura de Dados com Eventos:**
-Input: "Gere um Array customizado com eventos de animação"
+**EXEMPLO 3 - Serviço de Aplicação:**
+Input: "Gere um serviço de autenticação"
 Output:
 {
-  "path": "src/data-structures/array/CustomArray.ts",
-  "code": "import { EventEmitter } from '../core/EventEmitter';\\nimport type { AnimationStep } from '../types/animation';\\n\\n/**\\n * Custom Array implementation with animation step emission.\\n * Emits animation events for visualization purposes.\\n * @template T - Type of elements stored in the array\\n */\\nexport class CustomArray<T> extends EventEmitter<AnimationStep> {\\n  private elements: T[] = [];\\n\\n  /**\\n   * Inserts an element at a specific index.\\n   * @param index - Position to insert (0 to length)\\n   * @param value - Value to insert\\n   * @returns Updated array\\n   * @throws {RangeError} When index is out of bounds\\n   */\\n  insert(index: number, value: T): T[] {\\n    this.validateIndex(index, true);\\n\\n    this.emit({\\n      type: 'highlight',\\n      description: 'Inserting element at index ' + index,\\n      state: { highlightedIndices: [index] }\\n    });\\n\\n    this.elements.splice(index, 0, value);\\n    return [...this.elements];\\n  }\\n\\n  private validateIndex(index: number, allowEnd = false): void {\\n    const max = allowEnd ? this.elements.length : this.elements.length - 1;\\n    if (index < 0 || index > max) {\\n      throw new RangeError('Index ' + index + ' out of bounds [0, ' + max + ']');\\n    }\\n  }\\n}",
-  "explanation": "Array customizado com emissão de eventos para animação, validação de bounds, JSDoc completo."
+  "path": "src/application/services/AuthService.ts",
+  "code": "import { UserRepository } from '../../domain/repositories/UserRepository';\\nimport { TokenService } from '../../infrastructure/services/TokenService';\\nimport { DomainError } from '../../domain/errors/DomainError';\\n\\n/**\\n * Handles user authentication operations.\\n * Coordinates between domain and infrastructure layers.\\n */\\nexport class AuthService {\\n  constructor(\\n    private readonly userRepository: UserRepository,\\n    private readonly tokenService: TokenService\\n  ) {}\\n\\n  /**\\n   * Authenticates a user with email and password.\\n   * @param email - User email address\\n   * @param password - User password\\n   * @returns Authentication token\\n   * @throws {DomainError} When credentials are invalid\\n   */\\n  async login(email: string, password: string): Promise<string> {\\n    const user = await this.userRepository.findByEmail(email);\\n    if (!user) {\\n      throw new DomainError('Invalid credentials', 'AUTH_FAILED');\\n    }\\n\\n    const isValid = await user.verifyPassword(password);\\n    if (!isValid) {\\n      throw new DomainError('Invalid credentials', 'AUTH_FAILED');\\n    }\\n\\n    return this.tokenService.generate({ userId: user.id, email: user.email });\\n  }\\n}",
+  "explanation": "Serviço de autenticação seguindo Clean Architecture, injeção de dependências, tratamento de erros apropriado."
 }
 
 ───────────────────────────────────────────────────────────────────────────────

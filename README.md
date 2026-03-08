@@ -1,9 +1,10 @@
 # Gemini Mini-IDE (Monorepo)
 
-Ambiente de desenvolvimento assistido por IA, capaz de transformar intenções em planos e código.
+Ambiente de desenvolvimento assistido por IA para transformar intenções em planos e código.
 
-> **Status Atual:** v0.10.1 (Hardened Backend) - API Documentada + Controle de Custos + UI Beta
-> **Pipeline:** 🟢 Passing (Lint, Types, Tests, Build, Smoke)
+> **Status:** Em desenvolvimento ativo
+> **Testes:** 157 passando (vitest)
+> **Build:** UI funcional, analysis-agent com issues de tipos conhecidos (ver KNOWN_ISSUES.md)
 
 ## 🚀 Funcionalidades Principais
 1. **API Robusta:** Documentação Swagger (/docs), Tratamento de Erros, Validação.
@@ -47,8 +48,35 @@ node packages/cli/dist/index.js analyze "Criar um CRUD"
 - **Multi-Modelos:** Suporte nativo para OpenAI, Anthropic, Google Gemini, DeepSeek e **Ollama (Local)**.
 - **Inteligência Local:** O sistema entende intenções, requisitos e restrições em tempo real enquanto você digita.
 
-### 🚀 Versão v0.15.0 (AI Powered)
-- **Inteligência Real:** O sistema agora se conecta a LLMs reais (GPT-4, DeepSeek) para gerar código.
-- **Exportação Funcional:** Gere e baixe projetos completos em ZIP.
-- **Segurança:** Gestão de chaves via Headers HTTP seguros.
-- **Temas:** Suporte nativo a Dark e Light mode.
+### Versão Atual
+- Integração com LLMs (GPT-4, DeepSeek, Gemini) para geração de código
+- Exportação de projetos em ZIP
+- Temas Dark/Light
+- UI com Framer Motion para animações suaves
+
+## Limitações Conhecidas
+
+Consulte [KNOWN_ISSUES.md](./KNOWN_ISSUES.md) para lista completa de:
+- Testes excluídos e suas razões
+- Componentes incompletos (AppRefactored)
+- Issues de build no analysis-agent
+
+## Arquitetura
+
+```
+packages/
+├── ui/            # Frontend React + Vite + Framer Motion
+├── server/        # Backend Fastify
+├── cli/           # Interface de linha de comando
+├── shared/        # Tipos e utilitários compartilhados
+└── analysis-agent/# Motor de análise e geração de código
+```
+
+## Governança de Código
+
+O projeto inclui validadores para qualidade de código:
+- **CompletenessValidator**: Detecta TODOs, FIXMEs, any types, suppressions
+- **CategoryValidator**: Valida estrutura de manifesto
+- **BaseProjectAuditor**: Audita e corrige projetos gerados
+
+Estes validadores são integrados ao CI em modo blocking.

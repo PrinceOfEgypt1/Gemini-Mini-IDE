@@ -29,16 +29,33 @@ describe("CompletenessValidator", () => {
       expect(result.errors).toContain("Contains FIXME marker");
     });
 
-    it("should reject code with ... placeholder", () => {
+    it("should reject code with ... placeholder comment", () => {
       const code = `
+        /**
+         * Does something.
+         */
         export function baz() {
-          const data = { ...rest };
-          return data;
+          // ... implement later
+          return null;
         }
       `;
       const result = validator.validate(code, "src/test.ts");
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain("Contains '...' placeholder");
+    });
+
+    it("should accept valid spread syntax (not placeholder)", () => {
+      const code = `
+        /**
+         * Merges objects.
+         */
+        export function merge(a: object, b: object) {
+          return { ...a, ...b };
+        }
+      `;
+      const result = validator.validate(code, "src/test.ts");
+      // Spread syntax is valid, not a placeholder
+      expect(result.errors).not.toContain("Contains '...' placeholder");
     });
   });
 
