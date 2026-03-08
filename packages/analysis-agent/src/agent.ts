@@ -4,6 +4,8 @@ import { globalAnalysisCache } from "./services/cache.service.js";
 import { PromptOrchestrator } from "./services/prompt-orchestrator.js";
 import { CodeGenerationService } from "./services/code-generation-service.js";
 import { ValidationService } from "./services/validation-service.js";
+import { baseProjectAuditor } from "./governance/base-project-auditor.js";
+import { categoryValidator } from "./governance/category-validator.js";
 import type { ILLMClient, IIncrementalLLMClient } from "./llm-clients/llm-client.interface.js";
 import type { RichAnalysis, RichProductPlan, RichArchitecture, RichUserStoriesResult, PlanResult, AgentResult } from "./types/rich-schemas.js";
 import { RichAnalysisSchema, RichProductPlanSchema, RichArchitectureSchema, RichUserStoriesResultSchema } from "./types/rich-schemas.js";
@@ -93,9 +95,28 @@ export class AnalysisAgent extends EventEmitter {
 
   private async runArchitectureStep(userPrompt: string, analysis: RichAnalysis, productPlan: RichProductPlan, userStories: RichUserStoriesResult): Promise<RichArchitecture> {
     const prompt = this.promptOrchestrator.getArchitecturePrompt(userPrompt, analysis, productPlan, userStories.userStories);
-    const result = await this.callLLM<RichArchitecture>(prompt, RichArchitectureSchema);
-    this.promptOrchestrator.setArchitecture(result);
-    return result;
+    const rawResult = await this.callLLM<RichArchitecture>(prompt, RichArchitectureSchema);
+
+    // Apply generic governance: inject essential files if missing
+    const auditedResult = baseProjectAuditor.auditAndFix(rawResult);
+
+    // Validate category distribution and emit warnings
+    const categoryValidation = categoryValidator.validate(auditedResult.manifest);
+    if (categoryValidation.warnings.length > 0) {
+      this.emit("governance:warnings", {
+        phase: "architecture",
+        warnings: categoryValidation.warnings,
+      });
+    }
+    if (!categoryValidation.isValid) {
+      this.emit("governance:errors", {
+        phase: "architecture",
+        errors: categoryValidation.errors,
+      });
+    }
+
+    this.promptOrchestrator.setArchitecture(auditedResult);
+    return auditedResult;
   }
 
   private async expandEpicsToStories(productPlan: RichProductPlan): Promise<RichUserStoriesResult> {

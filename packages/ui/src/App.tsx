@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
 import { ExploreTimeline } from './components/ExploreTimeline';
 import { WorkspaceTabs } from './components/WorkspaceTabs';
@@ -155,7 +156,12 @@ const MainLayout = () => {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-[var(--bg-app)] text-[var(--text-primary)] font-sans">
+    <motion.div
+      className="h-screen w-screen flex flex-col overflow-hidden bg-[var(--bg-app)] text-[var(--text-primary)] font-sans"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, ease: 'easeOut' as const }}
+    >
       <header className="h-14 flex-none flex items-center gap-3 px-4 bg-[var(--bg-panel)]/90 border-b border-[var(--border-main)] shadow-sm z-10 backdrop-blur-sm">
         <div className="font-bold text-lg tracking-tight">Gemini Mini-IDE</div>
         <span className="px-2.5 py-1 rounded-full bg-[var(--bg-panel-hover)] border border-[var(--border-main)] text-xs font-medium">v0.17.1</span>
@@ -275,11 +281,13 @@ const MainLayout = () => {
         </div>
       </footer>
 
-      <ProjectWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} />
-      <QuickStartGallery isOpen={isQuickStartOpen} onClose={() => setIsQuickStartOpen(false)} onSelectTemplate={handleTemplateSelect} onStartTour={() => {setIsQuickStartOpen(false); setTimeout(startOnboardingTour, 300);}} />
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-    </div>
+      <AnimatePresence>
+        {isWizardOpen && <ProjectWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} />}
+        {isQuickStartOpen && <QuickStartGallery isOpen={isQuickStartOpen} onClose={() => setIsQuickStartOpen(false)} onSelectTemplate={handleTemplateSelect} onStartTour={() => {setIsQuickStartOpen(false); setTimeout(startOnboardingTour, 300);}} />}
+        {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
+        {isHelpOpen && <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
