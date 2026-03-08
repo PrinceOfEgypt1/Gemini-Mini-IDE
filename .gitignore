@@ -19,3 +19,6 @@ data/
 CODE_EXPORT.txt
 logs/
 .trash-*/
+
+# Windows artifacts
+*:Zone.Identifier
