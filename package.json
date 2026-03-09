@@ -12,7 +12,7 @@
     "dev": "pnpm --filter @gemini-mini-ide/ui dev",
     "start": "pnpm --filter @gemini-mini-ide/server start",
     "clean": "pnpm -r exec rm -rf dist node_modules",
-    "prepare": "pnpm -r build"
+    "prepare": "echo prepare-skip"
   },
   "keywords": ["ide", "ai", "typescript", "react"],
   "author": "",
