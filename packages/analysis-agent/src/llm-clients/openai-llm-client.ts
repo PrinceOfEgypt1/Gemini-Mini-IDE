@@ -7,8 +7,15 @@
 
 import OpenAI from "openai";
 import { IIncrementalLLMClient } from "./llm-client.interface.js";
-import type { LLMClient as LegacyLLMClient, BatchGeneratedFile } from "../generation/incremental-generator.js";
+import type { BatchGeneratedFile } from "../types/generation-types.js";
 import { createHash } from "node:crypto";
+
+/**
+ * Legacy LLM Client interface for backward compatibility
+ */
+export interface LegacyLLMClient {
+  generateCode(prompt: string, context: string, domainExamples?: string): Promise<BatchGeneratedFile[]>;
+}
 
 /**
  * File specification extracted from batch prompt

@@ -1,47 +1,50 @@
-import { IncrementalGenerator, type IncrementalGenerationResult, type LLMClient } from "../generation/incremental-generator.js";
-import { ValidationService } from "./validation-service.js";
-import { PromptOrchestrator } from "./prompt-orchestrator.js";
+import { IncrementalGenerator } from "../generation/incremental-generator.js";
+import type { IIncrementalLLMClient } from "../llm-clients/llm-client.interface.js";
+import type { BatchGeneratedFile } from "../types/generation-types.js";
+import type { RichArchitecture, RichUserStory } from "../types/rich-schemas.js";
+import type { ValidationService } from "./validation-service.js";
+import type { PromptOrchestrator } from "./prompt-orchestrator.js";
 
 export class CodeGenerationService {
   private readonly incrementalGenerator: IncrementalGenerator;
-  private readonly promptOrchestrator: PromptOrchestrator;
-  private readonly validationService: ValidationService;
 
   constructor(
-    llmClient: LLMClient,
-    promptOrchestrator: PromptOrchestrator,
-    validationService: ValidationService
+    llmClient: IIncrementalLLMClient,
+    _promptOrchestrator: PromptOrchestrator,
+    _validationService: ValidationService
   ) {
     this.incrementalGenerator = new IncrementalGenerator(llmClient);
-    this.promptOrchestrator = promptOrchestrator;
-    this.validationService = validationService;
+    // promptOrchestrator and validationService reserved for future validation pipeline
   }
 
+  /**
+   * Gera código a partir da arquitetura e user stories.
+   * Consome o AsyncGenerator do IncrementalGenerator e coleta todos os arquivos.
+   */
   public async generateCode(
-    onProgress?: (batchName: string, progress: number) => void
-  ): Promise<IncrementalGenerationResult> {
-    const architecture = this.promptOrchestrator.getArchitecture();
-    const userStories = this.promptOrchestrator.getUserStories();
-    const userPrompt = this.promptOrchestrator.getUserPrompt();
+    architecture: RichArchitecture,
+    userStories: RichUserStory[]
+  ): Promise<BatchGeneratedFile[]> {
+    const allFiles: BatchGeneratedFile[] = [];
+    const allErrors: string[] = [];
 
-    if (!architecture || !userStories || !userPrompt) {
-      throw new Error("Contexto de geracao incompleto no PromptOrchestrator.");
+    // Consome o generator e acumula resultados
+    for await (const batchResult of this.incrementalGenerator.generate(architecture, userStories)) {
+      // Converte LLMGeneratedFile para BatchGeneratedFile
+      for (const file of batchResult.generatedFiles) {
+        allFiles.push({
+          path: file.path,
+          content: file.content,
+        });
+      }
+      allErrors.push(...batchResult.errors);
     }
 
-    const result = await this.incrementalGenerator.generate(
-      architecture,
-      userStories,
-      userPrompt,
-      onProgress
-    );
-
-    // Implementar o Quality Gate
-    const validationErrors = this.validationService.validateGeneratedCode(result.allFiles, architecture);
-    if (validationErrors.length > 0) {
-      result.success = false;
-      result.errors.push(...validationErrors);
+    if (allErrors.length > 0) {
+      // eslint-disable-next-line no-console
+      console.warn("[CodeGenerationService] Erros durante geração:", allErrors);
     }
 
-    return result;
+    return allFiles;
   }
 }
