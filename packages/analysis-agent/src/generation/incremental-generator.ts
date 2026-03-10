@@ -47,8 +47,9 @@ export class IncrementalGenerator {
         generatedFiles.push(...parsed.files);
       }
 
-    } catch (e: any) {
-      errors.push(`Failed to parse LLM output for batch: ${e.message}`);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      errors.push(`Failed to parse LLM output for batch: ${message}`);
     }
 
     return { generatedFiles, errors, warnings };
