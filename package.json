@@ -1,6 +1,7 @@
 {
   "name": "gemini-mini-ide-monorepo",
   "version": "1.0.0",
+  "packageManager": "pnpm@9.12.2",
   "description": "Gemini Mini-IDE - Ambiente de Desenvolvimento Assistido por IA",
   "main": "index.js",
   "scripts": {
