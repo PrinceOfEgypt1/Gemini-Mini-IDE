@@ -58,8 +58,7 @@ node packages/cli/dist/index.js analyze "Criar um CRUD"
 
 Consulte [KNOWN_ISSUES.md](./KNOWN_ISSUES.md) para lista completa de:
 - Testes excluídos e suas razões
-- Componentes incompletos (AppRefactored)
-- Issues de build no analysis-agent
+- Issues de build no analysis-agent (resolvidos em Rodada 4/5)
 
 ## Arquitetura
 

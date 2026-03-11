@@ -93,15 +93,6 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 
 ---
 
-### COI-009 - UI premium ainda nao integrada por completo
-- **Severidade:** MEDIO
-- **Area:** UI/UX
-- **Status:** PARCIAL
-- **Evidencia resumida:** motion/UI premium ainda parcialmente integrados ao app principal
-- **Acao necessaria:** Rodada futura focada em integracao real da UI premium
-- **Definicao de concluido:** Runtime principal usa de fato os componentes finais
-- **Nota:** Nao era foco da Rodada 3
-
 ---
 
 ### COI-012 - Exclusoes de testes no analysis-agent
@@ -173,15 +164,30 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 
 ---
 
-## Resumo pos-Rodada 6
+## Itens FECHADOS na Rodada 7
+
+### COI-009 - UI premium parcialmente integrada
+- **Severidade:** MEDIO
+- **Status:** COMPLETO
+- **Fechado em:** Rodada 7
+- **Evidencia:**
+  - `AppRefactored.tsx` removido como codigo morto (nunca foi importado em main.tsx)
+  - Hooks nao utilizados removidos: useProjectState, useChatState, useUIState, useProjectActions
+  - `App.tsx` confirmado como UI principal verdadeira com Framer Motion e reduced motion
+  - Ambiguidade arquitetural eliminada
+  - Build, typecheck, lint e 176 testes passando
+
+---
+
+## Resumo pos-Rodada 7
 
 | Categoria | Fechados | Abertos |
 |-----------|----------|---------|
 | CRITICO | 3 | 1 |
 | ALTO | 7 | 0 |
-| MEDIO | 1 | 3 |
-| **Total** | **11** | **4** |
+| MEDIO | 2 | 2 |
+| **Total** | **12** | **3** |
 
 ---
 
-**Ultima atualizacao:** 2026-03-11 (Rodada 6 - Fase 6)
+**Ultima atualizacao:** 2026-03-11 (Rodada 7 - Fase 5)
