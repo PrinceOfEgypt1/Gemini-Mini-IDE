@@ -308,9 +308,104 @@ Prompt Rodada 6: Integracao real de UI/UX premium e motion system
 |----|------|------------|--------|-------------|
 | COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI |
 | COI-002 | Coverage thresholds | MEDIA | PARCIAL | Decisao de projeto |
-| COI-009 | UI premium | MEDIA | PARCIAL | Rodada 6 |
-| COI-010 | Motion system | MEDIA | PARCIAL | Rodada 6 |
+| COI-009 | UI premium | MEDIA | PARCIAL | Rodada 7 |
+| COI-010 | Motion system | MEDIA | COMPLETO | Rodada 6 |
 | COI-012 | Exclusoes de testes | MEDIA | PARCIAL | Refatoracao futura |
+
+---
+
+## Rodada 6
+**Status geral:** COMPLETA
+**Data:** 2026-03-11
+**Tipo:** INTEGRACAO UI/UX E MOTION SYSTEM
+**Objetivo principal:** Integrar UI premium e motion system com suporte a acessibilidade (prefers-reduced-motion).
+
+### Contexto
+- Rodada 5 consolidou documentacao e governanca
+- UI principal (App.tsx) ja funcional com Framer Motion
+- Lacuna identificada: falta de suporte a prefers-reduced-motion
+
+### Escopo da Rodada 6
+- Integrar motion system de forma acessivel
+- Criar hook useReducedMotion
+- Atualizar config/animations.ts com helpers acessiveis
+- Validar que a UI continua funcional
+
+### Arquivos alterados
+- packages/ui/src/hooks/useReducedMotion.ts (NOVO)
+- packages/ui/src/hooks/index.ts (exportacao do hook)
+- packages/ui/src/config/animations.ts (suporte a reduced motion)
+- packages/ui/src/App.tsx (integracao do hook)
+
+### Baseline da Rodada 6
+- **Commit base:** 7791ea181a4fa71f900f194637aec03a56881079
+- **Branch:** claude/round-6-ui-ux-motion-integration-clean
+- **Working tree:** LIMPO
+- **Diff inicial contra origin/main:** VAZIO
+- **Validacoes pos-implementacao:**
+  - pnpm lint: PASSA
+  - pnpm typecheck: PASSA
+  - pnpm build: PASSA
+  - pnpm test: 176 testes passando
+
+### Fases executadas
+- Fase 0: Baseline limpo - COMPLETA
+- Fase 1: Auditoria do fluxo real - COMPLETA
+- Fase 2: Desenho da integracao minima - COMPLETA
+- Fase 3: Implementacao UI premium - COMPLETA
+- Fase 4: Implementacao motion system - COMPLETA
+- Fase 5: Validacao tecnica - COMPLETA
+- Fase 6: Governanca e preparacao R7 - COMPLETA
+- Fase 7: Relatorio final - EM EXECUCAO
+
+### Descobertas da auditoria (Fase 1)
+- App.tsx e o componente raiz ATIVO (funcional)
+- AppRefactored.tsx existe mas NAO FUNCIONA (hooks faltantes)
+- Hooks faltantes: useProjectState, useChatState, useUIState, useProjectActions
+- Motion via Framer Motion ja funciona mas SEM suporte a prefers-reduced-motion
+- Componentes de layout premium existem e estao disponiveis
+
+### Trabalho realizado
+1. Criado hook useReducedMotion para detectar preferencia do usuario
+2. Atualizado config/animations.ts com:
+   - REDUCED_MOTION_TRANSITIONS
+   - reducedMotionVariants
+   - getAccessibleVariants()
+   - getAccessibleTransition()
+3. Integrado useReducedMotion no App.tsx (MainLayout)
+4. Transicao principal respeita prefers-reduced-motion
+
+### Reclassificacoes
+- MC-018: PARCIAL -> COMPLETO (motion acessivel integrado)
+- COI-010: PARCIAL -> COMPLETO (motion acessivel integrado)
+- MC-017: permanece PARCIAL (AppRefactored.tsx tem hooks faltantes)
+- COI-009: permanece PARCIAL (AppRefactored.tsx nao integrado)
+
+### Pendencias que permanecem abertas
+
+| ID | Item | Severidade | Status | Proxima acao |
+|----|------|------------|--------|--------------|
+| COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI |
+| COI-002 | Coverage thresholds | MEDIA | PARCIAL | Decisao de projeto |
+| COI-009 | UI premium (AppRefactored) | MEDIA | PARCIAL | Implementar hooks ou remover arquivo |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL | Refatoracao futura |
+
+### Conclusao da Rodada 6
+**Status geral:** COMPLETA
+**MC-018 fechado com evidencia**
+**COI-010 fechado com evidencia**
+**Projeto pronto para Rodada 7**
+
+### Recomendacao para Rodada 7
+```
+Prompt Rodada 7: Fechamento fino, divida residual e consolidacao final
+```
+
+**Escopo sugerido:**
+1. Decidir sobre AppRefactored.tsx (implementar hooks ou remover)
+2. Fechar COI-009 de forma definitiva
+3. Avaliar coverage thresholds (COI-002)
+4. Consolidar divida tecnica restante
 
 ---
 

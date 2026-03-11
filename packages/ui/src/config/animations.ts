@@ -1,6 +1,18 @@
 /**
  * Configuracao centralizada de animacoes cinematograficas.
  * Define variantes, transicoes e efeitos reutilizaveis em toda a aplicacao.
+ *
+ * ACESSIBILIDADE: Este modulo suporta prefers-reduced-motion atraves de:
+ * - REDUCED_MOTION_TRANSITIONS: transicoes instantaneas para usuarios com preferencia
+ * - reducedMotionVariants: variantes simplificadas (apenas opacidade)
+ * - getAccessibleVariants(): retorna variantes apropriadas com base na preferencia
+ * - getAccessibleTransition(): retorna transicao apropriada com base na preferencia
+ *
+ * Uso com hook useReducedMotion:
+ * ```
+ * const prefersReducedMotion = useReducedMotion();
+ * const variants = getAccessibleVariants(slideInFromLeft, prefersReducedMotion);
+ * ```
  */
 
 import type { Transition, Variants, Easing } from 'framer-motion';
@@ -309,4 +321,61 @@ export function withTransition(
     }
     return acc;
   }, {} as Variants);
+}
+
+// ============================================================================
+// ACESSIBILIDADE - REDUCED MOTION
+// ============================================================================
+
+/**
+ * Transicoes instantaneas para usuarios que preferem movimento reduzido.
+ * Usa duracao 0 para evitar qualquer animacao.
+ */
+export const REDUCED_MOTION_TRANSITIONS = {
+  instant: { duration: 0 } as Transition,
+  none: { duration: 0, delay: 0 } as Transition,
+};
+
+/**
+ * Variantes sem movimento para acessibilidade.
+ * Mantem apenas mudancas de opacidade (menos perturbadoras).
+ */
+export const reducedMotionVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.1 } },
+  exit: { opacity: 0, transition: { duration: 0.1 } },
+};
+
+/**
+ * Retorna variantes apropriadas baseado na preferencia de movimento reduzido.
+ *
+ * @param normalVariants - Variantes padrao com animacoes completas
+ * @param prefersReducedMotion - Se o usuario prefere movimento reduzido
+ * @returns Variantes apropriadas para o contexto
+ */
+export function getAccessibleVariants(
+  normalVariants: Variants,
+  prefersReducedMotion: boolean
+): Variants {
+  if (prefersReducedMotion) {
+    return reducedMotionVariants;
+  }
+  return normalVariants;
+}
+
+/**
+ * Retorna transicao apropriada baseado na preferencia de movimento reduzido.
+ *
+ * @param normalTransition - Transicao padrao com animacao
+ * @param prefersReducedMotion - Se o usuario prefere movimento reduzido
+ * @returns Transicao apropriada para o contexto
+ */
+export function getAccessibleTransition(
+  normalTransition: Transition,
+  prefersReducedMotion: boolean
+): Transition {
+  if (prefersReducedMotion) {
+    return REDUCED_MOTION_TRANSITIONS.instant;
+  }
+  return normalTransition;
 }

@@ -19,6 +19,7 @@ import { ConversationChat } from './components/chat/ConversationChat';
 import type { ConversationChatHandle } from './components/chat/ConversationChat';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { useReducedMotion } from './hooks';
 import { api } from './services/api';
 import { startOnboardingTour } from './services/tour';
 import { parseDiscoveryMessage, DiscoveryData } from './utils/discoveryParser';
@@ -32,8 +33,9 @@ interface GeneratedProject {
 
 const MainLayout = () => {
   const { showToast } = useToast();
+  const prefersReducedMotion = useReducedMotion();
   const [activeTab, setActiveTab] = useState('overview');
-  
+
   // Modais
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -160,7 +162,7 @@ const MainLayout = () => {
       className="h-screen w-screen flex flex-col overflow-hidden bg-[var(--bg-app)] text-[var(--text-primary)] font-sans"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.4, ease: 'easeOut' as const }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.4, ease: 'easeOut' as const }}
     >
       <header className="h-14 flex-none flex items-center gap-3 px-4 bg-[var(--bg-panel)]/90 border-b border-[var(--border-main)] shadow-sm z-10 backdrop-blur-sm">
         <div className="font-bold text-lg tracking-tight">Gemini Mini-IDE</div>

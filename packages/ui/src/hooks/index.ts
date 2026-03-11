@@ -1,6 +1,9 @@
 // Hook de streaming de analise
 export { useAnalysisStream } from './useAnalysisStream';
 
+// Hook de acessibilidade para movimento reduzido
+export { useReducedMotion } from './useReducedMotion';
+
 // Tipos para compatibilidade (serao implementados na integracao completa)
 export type TabType = 'overview' | 'code' | 'hus' | 'docs' | 'tests' | 'timeline' | 'outputs';
 

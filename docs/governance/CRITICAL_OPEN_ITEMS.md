@@ -104,17 +104,6 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 
 ---
 
-### COI-010 - Motion system premium e acessivel ainda parcial
-- **Severidade:** MEDIO
-- **Area:** Motion / Acessibilidade
-- **Status:** PARCIAL
-- **Evidencia resumida:** reduced motion e integracao real ainda nao completamente comprovados
-- **Acao necessaria:** Rodada futura de UI/motion
-- **Definicao de concluido:** Motion system integrado, acessivel, performatico e fiel a experiencia principal
-- **Nota:** Nao era foco da Rodada 3
-
----
-
 ### COI-012 - Exclusoes de testes no analysis-agent
 - **Severidade:** MEDIO
 - **Area:** Testes / Divida tecnica
@@ -170,15 +159,29 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 
 ---
 
-## Resumo pos-Rodada 5
+## Itens FECHADOS na Rodada 6
+
+### COI-010 - Motion system premium e acessivel
+- **Severidade:** MEDIO
+- **Status:** COMPLETO
+- **Fechado em:** Rodada 6
+- **Evidencia:**
+  - Hook `useReducedMotion` criado em `packages/ui/src/hooks/useReducedMotion.ts`
+  - `config/animations.ts` atualizado com helpers acessiveis
+  - `App.tsx` integrado com suporte a prefers-reduced-motion
+  - Build, typecheck, lint e 176 testes passando
+
+---
+
+## Resumo pos-Rodada 6
 
 | Categoria | Fechados | Abertos |
 |-----------|----------|---------|
 | CRITICO | 3 | 1 |
 | ALTO | 7 | 0 |
-| MEDIO | 0 | 4 |
-| **Total** | **10** | **5** |
+| MEDIO | 1 | 3 |
+| **Total** | **11** | **4** |
 
 ---
 
-**Ultima atualizacao:** 2026-03-11 (Rodada 5 - Fase 2)
+**Ultima atualizacao:** 2026-03-11 (Rodada 6 - Fase 6)
