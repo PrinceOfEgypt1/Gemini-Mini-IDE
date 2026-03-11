@@ -118,7 +118,7 @@ jobs:
         run: |
           cd packages/server
           # Start server in background with timeout
-          timeout 10s node dist/index.js &
+          timeout 10s node dist/server/src/index.js &
           SERVER_PID=$!
           sleep 3
 
