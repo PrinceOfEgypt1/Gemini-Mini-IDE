@@ -60,7 +60,7 @@ Registrar, de forma cronologica, o que foi feito em cada rodada de recuperacao/c
 ---
 
 ## Rodada 3
-**Status geral:** EM EXECUCAO
+**Status geral:** COMPLETA
 **Data de abertura:** 2026-03-08
 **Objetivo principal:** Fechar pendencias criticas estruturais antes de nova rodada focada em UI/UX premium.
 
@@ -179,6 +179,138 @@ Registrar, de forma cronologica, o que foi feito em cada rodada de recuperacao/c
 **Pendencias criticas fechadas:** Sim (smoke test, testes UI, higiene, KNOWN_ISSUES)
 **Pendencias que requerem acao externa:** Branch protection
 **Recomendacao:** Aplicar branch protection e considerar Rodada 4 para UI/motion
+
+---
+
+## Rodada 4
+**Status geral:** COMPLETA
+**Data:** 2026-03-09
+**Tipo:** ESTABILIZACAO TECNICA
+**Objetivo principal:** Corrigir erros de lint, typecheck e build no analysis-agent e server.
+
+### Trabalho realizado
+- Correcao de erros de lint no analysis-agent
+- Correcao de erros de typecheck no server (remocao de project references)
+- Adicao de type shim para `node:sqlite` no server
+- Correcao de `any` para `unknown` em incremental-generator.ts
+- Ajustes de CI (pnpm version, coverage provider, node version, smoke test)
+
+### Commits relevantes (PR #18)
+- `b2c34aa` fix(analysis-agent): resolve lint, typecheck, and build errors
+- `d2052d8` fix(server): enable typecheck without prior build
+- `3ea2002` fix(analysis-agent): replace any with unknown in catch block
+- `2a3698f` chore: pin pnpm version consistently for CI
+- `10ae820` fix(ci): add vitest coverage provider for workspace tests
+- `66dcef6` fix(ci): align workflow runtime with node sqlite support
+- `a34cdb7` fix(ci): use actual server build output in smoke test
+- `7cf7d1a` Merge pull request #18
+
+### Resultado
+- **pnpm lint:** PASSA
+- **pnpm typecheck:** PASSA
+- **pnpm build:** PASSA
+- **pnpm test:** 176 testes passando
+
+### Conclusao da Rodada 4
+**Status geral:** COMPLETA
+**Base estabilizada e mergeada na main**
+
+---
+
+## Rodada 5
+**Status geral:** EM EXECUCAO
+**Data de abertura:** 2026-03-11
+**Tipo:** CONSOLIDACAO DOCUMENTAL
+**Objetivo principal:** Consolidar nos artefatos de governanca e documentacao critica a estabilizacao tecnica pos-Rodada 4.
+
+### Contexto
+- Rodada 4 estabilizou a base tecnica
+- PR #18 mergeado na main
+- Governanca e documentacao ainda nao refletiam estado real
+
+### Escopo da Rodada 5
+- Apenas alteracoes documentais
+- NAO alterar codigo-fonte, CI/CD, configs
+
+### Arquivos autorizados para alteracao
+- docs/governance/MASTER_COMPLIANCE_MATRIX.md
+- docs/governance/ROUND_STATUS_LOG.md
+- docs/governance/CRITICAL_OPEN_ITEMS.md
+- README.md
+- KNOWN_ISSUES.md
+- REMEDIATION_REPORT.md
+
+### Baseline da Rodada 5
+- **Commit base:** 7cf7d1a295efd2b5c5e67c63d5259ed0eb5b38db
+- **Branch:** claude/round-5-post-round-4-consolidation-clean
+- **Working tree:** LIMPO
+- **Diff inicial contra origin/main:** VAZIO
+- **Validacoes:**
+  - pnpm lint: PASSA
+  - pnpm typecheck: PASSA
+  - pnpm build: PASSA
+  - pnpm test: 176 testes passando (cli:1, shared:1, ui:17, analysis-agent:155, server:2)
+
+### Fases executadas
+- Fase 0: Baseline limpo e criacao da branch - COMPLETA
+- Fase 1: Auditoria do estado real pos-Rodada 4 - COMPLETA
+- Fase 2: Consolidacao dos artefatos de governanca - EM EXECUCAO
+- Fase 3: Alinhamento da documentacao critica - PENDENTE
+- Fase 4: Preparacao da proxima rodada - PENDENTE
+- Fase 5: Relatorio final - PENDENTE
+
+### Divergencias identificadas na Fase 1
+| Documento | Divergencia | Estado Real |
+|-----------|-------------|-------------|
+| README.md L6 | "157 passando" | 176 testes |
+| README.md L7 | "issues de tipos" | Build passa |
+| KNOWN_ISSUES.md S3 | "Build fails" | Build OK |
+| REMEDIATION_REPORT | "154 tests" | 176 testes |
+| MC-009 | PARCIAL | Integrado agent.ts:261 |
+| MC-010 | PARCIAL | Integrado agent.ts:258 |
+
+### Reclassificacoes na Fase 2
+- MC-009: PARCIAL -> COMPLETO (evidencia: agent.ts:261)
+- MC-010: PARCIAL -> COMPLETO (evidencia: agent.ts:258)
+- MC-015: PARCIAL -> COMPLETO (alinhamento README)
+
+### Correcoes aplicadas na Fase 3
+- README.md: 157 -> 176 testes; "issues de tipos" -> "build OK"
+- KNOWN_ISSUES.md Secao 3: "Build fails" -> "RESOLVED"
+- REMEDIATION_REPORT.md: 154 -> 176 testes; Versao 1.0 -> 1.1
+
+### Preparacao para Rodada 6 (Fase 4)
+
+**Recomendacao formal:**
+```
+Prompt Rodada 6: Integracao real de UI/UX premium e motion system
+```
+
+**Escopo sugerido:**
+1. Integrar componentes UI premium ao fluxo principal (App.tsx)
+2. Implementar hooks faltantes para AppRefactored.tsx ou remover arquivo
+3. Validar motion system com prefers-reduced-motion
+4. Testar performance de animacoes
+5. Fechar COI-009 e COI-010
+
+**Pre-requisitos:**
+- Branch protection aplicada no GitHub (COI-001) - dependencia externa
+- Baseline estavel: 176 testes, lint/typecheck/build OK (CONFIRMADO)
+
+**NAO incluir no escopo da Rodada 6:**
+- Mudancas em CI/CD ou workflows
+- Aumento de coverage thresholds
+- Refatoracao de testes excluidos (COI-012)
+
+### Pendencias que permanecem abertas
+
+| ID | Item | Severidade | Status | Dependencia |
+|----|------|------------|--------|-------------|
+| COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI |
+| COI-002 | Coverage thresholds | MEDIA | PARCIAL | Decisao de projeto |
+| COI-009 | UI premium | MEDIA | PARCIAL | Rodada 6 |
+| COI-010 | Motion system | MEDIA | PARCIAL | Rodada 6 |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL | Refatoracao futura |
 
 ---
 

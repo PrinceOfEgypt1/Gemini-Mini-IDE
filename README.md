@@ -3,8 +3,8 @@
 Ambiente de desenvolvimento assistido por IA para transformar intenções em planos e código.
 
 > **Status:** Em desenvolvimento ativo
-> **Testes:** 157 passando (vitest)
-> **Build:** UI funcional, analysis-agent com issues de tipos conhecidos (ver KNOWN_ISSUES.md)
+> **Testes:** 176 passando (vitest) - cli:1, shared:1, ui:17, analysis-agent:155, server:2
+> **Build:** Todos os pacotes compilam com sucesso (pnpm build)
 
 ## 🚀 Funcionalidades Principais
 1. **API Robusta:** Documentação Swagger (/docs), Tratamento de Erros, Validação.
