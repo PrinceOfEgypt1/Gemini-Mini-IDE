@@ -4,20 +4,13 @@ This document honestly tracks incomplete work and known limitations.
 
 ## 1. AppRefactored.tsx (packages/ui)
 
-**Status**: Incomplete - DO NOT USE
+**Status**: RESOLVED - Removed in Rodada 7
 
-**Issue**: `packages/ui/src/AppRefactored.tsx` was created as a refactored version of App.tsx with:
-- Custom hooks architecture (useProjectState, useChatState, useUIState, useProjectActions)
-- Framer Motion animations throughout
-- Cleaner component separation
+**Previous Issue**: `packages/ui/src/AppRefactored.tsx` was created as a refactored version of App.tsx with custom hooks architecture, but the hooks were never exported from `hooks/index.ts`, making the file unusable.
 
-**Problem**: The required hooks do not exist:
-- `hooks/index.ts` only exports `useAnalysisStream`
-- Missing: `useProjectState`, `useChatState`, `useUIState`, `useProjectActions`
+**Resolution**: AppRefactored.tsx and the associated unused hooks (useProjectState, useChatState, useUIState, useProjectActions) were removed in Rodada 7 as dead code.
 
-**Current State**: App.tsx is the working entry point with basic Framer Motion integration.
-
-**Resolution Path**: Either implement the missing hooks or delete AppRefactored.tsx.
+**Current State**: `App.tsx` is the single, active UI entry point with Framer Motion integration and accessibility support (prefers-reduced-motion via useReducedMotion hook).
 
 ---
 
@@ -70,4 +63,4 @@ The main prompts are generic and work for any project type.
 
 ---
 
-Last Updated: 2026-03-11 (Rodada 5)
+Last Updated: 2026-03-11 (Rodada 7)
