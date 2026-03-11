@@ -148,4 +148,37 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 
 ---
 
-**Ultima atualizacao:** 2026-03-08 (Rodada 3 - Fase 6)
+## Itens FECHADOS na Rodada 4/5
+
+### COI-013 - Erros de build no analysis-agent
+- **Severidade:** ALTO
+- **Status:** COMPLETO
+- **Fechado em:** Rodada 4
+- **Evidencia:** `pnpm build` passa; PR #18 mergeado
+
+### COI-014 - Erros de typecheck no server
+- **Severidade:** ALTO
+- **Status:** COMPLETO
+- **Fechado em:** Rodada 4
+- **Evidencia:** `pnpm typecheck` passa; project references removidos; type shim adicionado
+
+### COI-015 - Validadores nao integrados ao runtime
+- **Severidade:** ALTO
+- **Status:** COMPLETO
+- **Fechado em:** Rodada 5
+- **Evidencia:** `baseProjectAuditor.auditAndFix()` em agent.ts:258; `categoryValidator.validate()` em agent.ts:261
+
+---
+
+## Resumo pos-Rodada 5
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 3 | 1 |
+| ALTO | 7 | 0 |
+| MEDIO | 0 | 4 |
+| **Total** | **10** | **5** |
+
+---
+
+**Ultima atualizacao:** 2026-03-11 (Rodada 5 - Fase 2)

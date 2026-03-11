@@ -34,18 +34,18 @@ This document honestly tracks incomplete work and known limitations.
 
 ---
 
-## 3. TypeScript Build Errors (packages/analysis-agent)
+## 3. TypeScript Build (packages/analysis-agent)
 
-**Status**: Build fails with multiple type errors
+**Status**: RESOLVED (Rodada 4/5)
 
-**Root Causes**:
-- `incremental-generator.js` missing expected exports
-- `agent.ts` API signature mismatches
-- Zod schema type incompatibilities
+**Previous Issues** (now fixed):
+- Server typecheck dependency on project references - resolved by removing project references
+- `node:sqlite` type definitions missing - resolved by adding type shim in server package
+- `incremental-generator.ts` using `any` type - resolved with proper `unknown` type guards
 
-**Workaround**: Tests pass independently via vitest (which uses esbuild, not tsc).
+**Current State**: Both `pnpm typecheck` and `pnpm build` pass cleanly across all packages.
 
-**Resolution Path**: Align type definitions with runtime implementations.
+**Evidence**: PR #18 merged to main with all fixes.
 
 ---
 
@@ -70,4 +70,4 @@ The main prompts are generic and work for any project type.
 
 ---
 
-Last Updated: 2026-03-08 (Rodada 3)
+Last Updated: 2026-03-11 (Rodada 5)

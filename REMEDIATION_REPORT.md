@@ -1,8 +1,8 @@
 # Remediation Report - Gemini Mini-IDE
 
-**Date:** 2026-03-07
-**Version:** 1.0
-**Status:** Complete
+**Date:** 2026-03-11
+**Version:** 1.1
+**Status:** Complete (Updated Rodada 5)
 
 ---
 
@@ -50,7 +50,7 @@ This document summarizes the comprehensive architectural, technical, and operati
 - **Created `generality.test.ts`** - 11 multi-prompt generality tests
 - Tests verify: Web App, API/Backend, Library, CLI, Dashboard prompts
 - Tests ensure NO data structure references (Stack, Queue, Graph, etc.)
-- **All 154 tests pass**
+- **All 176 tests pass** (cli:1, shared:1, ui:17, analysis-agent:155, server:2)
 
 ### FASE 7: CI/CD and Quality Gates
 - **Created `.github/workflows/ci.yml`** - Full CI pipeline
@@ -70,12 +70,12 @@ This document summarizes the comprehensive architectural, technical, and operati
 
 | Metric | Before | After |
 |--------|--------|-------|
-| Tests Passing | Unknown | 154/154 (100%) |
+| Tests Passing | Unknown | 176/176 (100%) |
 | Scripts in Root | 331 | 0 (quarantined) |
 | Governance Files | 0 | 6 |
 | CI/CD Pipeline | None | Complete |
 | CODEOWNERS | None | Configured |
-| Domain-Specific Code | Yes | None |
+| Domain-Specific Code | Yes | Optional/Not Integrated (~828 lines in domain-specific/) |
 
 ---
 
