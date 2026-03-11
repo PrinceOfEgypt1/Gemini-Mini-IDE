@@ -1,6 +1,7 @@
 {
   "name": "gemini-mini-ide-monorepo",
   "version": "1.0.0",
+  "packageManager": "pnpm@9.12.2",
   "description": "Gemini Mini-IDE - Ambiente de Desenvolvimento Assistido por IA",
   "main": "index.js",
   "scripts": {
@@ -14,7 +15,12 @@
     "clean": "pnpm -r exec rm -rf dist node_modules",
     "prepare": "pnpm -r build"
   },
-  "keywords": ["ide", "ai", "typescript", "react"],
+  "keywords": [
+    "ide",
+    "ai",
+    "typescript",
+    "react"
+  ],
   "author": "",
   "license": "ISC",
   "private": true,
@@ -28,6 +34,7 @@
     "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",
+    "@vitest/coverage-v8": "1.6.1",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
     "prettier": "^3.6.2",

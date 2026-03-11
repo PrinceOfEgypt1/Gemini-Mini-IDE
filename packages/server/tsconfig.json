@@ -2,15 +2,15 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
-    "composite": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "types": ["node"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"],
-  "references": [
-    { "path": "../shared" },
-    { "path": "../analysis-agent" }
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "../analysis-agent/src/esaa/store/event-store.ts"
   ]
 }

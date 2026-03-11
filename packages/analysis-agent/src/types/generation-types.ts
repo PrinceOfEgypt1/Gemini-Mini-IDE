@@ -1,7 +1,8 @@
 import type { RichManifestItem } from "./rich-schemas.js";
 
 // Representa um ficheiro dentro de um lote a ser gerado
-export interface BatchFile extends RichManifestItem {}
+// Usando type alias para evitar interface vazia
+export type BatchFile = RichManifestItem;
 
 // A estrutura que o LLM deve retornar para um único ficheiro
 export interface LLMGeneratedFile {
@@ -27,4 +28,5 @@ export interface BatchResult {
 export interface BatchGeneratedFile {
   path: string;
   content: string;
+  hash?: string;
 }
