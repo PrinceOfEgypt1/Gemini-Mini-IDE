@@ -57,7 +57,7 @@ jobs:
         run: pnpm typecheck
 
       - name: Test with Coverage (BLOCKING)
-        run: pnpm test -- --coverage
+        run: pnpm -r test -- --coverage
         env:
           CI: true
 

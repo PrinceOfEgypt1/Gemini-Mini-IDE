@@ -15,7 +15,12 @@
     "clean": "pnpm -r exec rm -rf dist node_modules",
     "prepare": "pnpm -r build"
   },
-  "keywords": ["ide", "ai", "typescript", "react"],
+  "keywords": [
+    "ide",
+    "ai",
+    "typescript",
+    "react"
+  ],
   "author": "",
   "license": "ISC",
   "private": true,
@@ -29,6 +34,7 @@
     "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",
+    "@vitest/coverage-v8": "1.6.1",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
     "prettier": "^3.6.2",
