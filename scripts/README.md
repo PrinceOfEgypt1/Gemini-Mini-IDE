@@ -18,6 +18,26 @@ scripts/
 - Devem ter documentação de uso
 - Devem criar backup antes de modificações
 
+**Scripts disponíveis:**
+
+1. `pipeline.sh` - Pipeline de qualidade (lint, typecheck, test, build, runtime validation)
+2. `impact-analysis.sh` - Análise de impacto pré-mudança
+
+**Uso do impact-analysis.sh:**
+```bash
+# Analisar diff contra origin/main (padrão)
+./scripts/active/impact-analysis.sh
+
+# Analisar diff contra outra referência
+./scripts/active/impact-analysis.sh --base HEAD~3
+
+# Analisar arquivos específicos
+./scripts/active/impact-analysis.sh --files packages/server/src/index.ts
+
+# Analisar mudanças staged
+./scripts/active/impact-analysis.sh --staged
+```
+
 ### Scripts em Quarentena (`quarantine/`)
 - 329 scripts legados movidos para quarentena
 - Contêm `cat >` que pode sobrescrever arquivos críticos

@@ -593,6 +593,68 @@ Nenhum dos itens restantes bloqueia o funcionamento do projeto ou representa ris
 
 ---
 
+## Rodada 9
+**Status geral:** COMPLETA
+**Data:** 2026-03-13
+**Tipo:** ANALISE DE IMPACTO PRE-MUDANCA
+**Objetivo principal:** Implementar mecanismo oficial de analise de impacto pre-mudanca para o monorepo.
+
+### Contexto
+- Rodadas 1-8 estabilizaram lint, typecheck, build, testes, governanca, UI, motion e runtime
+- Nao existia mecanismo para avaliar risco de mudancas antes do merge
+- Possibilidade de regressao silenciosa em monorepo com multiplos pacotes
+
+### Escopo da Rodada 9
+- Auditar estrutura do monorepo e identificar eixos de impacto
+- Implementar script de analise de impacto com classificacao de risco
+- Validar com cenarios reais/simulados
+- Atualizar governanca
+
+### Trabalho realizado
+
+1. **Auditoria estrutural (Fase 1)**
+   - Mapeados 5 packages, 1 workflow, 1 script ativo, 4 docs governanca
+   - Identificados 10 eixos de impacto: ui, server, analysis-agent, shared, cli, ci, governance, scripts, config, docs
+   - Classificacao de risco por area definida
+
+2. **Implementacao (Fase 3)**
+   - Criado `scripts/active/impact-analysis.sh`
+   - Aceita 4 modos: --files (explicito), --base (diff contra ref), --staged, default (diff contra origin/main)
+   - Classifica risco em 4 niveis: BAIXO, MEDIO, ALTO, CRITICO
+   - Identifica areas afetadas, validacoes obrigatorias/recomendadas, impacto por dominio
+   - Exit code 0 para BAIXO/MEDIO, 1 para ALTO/CRITICO
+
+3. **Validacao pratica (Fase 4)**
+   - Cenario 1: UI (App.tsx + animations.ts) -> ALTO, valida lint/typecheck/build/test
+   - Cenario 2: CI (ci.yml) -> ALTO, valida review-workflow + pipeline
+   - Cenario 3: Governance + docs -> MEDIO, valida review-coherence
+   - Cenario 4: Shared + config critico -> CRITICO, valida full pipeline + runtime
+   - Cenario 5: Esta rodada -> MEDIO, valida review + test-script
+
+### Arquivos alterados
+- `scripts/active/impact-analysis.sh` (NOVO) - script de analise de impacto
+- `docs/governance/MASTER_COMPLIANCE_MATRIX.md` - MC-023
+- `docs/governance/CRITICAL_OPEN_ITEMS.md` - registro
+- `docs/governance/ROUND_STATUS_LOG.md` - registro da rodada
+
+### Itens FECHADOS
+- MC-023: Analise de impacto pre-mudanca (COMPLETO)
+
+### Pendencias que permanecem abertas
+
+| ID | Item | Severidade | Status | Proxima acao |
+|----|------|------------|--------|--------------|
+| COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI (dependencia externa) |
+| COI-002 | Coverage thresholds | MEDIA | PARCIAL | Decisao de projeto |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL | Refatoracao futura |
+
+### Conclusao da Rodada 9
+**Status geral:** COMPLETA
+**MC-023 fechado com evidencia**
+**Mecanismo de analise de impacto institucionalizado**
+
+---
+
 ## Template para novas rodadas
 
 ### Rodada X
