@@ -190,4 +190,30 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 
 ---
 
-**Ultima atualizacao:** 2026-03-11 (Rodada 7 - Fase 5)
+## Itens FECHADOS na Rodada 8
+
+### COI-016 - Validacao real de runtime e coerencia de entrypoint
+- **Severidade:** CRITICO
+- **Status:** COMPLETO
+- **Fechado em:** Rodada 8 - Fase 3-4
+- **Evidencia:**
+  - `packages/server/package.json` main e start corrigidos para `dist/server/src/index.js`
+  - Server sobe com sucesso e `/healthz` responde `{"status":"ok"}`
+  - CI smoke test atualizado: valida `/healthz` e coerencia de entrypoint
+  - Pipeline local (`scripts/active/pipeline.sh`) com validacao de runtime
+  - Prova concreta: `curl -sf http://localhost:3200/healthz` retorna 200
+
+---
+
+## Resumo pos-Rodada 8
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 7 | 0 |
+| MEDIO | 2 | 2 |
+| **Total** | **13** | **3** |
+
+---
+
+**Ultima atualizacao:** 2026-03-13 (Rodada 8 - Fase 5)

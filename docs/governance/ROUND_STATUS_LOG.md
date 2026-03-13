@@ -509,6 +509,90 @@ Nenhum dos itens restantes bloqueia o funcionamento do projeto ou representa ris
 
 ---
 
+## Rodada 8
+**Status geral:** COMPLETA
+**Data:** 2026-03-13
+**Tipo:** VALIDACAO REAL DE RUNTIME E INTEGRACAO
+**Objetivo principal:** Implementar e consolidar validacao real de runtime e integracao minima para evitar "vitorias prematuras".
+
+### Contexto
+- Rodadas anteriores estabilizaram lint, typecheck, build, testes, governanca, UI e motion
+- Porém, não existia validação de que o server realmente subia e respondia
+- Entrypoint em package.json apontava para arquivo inexistente (dist/index.js vs dist/server/src/index.js)
+- CI smoke test usava endpoint /health (inexistente) em vez de /healthz (real)
+- Pipeline local não tinha nenhuma validação de runtime
+
+### Escopo da Rodada 8
+- Auditar estado atual de validação de runtime
+- Corrigir entrypoint no package.json do server
+- Corrigir CI smoke test (endpoint, porta, kill command)
+- Adicionar validação de runtime ao pipeline local
+- Atualizar governança
+
+### Achados da auditoria (Fase 1)
+| Item | Estado encontrado | Problema |
+|------|-------------------|----------|
+| package.json main | `dist/index.js` | Arquivo NÃO EXISTE - build emite em `dist/server/src/index.js` |
+| package.json start | `node dist/index.js` | Mesmo problema - `pnpm start` falharia |
+| CI smoke test endpoint | `/health` | Endpoint incorreto - server expõe `/healthz` |
+| CI smoke test porta | `3000` | Porta incorreta - server usa `3200` |
+| CI smoke test pkill | `node dist/index.js` | Caminho errado para kill (mascarado por `|| true`) |
+| Pipeline local | Sem runtime check | Apenas lint/typecheck/tests/build |
+
+### Correções aplicadas (Fase 3)
+
+1. **packages/server/package.json**
+   - main: `dist/index.js` -> `dist/server/src/index.js`
+   - start: `node dist/index.js` -> `node dist/server/src/index.js`
+
+2. **.github/workflows/ci.yml**
+   - Endpoint: `/health` -> `/healthz`
+   - Porta: `3000` -> `3200`
+   - Health check agora é BLOQUEANTE (não apenas "note")
+   - Adicionada verificação de coerência de entrypoint
+   - Kill command corrigido
+
+3. **scripts/active/pipeline.sh**
+   - Adicionado step "Entrypoint coherence": verifica que arquivo declarado em main existe
+   - Adicionado step "Server startup and healthz": inicia server, valida /healthz, para server
+
+### Validação técnica (Fase 4)
+- pnpm lint: PASSA
+- pnpm typecheck: PASSA
+- pnpm build: PASSA
+- pnpm test: todos passando
+- Server startup: OK (PID criado, processo rodando)
+- /healthz: `{"status":"ok","timestamp":"2026-03-13T19:19:45.496Z"}`
+- Entrypoint coherence: `dist/server/src/index.js` EXISTE
+
+### Arquivos alterados
+- `packages/server/package.json` - correcao de main e start
+- `.github/workflows/ci.yml` - correcao de smoke test
+- `scripts/active/pipeline.sh` - adicao de runtime validation
+- `docs/governance/MASTER_COMPLIANCE_MATRIX.md` - MC-021, MC-022
+- `docs/governance/CRITICAL_OPEN_ITEMS.md` - COI-016
+- `docs/governance/ROUND_STATUS_LOG.md` - registro da rodada
+
+### Itens FECHADOS
+- MC-021: Validacao real de runtime e integracao minima (COMPLETO)
+- MC-022: Coerencia entre build e package.json entrypoint (COMPLETO)
+- COI-016: Validacao real de runtime e coerencia de entrypoint (COMPLETO)
+
+### Pendencias que permanecem abertas
+
+| ID | Item | Severidade | Status | Proxima acao |
+|----|------|------------|--------|--------------|
+| COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI (dependencia externa) |
+| COI-002 | Coverage thresholds | MEDIA | PARCIAL | Decisao de projeto |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL | Refatoracao futura |
+
+### Conclusao da Rodada 8
+**Status geral:** COMPLETA
+**Validacao de runtime institucionalizada com evidencia concreta**
+**Projeto agora valida não apenas "compila" mas "sobe e responde"**
+
+---
+
 ## Template para novas rodadas
 
 ### Rodada X

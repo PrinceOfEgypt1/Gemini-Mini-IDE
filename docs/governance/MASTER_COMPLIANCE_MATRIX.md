@@ -50,6 +50,8 @@ Esta matriz e a fonte principal de controle de conformidade do projeto **Gemini 
 | MC-018 | Motion | Motion system funcional, acessivel e integrado | Antes havia motion parcial | `prefers-reduced-motion`, integracao real e performance | COMPLETO | - | Teste de uso real + acessibilidade | Nao | Rodada 6 | **EVIDENCIA:** useReducedMotion hook criado; App.tsx respeita prefers-reduced-motion; config/animations.ts com helpers acessiveis |
 | MC-019 | Relatorios | Relatorios sem superdeclaracao | Houve historico de exagero | Relatorio final usando COMPLETO/PARCIAL/NAO CUMPRIDO com honestidade | PARCIAL | Revisar linguagem final | Auditoria textual do relatorio | Nao | Rodada 3 | Item permanente |
 | MC-020 | Dependencias externas | Checklist para tudo que depende de GitHub UI/settings | Parte da governanca depende de settings externos | Documento claro de aplicacao manual | COMPLETO | - | Conferencia documental | Sim | Rodada 3 | Arquivo `EXTERNAL_DEPENDENCIES_CHECKLIST.md` criado |
+| MC-021 | Runtime | Validacao real de runtime e integracao minima | Rodadas anteriores validavam apenas build estatico | Server sobe, /healthz responde, entrypoint coerente | COMPLETO | - | Server start + curl /healthz + verificacao entrypoint | Nao | Rodada 8 | **EVIDENCIA:** package.json corrigido para dist/server/src/index.js; pipeline local com runtime check; CI smoke test com /healthz e entrypoint validation |
+| MC-022 | Runtime | Coerencia entre build e package.json entrypoint | Entrypoint em package.json apontava para dist/index.js mas build emitia dist/server/src/index.js | package.json main e start apontam para arquivo real | COMPLETO | - | Verificar que arquivo declarado em main existe apos build | Nao | Rodada 8 | **EVIDENCIA:** main e start corrigidos para dist/server/src/index.js; CI verifica coerencia automaticamente |
 
 ---
 
@@ -74,3 +76,5 @@ Esta matriz e a fonte principal de controle de conformidade do projeto **Gemini 
 | 2026-03-11 | Rodada 7 - Fase 0-2 | Auditoria e decisao final | IA | AppRefactored.tsx identificado como codigo morto; decisao de remocao tomada |
 | 2026-03-11 | Rodada 7 - Fase 3-4 | Implementacao e validacao | IA | AppRefactored.tsx e hooks nao utilizados removidos; 176 testes passando |
 | 2026-03-11 | Rodada 7 - Fase 5-6 | Governanca e encerramento | IA | MC-017 e COI-009 promovidos a COMPLETO; linha de recuperacao ENCERRADA |
+| 2026-03-13 | Rodada 8 - Fase 0-3 | Auditoria e implementacao de runtime validation | IA | Entrypoint corrigido; CI smoke test com /healthz e entrypoint check; pipeline local com runtime validation |
+| 2026-03-13 | Rodada 8 - Fase 4-5 | Validacao e governanca | IA | MC-021 e MC-022 criados como COMPLETO; COI-016 criado e fechado |
