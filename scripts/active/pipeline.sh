@@ -45,11 +45,46 @@ run_step() {
     echo ""
 }
 
-# Pipeline
+# Pipeline - Static checks
 run_step "Lint" "pnpm lint"
 run_step "Typecheck" "pnpm typecheck"
 run_step "Tests" "pnpm test"
 run_step "Build" "pnpm build"
+
+# Pipeline - Runtime validation
+run_step "Entrypoint coherence" '
+    MAIN_ENTRY=$(node -e "const p=require(\"./packages/server/package.json\"); console.log(p.main)")
+    if [ -f "packages/server/$MAIN_ENTRY" ]; then
+        echo "  package.json main ($MAIN_ENTRY) exists in build output"
+    else
+        echo "  FAIL: packages/server/$MAIN_ENTRY does not exist"
+        exit 1
+    fi
+'
+
+run_step "Server startup and healthz" '
+    cd packages/server
+    node dist/server/src/index.js &
+    SERVER_PID=$!
+    sleep 2
+
+    if ! kill -0 $SERVER_PID 2>/dev/null; then
+        echo "  Server failed to start"
+        exit 1
+    fi
+
+    HEALTH=$(curl -sf http://localhost:3200/healthz 2>/dev/null)
+    CURL_EXIT=$?
+    kill $SERVER_PID 2>/dev/null || true
+    wait $SERVER_PID 2>/dev/null || true
+
+    if [ $CURL_EXIT -ne 0 ]; then
+        echo "  /healthz did not respond"
+        exit 1
+    fi
+
+    echo "  Server started and /healthz responded: $HEALTH"
+'
 
 # Resultado
 echo -e "${BLUE}════════════════════════════════════════════════════════════════${NC}"

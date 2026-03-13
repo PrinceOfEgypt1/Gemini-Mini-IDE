@@ -114,25 +114,44 @@ jobs:
             console.log('All required exports present');
           "
 
-      - name: Verify server starts (BLOCKING)
+      - name: Verify server starts and healthz responds (BLOCKING)
         run: |
           cd packages/server
           # Start server in background with timeout
-          timeout 10s node dist/server/src/index.js &
+          timeout 15s node dist/server/src/index.js &
           SERVER_PID=$!
           sleep 3
 
-          # Check if server process is still running (basic smoke test)
-          if kill -0 $SERVER_PID 2>/dev/null; then
-            echo "Server started successfully"
-            # Attempt health check but don't fail if endpoint doesn't exist
-            curl -f http://localhost:3000/health 2>/dev/null || echo "Note: /health endpoint not available (acceptable)"
-            pkill -f "node dist/index.js" || true
-            exit 0
-          else
+          # Check if server process is still running
+          if ! kill -0 $SERVER_PID 2>/dev/null; then
             echo "CRITICAL: Server failed to start"
             exit 1
           fi
+
+          echo "Server started successfully (PID: $SERVER_PID)"
+
+          # Health check on /healthz (MUST succeed)
+          if curl -sf http://localhost:3200/healthz; then
+            echo ""
+            echo "HealthZ endpoint responding correctly"
+          else
+            echo "CRITICAL: /healthz endpoint not responding"
+            kill $SERVER_PID 2>/dev/null || true
+            exit 1
+          fi
+
+          # Verify entrypoint coherence
+          MAIN_ENTRY=$(node -e "const p=require('./package.json'); console.log(p.main)")
+          if [ -f "$MAIN_ENTRY" ]; then
+            echo "Entrypoint coherence OK: $MAIN_ENTRY exists"
+          else
+            echo "CRITICAL: package.json main ($MAIN_ENTRY) does not exist"
+            kill $SERVER_PID 2>/dev/null || true
+            exit 1
+          fi
+
+          kill $SERVER_PID 2>/dev/null || true
+          echo "Runtime validation passed"
 
   # ===========================================================================
   # CRITICAL FILES GUARD - BLOCKING
