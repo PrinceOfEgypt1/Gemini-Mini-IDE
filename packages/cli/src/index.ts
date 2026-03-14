@@ -5,6 +5,7 @@ import path from 'path';
 import axios, { AxiosError } from 'axios';
 import chalk from 'chalk';
 import ora from 'ora';
+import { analyzeImpact, formatImpactReport } from '@gemini-mini-ide/shared';
 
 // URL do servidor (padrão local)
 const SERVER_URL = process.env["MINI_IDE_SERVER_URL"] ?? 'http://localhost:3200';
@@ -111,46 +112,26 @@ program
 
 program
   .command('impact')
-  .description('Analyzes impact of changed files and reports risk level')
-  .argument('[files...]', 'Files to analyze (if empty, uses git diff against origin/main)')
-  .option('--base <ref>', 'Git ref to diff against', 'origin/main')
-  .option('--staged', 'Analyze staged changes')
+  .description('Analyzes impact of changed files and reports risk level (runs locally, no server needed)')
+  .argument('[files...]', 'Files to analyze')
   .option('--json', 'Output raw JSON instead of formatted report')
-  .action(async (files: string[], options: { base: string; staged?: boolean; json?: boolean }) => {
-    const spinner = ora('Analyzing impact...').start();
-    try {
-      const response = await axios.post<{ report: unknown; formatted: string }>(
-        `${SERVER_URL}/impact-analysis`,
-        { files, base: options.base, staged: options.staged ?? false }
-      );
+  .action(async (files: string[], options: { json?: boolean }) => {
+    if (files.length === 0) {
+      console.error(chalk.red('Error: Provide at least one file path to analyze.'));
+      console.error(chalk.yellow('Usage: mini-ide impact <file1> [file2] ...'));
+      process.exit(2);
+    }
 
-      spinner.stop();
+    const report = analyzeImpact(files);
 
-      if (options.json) {
-        console.log(JSON.stringify(response.data.report, null, 2));
-      } else {
-        console.log(response.data.formatted);
-      }
+    if (options.json) {
+      console.log(JSON.stringify(report, null, 2));
+    } else {
+      console.log(formatImpactReport(report));
+    }
 
-      const report = response.data.report as { overallRisk: string };
-      const highRisk = report.overallRisk === 'ALTO' || report.overallRisk === 'CRITICO';
-      if (highRisk) {
-        process.exit(1);
-      }
-    } catch (error) {
-      spinner.fail(chalk.red('Impact analysis failed.'));
-      if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError;
-        if (axiosError.code === 'ECONNREFUSED') {
-          console.error(chalk.red(`\nCannot connect to server at ${SERVER_URL}.`));
-          console.error(chalk.yellow('Hint: Is the server running? (pnpm start)'));
-        } else {
-          console.error(chalk.red(`Error: ${axiosError.message}`));
-        }
-      } else {
-        const err = error as Error;
-        console.error(chalk.red(`Error: ${err.message}`));
-      }
+    const highRisk = report.overallRisk === 'ALTO' || report.overallRisk === 'CRITICO';
+    if (highRisk) {
       process.exit(1);
     }
   });
