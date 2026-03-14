@@ -85,11 +85,11 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 ### COI-002 - Coverage gate ainda nao totalmente comprovado
 - **Severidade:** MEDIO (rebaixado)
 - **Area:** Testes / CI
-- **Status:** PARCIAL
-- **Evidencia resumida:** Thresholds em 25%/15% sao baixos mas funcionais
-- **Acao necessaria:** Considerar elevar thresholds em rodada futura
-- **Definicao de concluido:** Thresholds mais altos ou justificativa documentada
-- **Nota:** Aceitavel para projeto em desenvolvimento ativo
+- **Status:** PARCIAL (avancado na Rodada 11)
+- **Evidencia resumida:** Thresholds root em 25%/15% ainda conservadores; shared agora tem thresholds por pacote (80% lines/branches/stmts, 50% funcs)
+- **Acao necessaria:** Elevar thresholds root quando cli/server tiverem coverage > 0%; adicionar thresholds por pacote a outros pacotes
+- **Definicao de concluido:** Thresholds reais por pacote em todos os pacotes com testes significativos
+- **Nota:** Rodada 11 adicionou thresholds ao shared (0% -> 93.7% coverage + 80% threshold). Root nao pode ser elevado porque cli=0% e server=0%
 
 ---
 
@@ -266,4 +266,31 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 
 ---
 
-**Ultima atualizacao:** 2026-03-14 (Rodada 10 - Fase 8)
+## Progresso na Rodada 11
+
+### COI-002 avancado
+- **Antes:** Thresholds root 25%/15% sem thresholds por pacote
+- **Depois:** shared tem thresholds por pacote (80%/80%/80%/50%); 92 testes novos; shared coverage 0%->93.7%
+- **Status:** Permanece PARCIAL (root nao pode ser elevado enquanto cli=0%, server=0%)
+
+### COI-012 parcialmente atendido
+- **Antes:** 3 exclusoes no analysis-agent; areas generation/ e validators/ sem testes
+- **Depois:** generation/ e validators/ agora tem testes (batch-validator, context-accumulator, manifest-batcher, integrity-validator); exclusoes de esaa/agent/index permanecem (requerem refatoracao de sqlite/OpenAI mocking)
+- **Status:** Permanece PARCIAL mas divida reduzida
+
+---
+
+## Resumo pos-Rodada 11
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 3 | 2 |
+| **Total** | **15** | **3** |
+
+Nota: Contagem total nao mudou, mas COI-002 e COI-012 tiveram progresso real.
+
+---
+
+**Ultima atualizacao:** 2026-03-14 (Rodada 11 - Fase 5)
