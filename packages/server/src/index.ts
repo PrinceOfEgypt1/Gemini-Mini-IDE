@@ -2,10 +2,17 @@ import Fastify, { FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import dotenv from "dotenv";
-import { z } from "zod";
 import { AnalysisAgent, globalESAAOrchestrator } from "@gemini-mini-ide/analysis-agent";
 import { analyzeImpact, formatImpactReport } from "@gemini-mini-ide/shared";
 import { exportController } from "./controllers/export.controller.js";
+import {
+  extractLLMConfig,
+  AnalyzeRequestSchema,
+  StartConversationSchema,
+  RespondSchema,
+  ImpactAnalysisSchema,
+} from "./helpers.js";
+import type { LLMConfig } from "./helpers.js";
 
 dotenv.config({ path: "../../.env" });
 
@@ -17,54 +24,6 @@ const DEFAULT_API_KEY = process.env["OPENAI_API_KEY"] ?? "";
 let defaultAgentInstance: AnalysisAgent | null = null;
 if (DEFAULT_API_KEY) {
   defaultAgentInstance = new AnalysisAgent(DEFAULT_API_KEY);
-}
-
-// Schema de Requisição
-const AnalyzeRequestSchema = z.object({
-  text: z.string().min(1),
-  maxLen: z.number().optional(),
-  currentContext: z
-    .object({
-      files: z.array(
-        z.object({
-          path: z.string(),
-          purpose: z.string().optional()
-        })
-      ),
-      summary: z.string().optional()
-    })
-    .optional()
-});
-
-// Schemas de conversação
-const StartConversationSchema = z.object({
-  userId: z.string().min(1),
-  message: z.string().min(1)
-});
-const RespondSchema = z.object({
-  message: z.string().min(1)
-});
-
-interface LLMConfig {
-  apiKey: string;
-  model?: string;
-  baseUrl?: string;
-}
-
-function extractLLMConfig(headers: Record<string, string | string[] | undefined>): LLMConfig {
-  const authHeader = headers["authorization"];
-  const apiKey = authHeader && typeof authHeader === "string" && authHeader.startsWith("Bearer ")
-    ? authHeader.substring(7)
-    : DEFAULT_API_KEY;
-
-  const model = headers["x-llm-model"];
-  const baseUrl = headers["x-llm-base-url"];
-
-  return {
-    apiKey,
-    model: typeof model === "string" ? model : undefined,
-    baseUrl: typeof baseUrl === "string" ? baseUrl : undefined
-  };
 }
 
 // Lazy-load InteractiveOrchestrator (depende de better-sqlite3 nativo)
@@ -133,12 +92,6 @@ const start = async (): Promise<void> => {
   app.get("/healthz", async () => ({ status: "ok", timestamp: new Date().toISOString() }));
 
   // Impact analysis endpoint
-  const ImpactAnalysisSchema = z.object({
-    files: z.array(z.string()),
-    base: z.string().optional(),
-    staged: z.boolean().optional(),
-  });
-
   app.post("/impact-analysis", async (request, reply) => {
     const parseResult = ImpactAnalysisSchema.safeParse(request.body);
     if (!parseResult.success) {
@@ -437,7 +390,7 @@ const start = async (): Promise<void> => {
 
   // POST /conversations/start — Inicia nova conversa
   app.post("/conversations/start", async (request, reply) => {
-    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>, DEFAULT_API_KEY);
     if (!llmConfig.apiKey) {
       return reply.status(401).send({
         error: "API Key não configurada",
@@ -462,7 +415,7 @@ const start = async (): Promise<void> => {
 
   // POST /conversations/:sessionId/respond — Responde ao agente
   app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/respond", async (request, reply) => {
-    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>, DEFAULT_API_KEY);
     if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }
@@ -485,7 +438,7 @@ const start = async (): Promise<void> => {
 
   // GET /conversations/:sessionId — Estado da sessão
   app.get<{ Params: { sessionId: string } }>("/conversations/:sessionId", async (request, reply) => {
-    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>, DEFAULT_API_KEY);
     if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }
@@ -506,7 +459,7 @@ const start = async (): Promise<void> => {
 
   // POST /conversations/:sessionId/skip — Pula agente atual
   app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/skip", async (request, reply) => {
-    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>, DEFAULT_API_KEY);
     if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }
@@ -524,7 +477,7 @@ const start = async (): Promise<void> => {
 
   // POST /conversations/:sessionId/plan — Gera plano (arch + HUs) para revisão
   app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/plan", async (request, reply) => {
-    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>, DEFAULT_API_KEY);
     if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }
@@ -542,7 +495,7 @@ const start = async (): Promise<void> => {
 
   // POST /conversations/:sessionId/generate — Gera código a partir do plano aprovado
   app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/generate", async (request, reply) => {
-    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>, DEFAULT_API_KEY);
     if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }
@@ -560,7 +513,7 @@ const start = async (): Promise<void> => {
 
   // POST /conversations/:sessionId/generate-incremental — Gera código incrementalmente com governança
   app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/generate-incremental", async (request, reply) => {
-    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>, DEFAULT_API_KEY);
     if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }
@@ -584,7 +537,7 @@ const start = async (): Promise<void> => {
 
   // POST /conversations/:sessionId/finalize — Gera resultado final (legado)
   app.post<{ Params: { sessionId: string } }>("/conversations/:sessionId/finalize", async (request, reply) => {
-    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>);
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>, DEFAULT_API_KEY);
     if (!llmConfig.apiKey) {
       return reply.status(401).send({ error: "API Key não configurada" });
     }

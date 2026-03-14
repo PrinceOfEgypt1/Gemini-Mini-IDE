@@ -830,6 +830,89 @@ Todos os pontos de integracao importam e usam `analyzeImpact()` desta mesma font
 
 ---
 
+## Rodada 12
+**Status geral:** COMPLETA
+**Data:** 2026-03-14
+**Tipo:** FORTALECIMENTO DE COVERAGE EM SERVER E CLI
+**Objetivo principal:** Atacar lacunas de coverage em server e cli, com preparacao para endurecimento futuro dos thresholds globais.
+
+### Baseline da Rodada 12
+- **Commit base:** 0bfabf9 (Merge PR #27 - Rodada 11)
+- **Branch:** claude/improve-test-coverage-vpHO8
+- **Working tree:** LIMPA
+- **Diff inicial contra origin/main:** VAZIO
+- **Testes baseline:** 248 (cli:1, shared:35, ui:17, analysis-agent:193, server:2)
+- **Pipeline:** 6/6 OK
+
+### Auditoria (Fase 1)
+- server: 0% coverage, 2 placeholder tests, 637-line index.ts monolitico
+- cli: 0% coverage, 1 placeholder test, 139-line index.ts com 3 comandos
+- server testable: extractLLMConfig (pure), Zod schemas (pure), endpoints via inject
+- cli testable: impact command logic (pure), server URL config
+
+### Estrategia (Fase 2)
+- Server: extrair helpers.ts com extractLLMConfig e Zod schemas; testar unitariamente
+- CLI: extrair commands.ts com runImpactAnalysis e getServerUrl; testar unitariamente
+- Refatoracao minima de suporte para testabilidade (extract-to-test pattern)
+
+### Trabalho realizado (Fase 3)
+
+**Server:**
+- Criado `helpers.ts`: extractLLMConfig + 4 Zod schemas extraidos de index.ts
+- Criado `helpers.test.ts`: 32 tests cobrindo extractLLMConfig e todos os schemas
+- Atualizado `index.ts`: importa de helpers.ts em vez de definir inline
+- Coverage: 0% -> 6.68% lines
+
+**CLI:**
+- Criado `commands.ts`: runImpactAnalysis + getServerUrl extraidos de index.ts
+- Atualizado `index.test.ts`: 15 testes reais substituindo placeholder
+- Atualizado `index.ts`: usa commands.ts para logica de impact
+- Coverage: 0% -> 23.39% lines (commands.ts = 100%)
+
+**Thresholds por pacote:**
+- Server: 5% lines/stmts, 20% funcs, 50% branches (NOVO)
+- CLI: 20% lines/stmts, 50% funcs, 80% branches (NOVO)
+
+### Validacao tecnica final (Fase 4)
+- pnpm lint: PASSA
+- pnpm typecheck: PASSA
+- pnpm build: PASSA
+- pnpm test: 294 testes (cli:15, shared:35, ui:17, analysis-agent:193, server:34)
+- pipeline: 6/6 OK
+
+### Arquivos alterados
+- `packages/server/src/helpers.ts` (NOVO) - pure functions extraidas
+- `packages/server/src/helpers.test.ts` (NOVO) - 32 tests
+- `packages/server/src/index.ts` (MODIFICADO) - importa helpers
+- `packages/server/vitest.config.ts` (MODIFICADO) - coverage thresholds
+- `packages/cli/src/commands.ts` (NOVO) - pure functions extraidas
+- `packages/cli/src/index.test.ts` (MODIFICADO) - 15 testes reais
+- `packages/cli/src/index.ts` (MODIFICADO) - usa commands module
+- `packages/cli/vitest.config.ts` (MODIFICADO) - coverage thresholds
+- `docs/governance/*.md` (MODIFICADO) - registros da rodada
+
+### Itens FECHADOS
+- MC-026: Fortalecimento de coverage em server e cli (COMPLETO)
+
+### Pendencias que permanecem abertas
+
+| ID | Item | Severidade | Status | Proxima acao |
+|----|------|------------|--------|--------------|
+| COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI |
+| COI-002 | Coverage thresholds | MEDIA | PARCIAL (avancado) | Elevar thresholds conforme coverage cresce; adicionar a ui/analysis-agent |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL | Refatoracao sqlite/OpenAI mocking |
+
+### Threshold global
+**NAO elevado.** Justificativa: ui=7.95% impede elevacao segura do threshold root (25%/15%).
+
+### Conclusao da Rodada 12
+**Status geral:** COMPLETA
+**MC-026 fechado com evidencia**
+**server e cli saem de 0% para coverage real com thresholds por pacote**
+**46 testes novos; 294 testes totais**
+
+---
+
 ## Template para novas rodadas
 
 ### Rodada X
