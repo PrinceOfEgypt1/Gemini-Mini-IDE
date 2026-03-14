@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { runImpactAnalysis, getServerUrl } from './commands.js';
+import { createProgram } from './index.js';
 
 describe('runImpactAnalysis', () => {
   it('should return exit code 2 for empty files', () => {
@@ -75,6 +76,71 @@ describe('runImpactAnalysis', () => {
   it('should handle multiple low-risk files', () => {
     const result = runImpactAnalysis(['docs/a.md', 'docs/b.md'], {});
     expect(result.exitCode).toBe(0);
+  });
+});
+
+describe('createProgram', () => {
+  it('should create a program with correct name', () => {
+    const program = createProgram();
+    expect(program.name()).toBe('mini-ide');
+  });
+
+  it('should have version 0.0.1', () => {
+    const program = createProgram();
+    expect(program.version()).toBe('0.0.1');
+  });
+
+  it('should have a description', () => {
+    const program = createProgram();
+    expect(program.description()).toContain('CLI');
+  });
+
+  it('should register analyze command', () => {
+    const program = createProgram();
+    const cmd = program.commands.find(c => c.name() === 'analyze');
+    expect(cmd).toBeDefined();
+    expect(cmd!.description()).toContain('análise');
+  });
+
+  it('should register health command', () => {
+    const program = createProgram();
+    const cmd = program.commands.find(c => c.name() === 'health');
+    expect(cmd).toBeDefined();
+    expect(cmd!.description()).toContain('servidor');
+  });
+
+  it('should register impact command', () => {
+    const program = createProgram();
+    const cmd = program.commands.find(c => c.name() === 'impact');
+    expect(cmd).toBeDefined();
+    expect(cmd!.description()).toContain('impact');
+  });
+
+  it('should have 3 commands total', () => {
+    const program = createProgram();
+    expect(program.commands).toHaveLength(3);
+  });
+
+  it('should have analyze command with --max-len option', () => {
+    const program = createProgram();
+    const cmd = program.commands.find(c => c.name() === 'analyze')!;
+    const option = cmd.options.find(o => o.long === '--max-len');
+    expect(option).toBeDefined();
+    expect(option!.defaultValue).toBe('200');
+  });
+
+  it('should have analyze command with --raw option', () => {
+    const program = createProgram();
+    const cmd = program.commands.find(c => c.name() === 'analyze')!;
+    const option = cmd.options.find(o => o.long === '--raw');
+    expect(option).toBeDefined();
+  });
+
+  it('should have impact command with --json option', () => {
+    const program = createProgram();
+    const cmd = program.commands.find(c => c.name() === 'impact')!;
+    const option = cmd.options.find(o => o.long === '--json');
+    expect(option).toBeDefined();
   });
 });
 

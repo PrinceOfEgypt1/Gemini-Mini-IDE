@@ -913,6 +913,100 @@ Todos os pontos de integracao importam e usam `analyzeImpact()` desta mesma font
 
 ---
 
+## Rodada 13
+
+### Rodada 13
+**Status geral:** COMPLETA
+**Objetivo principal:** Coverage mais profunda de rotas/handlers do server, entrypoint do cli e ataque controlado as exclusoes remanescentes do analysis-agent
+**Escopo:** packages/server, packages/cli, packages/analysis-agent (validators)
+
+### Baseline
+- 294 testes passando
+- server coverage: 6.68% (0% em rotas/handlers)
+- cli coverage: 23.39% (0% em entrypoint)
+- analysis-agent: 14.27% (validators 53.6%)
+- pipeline 6/6 verde
+
+### Entregas
+
+#### Server (packages/server)
+- **buildApp() factory** extraida de index.ts para testabilidade via app.inject()
+- **Guard `if (!process.env["VITEST"])`** para evitar auto-start em testes
+- **40 testes de rotas** em routes.test.ts cobrindo:
+  - GET /healthz
+  - POST /impact-analysis (valido, invalido, sem files)
+  - GET /impact-analysis
+  - POST /analyze (dry-run, invalido, sem API key)
+  - POST /export (invalido, formato nao suportado, ZIP valido)
+  - GET /esaa/health, /esaa/events, /esaa/projections/operational
+  - GET /esaa/projections/audit/:correlationId
+  - GET /esaa/agents
+  - POST /esaa/agents/:agentId/quarantine, /reinstate
+  - POST /esaa/recovery/snapshot, /rollback, /replay
+  - GET /esaa/promotions/:batchId, POST /rollback
+  - POST /conversations/* (8 endpoints, 401 sem API key, 400 body invalido)
+- **Coverage:** 6.68% -> 56.96% (+50.28pp)
+- **Thresholds elevados:** lines/stmts 5%->40%, funcs 20%->30%, branches 50%->55%
+
+#### CLI (packages/cli)
+- **createProgram() factory** extraida de index.ts para testabilidade
+- **Guard `if (!process.env["VITEST"])`** para evitar auto-parse em testes
+- **10 testes de entrypoint** cobrindo:
+  - Nome, versao, descricao do program
+  - Registro de 3 comandos (analyze, health, impact)
+  - Opcoes de cada comando (--max-len, --raw, --json)
+- **Coverage:** 23.39% -> 54.39% (+31pp)
+- **Thresholds elevados:** lines/stmts 20%->40%, funcs 50%->80%
+
+#### Analysis-agent (packages/analysis-agent)
+- **manifest-validator.ts** testado com 10 testes (0% -> 100%)
+- **validators/ directory:** 53.6% -> 100%
+- **Overall:** 14.27% -> 14.9%
+- **agent.test.ts auditado com tentativa real de re-habilitacao:**
+  - Falha 1: Mock retorna `complexity: "Media"` mas Zod schema espera `{level, score, justification}`
+  - Falha 2: `agent.client.chat` e `undefined` — estrutura interna do OpenAI client mudou
+  - Conclusao: requer atualizacao de mock data E descoberta da nova API interna. Escopo moderado.
+- **esaa.test.ts:** Nao atacado (depende de `node:sqlite` builtin vs `better-sqlite3` mock)
+- **index.test.ts:** Nao atacado (cadeia de imports acoplada ao esaa)
+
+### Provas criticas
+
+| Item | Antes | Depois |
+|------|-------|--------|
+| Server coverage | 6.68% | 56.96% |
+| CLI coverage | 23.39% | 54.39% |
+| Analysis-agent validators | 53.6% | 100% |
+| Total testes | 294 | 354 |
+| Server thresholds | 5/20/50/5 | 40/30/55/40 |
+| CLI thresholds | 20/50/80/20 | 40/80/80/40 |
+
+### Pendencias remanescentes
+
+| Item | Severidade | Status | Acao |
+|----|------|------------|--------|
+| COI-001 | Branch protection | CRITICA | PARCIAL |
+| COI-002 | Coverage thresholds | MEDIA | PARCIAL (avancado) |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL (auditado) |
+
+### Threshold global
+**NAO elevado.** Justificativa: ui=7.95% impede elevacao segura do threshold root (25%/15%).
+
+### Branch
+- **Canonica:** claude/round-13-server-routes-cli-entrypoint-agent-exclusions
+- **Efetiva:** claude/improve-test-coverage-vpHO8
+- **Divergencia:** SIM — sistema de deploy exige sufixo de session ID
+
+### Conclusao da Rodada 13
+**Status geral:** COMPLETA
+**MC-027 criado com evidencia**
+**Server sai de 6.68% para 56.96% com testes reais em rotas/handlers**
+**CLI sai de 23.39% para 54.39% com testes reais no entrypoint**
+**Analysis-agent validators atinge 100%; exclusoes auditadas com bloqueio documentado**
+**60 testes novos; 354 testes totais**
+**Thresholds elevados em server e cli com prova verde**
+
+---
+
 ## Template para novas rodadas
 
 ### Rodada X

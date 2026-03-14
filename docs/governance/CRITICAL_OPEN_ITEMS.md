@@ -86,10 +86,10 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 - **Severidade:** MEDIO (rebaixado)
 - **Area:** Testes / CI
 - **Status:** PARCIAL (avancado nas Rodadas 11 e 12)
-- **Evidencia resumida:** Thresholds root em 25%/15% ainda conservadores; shared (80%), server (5%), cli (20%) agora tem thresholds por pacote
-- **Acao necessaria:** Elevar thresholds root e por pacote conforme coverage cresce; adicionar thresholds a ui e analysis-agent
+- **Evidencia resumida:** Thresholds root em 25%/15% ainda conservadores; shared (80%), server (40%), cli (40%) agora tem thresholds por pacote
+- **Acao necessaria:** Elevar thresholds root conforme coverage cresce; adicionar thresholds a ui e analysis-agent
 - **Definicao de concluido:** Thresholds reais por pacote em todos os pacotes; thresholds root mais exigentes
-- **Nota:** Rodada 12 adicionou thresholds a server (0%->6.68%) e cli (0%->23.39%). Root nao pode ser elevado ainda porque ui=7.95%
+- **Nota:** Rodada 13 elevou thresholds server 5%->40% e cli 20%->40%. Root nao pode ser elevado ainda porque ui=7.95%. Faltam thresholds em ui e analysis-agent
 
 ---
 
@@ -98,10 +98,11 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 ### COI-012 - Exclusoes de testes no analysis-agent
 - **Severidade:** MEDIO
 - **Area:** Testes / Divida tecnica
-- **Status:** PARCIAL
+- **Status:** PARCIAL (auditado na Rodada 13)
 - **Evidencia resumida:** Exclui esaa.test.ts, agent.test.ts, index.test.ts por problemas de mocking
 - **Acao necessaria:** Refatorar testes ou melhorar mocking de dependencias nativas
 - **Definicao de concluido:** Testes executando ou exclusoes reduzidas
+- **Nota Rodada 13:** agent.test.ts auditado com tentativa real de re-habilitacao. Falha por: (1) mock retorna `complexity: "Media"` mas schema espera objeto `{level,score,justification}`; (2) `agent.client.chat` e `undefined` — estrutura interna do OpenAI client mudou. esaa.test.ts depende de `node:sqlite` builtin vs `better-sqlite3` mock. index.test.ts falha na cadeia de imports. manifest-validator.ts (0% coverage) agora testado (100%). Exclusoes permanecem inalteradas mas bloqueios estao tecnicamente documentados
 
 ---
 
@@ -316,4 +317,31 @@ Nota: Contagem total nao mudou, mas COI-002 e COI-012 tiveram progresso real.
 
 ---
 
-**Ultima atualizacao:** 2026-03-14 (Rodada 12 - Fase 5)
+## Progresso na Rodada 13
+
+### COI-002 avancado
+- **Antes:** server=6.68% com threshold 5/20/50/5; cli=23.39% com threshold 20/50/80/20
+- **Depois:** server=56.96% com threshold 40/30/55/40; cli=54.39% com threshold 40/80/80/40
+- **Status:** Permanece PARCIAL (root nao pode ser elevado enquanto ui=7.95%)
+
+### COI-012 auditado com bloqueio documentado
+- **Antes:** 3 exclusoes no analysis-agent sem tentativa real de re-habilitacao
+- **Depois:** agent.test.ts testado concretamente — 2 falhas tecnicas identificadas e documentadas; manifest-validator.ts (0% coverage, nao-excluido) agora com 10 testes e 100% coverage; exclusoes permanecem mas com bloqueio preciso
+- **Status:** Permanece PARCIAL
+
+---
+
+## Resumo pos-Rodada 13
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 3 | 2 |
+| **Total** | **15** | **3** |
+
+Nota: Contagem total nao mudou, mas COI-002 teve progresso significativo (thresholds elevados) e COI-012 teve auditoria real com bloqueio documentado.
+
+---
+
+**Ultima atualizacao:** 2026-03-14 (Rodada 13 - Fase 5)
