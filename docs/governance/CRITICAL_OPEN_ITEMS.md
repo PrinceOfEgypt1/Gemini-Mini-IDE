@@ -216,4 +216,30 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 
 ---
 
-**Ultima atualizacao:** 2026-03-13 (Rodada 8 - Fase 5)
+## Itens FECHADOS na Rodada 9
+
+### COI-017 - Analise de impacto pre-mudanca
+- **Severidade:** MEDIO
+- **Status:** COMPLETO
+- **Fechado em:** Rodada 9 - Fase 3-4
+- **Evidencia:**
+  - Script `scripts/active/impact-analysis.sh` criado e funcional
+  - Classifica risco em 4 niveis: BAIXO, MEDIO, ALTO, CRITICO
+  - Identifica areas afetadas e recomenda validacoes
+  - 5 cenarios validados com sucesso (server, UI, CI, governance, shared+config)
+  - Exit code 0 para risco baixo/medio, 1 para alto/critico
+
+---
+
+## Resumo pos-Rodada 9
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 7 | 0 |
+| MEDIO | 3 | 2 |
+| **Total** | **14** | **3** |
+
+---
+
+**Ultima atualizacao:** 2026-03-13 (Rodada 9 - Fase 5)

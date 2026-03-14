@@ -52,6 +52,7 @@ Esta matriz e a fonte principal de controle de conformidade do projeto **Gemini 
 | MC-020 | Dependencias externas | Checklist para tudo que depende de GitHub UI/settings | Parte da governanca depende de settings externos | Documento claro de aplicacao manual | COMPLETO | - | Conferencia documental | Sim | Rodada 3 | Arquivo `EXTERNAL_DEPENDENCIES_CHECKLIST.md` criado |
 | MC-021 | Runtime | Validacao real de runtime e integracao minima | Rodadas anteriores validavam apenas build estatico | Server sobe, /healthz responde, entrypoint coerente | COMPLETO | - | Server start + curl /healthz + verificacao entrypoint | Nao | Rodada 8 | **EVIDENCIA:** package.json corrigido para dist/server/src/index.js; pipeline local com runtime check; CI smoke test com /healthz e entrypoint validation |
 | MC-022 | Runtime | Coerencia entre build e package.json entrypoint | Entrypoint em package.json apontava para dist/index.js mas build emitia dist/server/src/index.js | package.json main e start apontam para arquivo real | COMPLETO | - | Verificar que arquivo declarado em main existe apos build | Nao | Rodada 8 | **EVIDENCIA:** main e start corrigidos para dist/server/src/index.js; CI verifica coerencia automaticamente |
+| MC-023 | Governanca | Analise de impacto pre-mudanca | Nao existia mecanismo para avaliar risco antes de merge | Script executavel que classifica risco e recomenda validacoes | COMPLETO | - | Execucao do script em cenarios reais/simulados | Nao | Rodada 9 | **EVIDENCIA:** scripts/active/impact-analysis.sh criado; 5 cenarios validados; classifica BAIXO/MEDIO/ALTO/CRITICO; recomenda validacoes por area |
 
 ---
 
@@ -78,3 +79,5 @@ Esta matriz e a fonte principal de controle de conformidade do projeto **Gemini 
 | 2026-03-11 | Rodada 7 - Fase 5-6 | Governanca e encerramento | IA | MC-017 e COI-009 promovidos a COMPLETO; linha de recuperacao ENCERRADA |
 | 2026-03-13 | Rodada 8 - Fase 0-3 | Auditoria e implementacao de runtime validation | IA | Entrypoint corrigido; CI smoke test com /healthz e entrypoint check; pipeline local com runtime validation |
 | 2026-03-13 | Rodada 8 - Fase 4-5 | Validacao e governanca | IA | MC-021 e MC-022 criados como COMPLETO; COI-016 criado e fechado |
+| 2026-03-13 | Rodada 9 - Fase 0-4 | Implementacao de analise de impacto | IA | Script impact-analysis.sh criado; 5 cenarios validados; classifica risco por area |
+| 2026-03-13 | Rodada 9 - Fase 5-6 | Governanca e relatorio | IA | MC-023 criado como COMPLETO |
