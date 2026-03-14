@@ -50,26 +50,30 @@ async function getOrchestrator(config: LLMConfig) {
   return orchestrator;
 }
 
-const app: FastifyInstance = Fastify({
-  logger: {
-    level: process.env["LOG_LEVEL"] ?? "info",
-    transport: {
-      target: "pino-pretty",
-      options: { colorize: true }
+/**
+ * Builds and configures the Fastify app with all routes and plugins.
+ * Exported for testability — tests can use app.inject() without starting a listener.
+ */
+export async function buildApp(): Promise<FastifyInstance> {
+  const app: FastifyInstance = Fastify({
+    logger: {
+      level: process.env["LOG_LEVEL"] ?? "info",
+      transport: {
+        target: "pino-pretty",
+        options: { colorize: true }
+      }
     }
-  }
-});
-
-// Error handler global
-app.setErrorHandler((error, _request, reply) => {
-  app.log.error(error);
-  reply.status(500).send({
-    error: "Internal Server Error",
-    details: error.message
   });
-});
 
-const start = async (): Promise<void> => {
+  // Error handler global
+  app.setErrorHandler((error, _request, reply) => {
+    app.log.error(error);
+    reply.status(500).send({
+      error: "Internal Server Error",
+      details: error.message
+    });
+  });
+
   // Registra plugins
   await app.register(cors, {
     origin: true,
@@ -578,13 +582,20 @@ const start = async (): Promise<void> => {
     });
   });
 
-  // Inicia o servidor
+  return app;
+}
+
+const start = async (): Promise<void> => {
+  const app = await buildApp();
   await app.listen({ port: PORT, host: "0.0.0.0" });
   app.log.info(`🚀 Server running at http://localhost:${PORT}`);
 };
 
-start().catch((err) => {
-  // eslint-disable-next-line no-console
-  console.error("Failed to start server:", err);
-  process.exit(1);
-});
+// Only auto-start when running as main entry, not when imported by tests
+if (!process.env["VITEST"]) {
+  start().catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  });
+}
