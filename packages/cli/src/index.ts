@@ -5,10 +5,10 @@ import path from 'path';
 import axios, { AxiosError } from 'axios';
 import chalk from 'chalk';
 import ora from 'ora';
-import { analyzeImpact, formatImpactReport } from '@gemini-mini-ide/shared';
+import { runImpactAnalysis, getServerUrl } from './commands.js';
 
 // URL do servidor (padrão local)
-const SERVER_URL = process.env["MINI_IDE_SERVER_URL"] ?? 'http://localhost:3200';
+const SERVER_URL = getServerUrl();
 
 interface AnalyzeResponse {
   summary: string;
@@ -116,23 +116,15 @@ program
   .argument('[files...]', 'Files to analyze')
   .option('--json', 'Output raw JSON instead of formatted report')
   .action(async (files: string[], options: { json?: boolean }) => {
-    if (files.length === 0) {
-      console.error(chalk.red('Error: Provide at least one file path to analyze.'));
+    const result = runImpactAnalysis(files, options);
+    if (result.exitCode === 2) {
+      console.error(chalk.red(result.output));
       console.error(chalk.yellow('Usage: mini-ide impact <file1> [file2] ...'));
       process.exit(2);
     }
-
-    const report = analyzeImpact(files);
-
-    if (options.json) {
-      console.log(JSON.stringify(report, null, 2));
-    } else {
-      console.log(formatImpactReport(report));
-    }
-
-    const highRisk = report.overallRisk === 'ALTO' || report.overallRisk === 'CRITICO';
-    if (highRisk) {
-      process.exit(1);
+    console.log(result.output);
+    if (result.exitCode !== 0) {
+      process.exit(result.exitCode);
     }
   });
 

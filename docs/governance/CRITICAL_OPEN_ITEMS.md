@@ -85,11 +85,11 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 ### COI-002 - Coverage gate ainda nao totalmente comprovado
 - **Severidade:** MEDIO (rebaixado)
 - **Area:** Testes / CI
-- **Status:** PARCIAL (avancado na Rodada 11)
-- **Evidencia resumida:** Thresholds root em 25%/15% ainda conservadores; shared agora tem thresholds por pacote (80% lines/branches/stmts, 50% funcs)
-- **Acao necessaria:** Elevar thresholds root quando cli/server tiverem coverage > 0%; adicionar thresholds por pacote a outros pacotes
-- **Definicao de concluido:** Thresholds reais por pacote em todos os pacotes com testes significativos
-- **Nota:** Rodada 11 adicionou thresholds ao shared (0% -> 93.7% coverage + 80% threshold). Root nao pode ser elevado porque cli=0% e server=0%
+- **Status:** PARCIAL (avancado nas Rodadas 11 e 12)
+- **Evidencia resumida:** Thresholds root em 25%/15% ainda conservadores; shared (80%), server (5%), cli (20%) agora tem thresholds por pacote
+- **Acao necessaria:** Elevar thresholds root e por pacote conforme coverage cresce; adicionar thresholds a ui e analysis-agent
+- **Definicao de concluido:** Thresholds reais por pacote em todos os pacotes; thresholds root mais exigentes
+- **Nota:** Rodada 12 adicionou thresholds a server (0%->6.68%) e cli (0%->23.39%). Root nao pode ser elevado ainda porque ui=7.95%
 
 ---
 
@@ -293,4 +293,27 @@ Nota: Contagem total nao mudou, mas COI-002 e COI-012 tiveram progresso real.
 
 ---
 
-**Ultima atualizacao:** 2026-03-14 (Rodada 11 - Fase 5)
+## Progresso na Rodada 12
+
+### COI-002 avancado
+- **Antes:** server=0%, cli=0% sem thresholds por pacote
+- **Depois:** server=6.68% com threshold 5/20/50/5; cli=23.39% com threshold 20/50/80/20
+- **Status:** Permanece PARCIAL (root nao pode ser elevado enquanto ui=7.95%)
+
+### COI-012 nao alterado
+- Rodada 12 focou em server/cli; exclusoes do analysis-agent permanecem inalteradas
+
+---
+
+## Resumo pos-Rodada 12
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 3 | 2 |
+| **Total** | **15** | **3** |
+
+---
+
+**Ultima atualizacao:** 2026-03-14 (Rodada 12 - Fase 5)
