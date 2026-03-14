@@ -242,4 +242,28 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 
 ---
 
-**Ultima atualizacao:** 2026-03-13 (Rodada 9 - Fase 5)
+## Itens FECHADOS na Rodada 10
+
+### COI-018 - Fonte unica de verdade para analise de impacto
+- **Severidade:** ALTO
+- **Status:** COMPLETO
+- **Fechado em:** Rodada 10 - Fase 3-7
+- **Evidencia:**
+  - Nucleo TS em `packages/shared/src/impact-analysis/`
+  - Wrapper bash, CLI, server e agent.ts usam o mesmo nucleo
+  - 4 pontos de integracao validados com prova concreta
+
+---
+
+## Resumo pos-Rodada 10
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 3 | 2 |
+| **Total** | **15** | **3** |
+
+---
+
+**Ultima atualizacao:** 2026-03-14 (Rodada 10 - Fase 8)

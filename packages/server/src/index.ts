@@ -4,6 +4,7 @@ import rateLimit from "@fastify/rate-limit";
 import dotenv from "dotenv";
 import { z } from "zod";
 import { AnalysisAgent, globalESAAOrchestrator } from "@gemini-mini-ide/analysis-agent";
+import { analyzeImpact, formatImpactReport } from "@gemini-mini-ide/shared";
 import { exportController } from "./controllers/export.controller.js";
 
 dotenv.config({ path: "../../.env" });
@@ -130,6 +131,35 @@ const start = async (): Promise<void> => {
 
   // Health check
   app.get("/healthz", async () => ({ status: "ok", timestamp: new Date().toISOString() }));
+
+  // Impact analysis endpoint
+  const ImpactAnalysisSchema = z.object({
+    files: z.array(z.string()),
+    base: z.string().optional(),
+    staged: z.boolean().optional(),
+  });
+
+  app.post("/impact-analysis", async (request, reply) => {
+    const parseResult = ImpactAnalysisSchema.safeParse(request.body);
+    if (!parseResult.success) {
+      return reply.status(400).send({
+        error: "Invalid request",
+        details: parseResult.error.issues
+      });
+    }
+
+    const { files } = parseResult.data;
+    const report = analyzeImpact(files);
+    const formatted = formatImpactReport(report);
+
+    return reply.send({ report, formatted });
+  });
+
+  app.get("/impact-analysis", async () => ({
+    description: "Impact analysis service",
+    usage: "POST /impact-analysis with { files: string[] }",
+    source: "@gemini-mini-ide/shared/impact-analysis",
+  }));
 
   // Endpoint principal de análise
   app.post("/analyze", async (request, reply) => {

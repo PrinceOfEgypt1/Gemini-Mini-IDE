@@ -655,6 +655,71 @@ Nenhum dos itens restantes bloqueia o funcionamento do projeto ou representa ris
 
 ---
 
+## Rodada 10
+**Status geral:** COMPLETA
+**Data:** 2026-03-14
+**Tipo:** INSTITUCIONALIZACAO DA ANALISE DE IMPACTO
+**Objetivo principal:** Transformar analise de impacto de script bash isolado em capacidade institucional com fonte unica de verdade em TypeScript.
+
+### Contexto
+- Rodada 9 criou script bash funcional mas isolado
+- Risco de duplicacao de logica e uso inconsistente
+- Sem integracao com CLI, server ou fluxo da IA
+
+### Arquitetura implementada
+- **Nucleo**: `packages/shared/src/impact-analysis/` (TypeScript)
+  - `types.ts` - tipos e interfaces
+  - `impact-analysis.ts` - logica de classificacao e formatacao
+  - `index.ts` - re-exports
+- **Wrapper bash**: `scripts/active/impact-analysis.sh` chama o nucleo via Node
+- **CLI**: Comando `impact` em `packages/cli/src/index.ts` via POST /impact-analysis
+- **Server**: Endpoint POST /impact-analysis em `packages/server/src/index.ts`
+- **Fluxo IA**: Hook em `packages/analysis-agent/src/agent.ts:276-286` emite `impact:analysis`
+
+### Fonte unica de verdade
+Toda logica de classificacao de risco, areas e validacoes vive em:
+`packages/shared/src/impact-analysis/impact-analysis.ts`
+
+Todos os pontos de integracao importam e usam `analyzeImpact()` desta mesma fonte.
+
+### Validacao pratica
+1. Wrapper bash: FUNCIONA (chama nucleo TS via Node require)
+2. CLI: FUNCIONA (mini-ide impact <files> via server endpoint)
+3. Server endpoint: FUNCIONA (POST /impact-analysis retorna JSON estruturado)
+4. Fluxo IA: INTEGRADO (agent.ts:279 chama analyzeImpact no architecture step)
+
+### Arquivos alterados
+- `packages/shared/src/impact-analysis/types.ts` (NOVO) - tipos
+- `packages/shared/src/impact-analysis/impact-analysis.ts` (NOVO) - nucleo
+- `packages/shared/src/impact-analysis/index.ts` (NOVO) - re-exports
+- `packages/shared/src/index.ts` (MODIFICADO) - export do modulo
+- `packages/cli/src/index.ts` (MODIFICADO) - comando impact
+- `packages/server/src/index.ts` (MODIFICADO) - endpoint /impact-analysis
+- `packages/analysis-agent/src/agent.ts` (MODIFICADO) - hook impact:analysis
+- `scripts/active/impact-analysis.sh` (MODIFICADO) - wrapper para nucleo TS
+- `scripts/README.md` (MODIFICADO) - documentacao atualizada
+- `docs/governance/MASTER_COMPLIANCE_MATRIX.md` (MODIFICADO) - MC-024
+- `docs/governance/CRITICAL_OPEN_ITEMS.md` (MODIFICADO) - COI-018
+- `docs/governance/ROUND_STATUS_LOG.md` (MODIFICADO) - registro
+
+### Itens FECHADOS
+- MC-024: Fonte unica de verdade para analise de impacto (COMPLETO)
+
+### Pendencias que permanecem abertas
+
+| ID | Item | Severidade | Status | Proxima acao |
+|----|------|------------|--------|--------------|
+| COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI (dependencia externa) |
+| COI-002 | Coverage thresholds | MEDIA | PARCIAL | Decisao de projeto |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL | Refatoracao futura |
+
+### Conclusao da Rodada 10
+**Status geral:** COMPLETA
+**MC-024 fechado com evidencia**
+**Analise de impacto institucionalizada como capacidade oficial do projeto**
+
+---
+
 ## Template para novas rodadas
 
 ### Rodada X

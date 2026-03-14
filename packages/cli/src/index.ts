@@ -109,4 +109,50 @@ program
     }
   });
 
+program
+  .command('impact')
+  .description('Analyzes impact of changed files and reports risk level')
+  .argument('[files...]', 'Files to analyze (if empty, uses git diff against origin/main)')
+  .option('--base <ref>', 'Git ref to diff against', 'origin/main')
+  .option('--staged', 'Analyze staged changes')
+  .option('--json', 'Output raw JSON instead of formatted report')
+  .action(async (files: string[], options: { base: string; staged?: boolean; json?: boolean }) => {
+    const spinner = ora('Analyzing impact...').start();
+    try {
+      const response = await axios.post<{ report: unknown; formatted: string }>(
+        `${SERVER_URL}/impact-analysis`,
+        { files, base: options.base, staged: options.staged ?? false }
+      );
+
+      spinner.stop();
+
+      if (options.json) {
+        console.log(JSON.stringify(response.data.report, null, 2));
+      } else {
+        console.log(response.data.formatted);
+      }
+
+      const report = response.data.report as { overallRisk: string };
+      const highRisk = report.overallRisk === 'ALTO' || report.overallRisk === 'CRITICO';
+      if (highRisk) {
+        process.exit(1);
+      }
+    } catch (error) {
+      spinner.fail(chalk.red('Impact analysis failed.'));
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+        if (axiosError.code === 'ECONNREFUSED') {
+          console.error(chalk.red(`\nCannot connect to server at ${SERVER_URL}.`));
+          console.error(chalk.yellow('Hint: Is the server running? (pnpm start)'));
+        } else {
+          console.error(chalk.red(`Error: ${axiosError.message}`));
+        }
+      } else {
+        const err = error as Error;
+        console.error(chalk.red(`Error: ${err.message}`));
+      }
+      process.exit(1);
+    }
+  });
+
 program.parse();

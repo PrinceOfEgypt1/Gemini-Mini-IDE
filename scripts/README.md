@@ -21,22 +21,30 @@ scripts/
 **Scripts disponíveis:**
 
 1. `pipeline.sh` - Pipeline de qualidade (lint, typecheck, test, build, runtime validation)
-2. `impact-analysis.sh` - Análise de impacto pré-mudança
+2. `impact-analysis.sh` - Análise de impacto pré-mudança (wrapper para o núcleo TS em `packages/shared`)
 
-**Uso do impact-analysis.sh:**
+**Uso do impact-analysis.sh (wrapper bash):**
 ```bash
-# Analisar diff contra origin/main (padrão)
-./scripts/active/impact-analysis.sh
-
-# Analisar diff contra outra referência
-./scripts/active/impact-analysis.sh --base HEAD~3
-
-# Analisar arquivos específicos
-./scripts/active/impact-analysis.sh --files packages/server/src/index.ts
-
-# Analisar mudanças staged
-./scripts/active/impact-analysis.sh --staged
+./scripts/active/impact-analysis.sh                  # diff contra origin/main
+./scripts/active/impact-analysis.sh --base HEAD~3    # diff contra outra ref
+./scripts/active/impact-analysis.sh --files f1 f2    # arquivos específicos
+./scripts/active/impact-analysis.sh --staged         # mudanças staged
 ```
+
+**Uso via CLI:**
+```bash
+mini-ide impact <files...>         # via servidor
+mini-ide impact --json <files...>  # saída JSON
+```
+
+**Uso via API:**
+```bash
+curl -X POST http://localhost:3200/impact-analysis \
+  -H "Content-Type: application/json" \
+  -d '{"files":["packages/server/src/index.ts"]}'
+```
+
+**Núcleo TypeScript:** `packages/shared/src/impact-analysis/` (fonte única de verdade)
 
 ### Scripts em Quarentena (`quarantine/`)
 - 329 scripts legados movidos para quarentena
