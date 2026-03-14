@@ -22,3 +22,7 @@ logs/
 
 # Windows artifacts
 *:Zone.Identifier
+
+# Node cache directories
+node-compile-cache/
+node-jiti/
