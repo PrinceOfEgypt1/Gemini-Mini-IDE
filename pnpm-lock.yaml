@@ -77,6 +77,9 @@ importers:
 
   packages/cli:
     dependencies:
+      '@gemini-mini-ide/shared':
+        specifier: workspace:*
+        version: link:../shared
       axios:
         specifier: ^1.6.0
         version: 1.13.2

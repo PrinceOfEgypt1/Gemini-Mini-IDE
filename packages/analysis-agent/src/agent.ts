@@ -6,6 +6,7 @@ import { CodeGenerationService } from "./services/code-generation-service.js";
 import { ValidationService } from "./services/validation-service.js";
 import { baseProjectAuditor } from "./governance/base-project-auditor.js";
 import { categoryValidator } from "./governance/category-validator.js";
+import { analyzeImpact } from "@gemini-mini-ide/shared";
 import type { ILLMClient, IIncrementalLLMClient } from "./llm-clients/llm-client.interface.js";
 import { OpenAIChatClient } from "./llm-clients/openai-chat-client.js";
 import { OpenAILLMClient } from "./llm-clients/openai-llm-client.js";
@@ -269,6 +270,18 @@ export class AnalysisAgent extends EventEmitter {
       this.emit("governance:errors", {
         phase: "architecture",
         errors: categoryValidation.errors,
+      });
+    }
+
+    // Impact analysis: assess risk of planned file changes
+    const plannedFiles = auditedResult.manifest?.map((f: { path: string }) => f.path) ?? [];
+    if (plannedFiles.length > 0) {
+      const impactReport = analyzeImpact(plannedFiles);
+      this.emit("impact:analysis", {
+        phase: "architecture",
+        overallRisk: impactReport.overallRisk,
+        areasAffected: impactReport.areas.map(a => ({ area: a.area, risk: a.risk })),
+        requiredValidations: impactReport.requiredValidations,
       });
     }
 

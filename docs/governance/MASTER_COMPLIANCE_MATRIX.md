@@ -53,6 +53,7 @@ Esta matriz e a fonte principal de controle de conformidade do projeto **Gemini 
 | MC-021 | Runtime | Validacao real de runtime e integracao minima | Rodadas anteriores validavam apenas build estatico | Server sobe, /healthz responde, entrypoint coerente | COMPLETO | - | Server start + curl /healthz + verificacao entrypoint | Nao | Rodada 8 | **EVIDENCIA:** package.json corrigido para dist/server/src/index.js; pipeline local com runtime check; CI smoke test com /healthz e entrypoint validation |
 | MC-022 | Runtime | Coerencia entre build e package.json entrypoint | Entrypoint em package.json apontava para dist/index.js mas build emitia dist/server/src/index.js | package.json main e start apontam para arquivo real | COMPLETO | - | Verificar que arquivo declarado em main existe apos build | Nao | Rodada 8 | **EVIDENCIA:** main e start corrigidos para dist/server/src/index.js; CI verifica coerencia automaticamente |
 | MC-023 | Governanca | Analise de impacto pre-mudanca | Nao existia mecanismo para avaliar risco antes de merge | Script executavel que classifica risco e recomenda validacoes | COMPLETO | - | Execucao do script em cenarios reais/simulados | Nao | Rodada 9 | **EVIDENCIA:** scripts/active/impact-analysis.sh criado; 5 cenarios validados; classifica BAIXO/MEDIO/ALTO/CRITICO; recomenda validacoes por area |
+| MC-024 | Arquitetura | Fonte unica de verdade para analise de impacto | Rodada 9 criou script bash isolado; logica duplicada possivel | Nucleo TS em shared reutilizado por wrapper, CLI, server e IA | COMPLETO | - | Verificar que wrapper, CLI, server e agent.ts usam o mesmo nucleo | Nao | Rodada 10 | **EVIDENCIA:** packages/shared/src/impact-analysis/ e fonte unica; wrapper chama shared/dist; CLI chama POST /impact-analysis; server usa analyzeImpact(); agent.ts:279 usa analyzeImpact() |
 
 ---
 
@@ -81,3 +82,5 @@ Esta matriz e a fonte principal de controle de conformidade do projeto **Gemini 
 | 2026-03-13 | Rodada 8 - Fase 4-5 | Validacao e governanca | IA | MC-021 e MC-022 criados como COMPLETO; COI-016 criado e fechado |
 | 2026-03-13 | Rodada 9 - Fase 0-4 | Implementacao de analise de impacto | IA | Script impact-analysis.sh criado; 5 cenarios validados; classifica risco por area |
 | 2026-03-13 | Rodada 9 - Fase 5-6 | Governanca e relatorio | IA | MC-023 criado como COMPLETO |
+| 2026-03-14 | Rodada 10 - Fase 0-7 | Institucionalizacao da analise de impacto | IA | Nucleo TS em shared; wrapper, CLI, server e agent.ts integrados; fonte unica de verdade |
+| 2026-03-14 | Rodada 10 - Fase 8-9 | Governanca e relatorio | IA | MC-024 criado como COMPLETO |

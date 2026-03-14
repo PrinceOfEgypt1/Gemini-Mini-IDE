@@ -5,6 +5,7 @@ import path from 'path';
 import axios, { AxiosError } from 'axios';
 import chalk from 'chalk';
 import ora from 'ora';
+import { analyzeImpact, formatImpactReport } from '@gemini-mini-ide/shared';
 
 // URL do servidor (padrão local)
 const SERVER_URL = process.env["MINI_IDE_SERVER_URL"] ?? 'http://localhost:3200';
@@ -105,6 +106,32 @@ program
       spinner.succeed(chalk.green(`Servidor online em ${SERVER_URL}`));
     } catch {
       spinner.fail(chalk.red(`Servidor offline em ${SERVER_URL}`));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('impact')
+  .description('Analyzes impact of changed files and reports risk level (runs locally, no server needed)')
+  .argument('[files...]', 'Files to analyze')
+  .option('--json', 'Output raw JSON instead of formatted report')
+  .action(async (files: string[], options: { json?: boolean }) => {
+    if (files.length === 0) {
+      console.error(chalk.red('Error: Provide at least one file path to analyze.'));
+      console.error(chalk.yellow('Usage: mini-ide impact <file1> [file2] ...'));
+      process.exit(2);
+    }
+
+    const report = analyzeImpact(files);
+
+    if (options.json) {
+      console.log(JSON.stringify(report, null, 2));
+    } else {
+      console.log(formatImpactReport(report));
+    }
+
+    const highRisk = report.overallRisk === 'ALTO' || report.overallRisk === 'CRITICO';
+    if (highRisk) {
       process.exit(1);
     }
   });
