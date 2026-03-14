@@ -33,7 +33,7 @@ FAILED=0
 run_step() {
     local name="$1"
     local cmd="$2"
-    ((STEP++))
+    STEP=$((STEP + 1))
 
     echo -e "${YELLOW}[$STEP] $name...${NC}"
     if eval "$cmd"; then
