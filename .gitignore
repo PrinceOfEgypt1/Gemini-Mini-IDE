@@ -30,6 +30,9 @@ node-jiti/
 
 # Runtime databases (SQLite, etc.)
 *.db
+*.db-shm
+*.db-wal
+*.db-journal
 *.sqlite
 *.sqlite3
 
