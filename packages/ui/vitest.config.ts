@@ -9,6 +9,17 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: [],
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'test/**/*.test.ts', 'test/**/*.test.tsx'],
-    exclude: ['**/node_modules/**', '**/dist/**']
+    exclude: ['**/node_modules/**', '**/dist/**'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts', 'src/**/*.tsx'],
+      exclude: ['**/node_modules/**', '**/dist/**', '**/*.test.ts', '**/*.test.tsx', '**/*.d.ts'],
+      thresholds: {
+        lines: 20,
+        functions: 35,
+        branches: 60,
+        statements: 20,
+      }
+    }
   },
 });

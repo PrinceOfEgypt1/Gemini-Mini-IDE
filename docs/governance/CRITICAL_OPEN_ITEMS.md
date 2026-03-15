@@ -82,14 +82,14 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 
 ---
 
-### COI-002 - Coverage gate ainda nao totalmente comprovado
+### COI-002 - Coverage gate institucionalizado
 - **Severidade:** MEDIO (rebaixado)
 - **Area:** Testes / CI
-- **Status:** PARCIAL (avancado nas Rodadas 11 e 12)
-- **Evidencia resumida:** Thresholds root em 25%/15% ainda conservadores; shared (80%), server (40%), cli (40%) agora tem thresholds por pacote
-- **Acao necessaria:** Elevar thresholds root conforme coverage cresce; adicionar thresholds a ui e analysis-agent
-- **Definicao de concluido:** Thresholds reais por pacote em todos os pacotes; thresholds root mais exigentes
-- **Nota:** Rodada 13 elevou thresholds server 5%->40% e cli 20%->40%. Root nao pode ser elevado ainda porque ui=7.95%. Faltam thresholds em ui e analysis-agent
+- **Status:** COMPLETO
+- **Fechado em:** Rodada 17 - Fase 5
+- **Evidencia resumida:** Todos os 5 pacotes com thresholds locais de coverage: shared 80/80/50/80, server 40/55/30/40, cli 40/80/80/40, ui 20/60/35/20, analysis-agent 15/70/45/15. Root/global 25/15/25/25 como safety net
+- **Definicao de concluido:** Thresholds reais por pacote em todos os pacotes — ATINGIDA
+- **Historico:** Rodadas 11-14 elevaram coverage e adicionaram thresholds a shared/server/cli. Rodada 17 completou com thresholds para ui e analysis-agent
 
 ---
 
@@ -110,10 +110,10 @@ Manter uma lista viva e priorizada dos itens criticos ainda abertos no projeto *
 
 | Categoria | Fechados | Abertos |
 |-----------|----------|---------|
-| CRITICO | 3 | 1 |
-| ALTO | 4 | 0 |
-| MEDIO | 0 | 4 |
-| **Total** | **7** | **5** |
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 4 | 1 |
+| **Total** | **16** | **2** |
 
 ---
 

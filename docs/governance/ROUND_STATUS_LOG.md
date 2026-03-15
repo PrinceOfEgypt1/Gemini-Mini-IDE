@@ -1256,6 +1256,93 @@ packages/server/src/
 
 ---
 
+### Rodada 17 — OPERACAO GUARDA DE COBERTURA
+**Status geral:** COMPLETA
+**Data:** 2026-03-15
+**Tipo:** GOVERNANCA DE COVERAGE INSTITUCIONALIZADA
+**Objetivo principal:** Institucionalizar coverage governance para UI e analysis-agent; consolidar policy de thresholds auditavel em todos os 5 pacotes.
+
+### Problema resolvido
+UI e analysis-agent nao tinham thresholds locais de coverage, permitindo regressao silenciosa. Apenas 3 de 5 pacotes tinham governanca de coverage. COI-002 permanecia aberto desde a Rodada 3.
+
+### Auditoria de coverage (Fase 1)
+| Pacote | Stmts | Branch | Funcs | Lines | Threshold? |
+|--------|-------|--------|-------|-------|-----------|
+| ui | 22.23% | 65.82% | 38.80% | 22.23% | NAO |
+| analysis-agent | 16.66% | 73.42% | 51.25% | 16.66% | NAO |
+| shared | - | - | - | - | SIM (80/80/50/80) |
+| server | - | - | - | - | SIM (40/55/30/40) |
+| cli | - | - | - | - | SIM (40/80/80/40) |
+| root/global | - | - | - | - | SIM (25/15/25/25) |
+
+### Criterio de design dos thresholds
+- Thresholds definidos ABAIXO da coverage atual (margem de seguranca ~2-5pp)
+- Objetivo: impedir REGRESSAO, nao forcar crescimento imediato
+- Crescimento futuro deve ser gerido por rodadas dedicadas
+
+### Thresholds implementados (Fase 3)
+
+| Pacote | Lines | Branches | Functions | Statements | Status |
+|--------|-------|----------|-----------|------------|--------|
+| shared | 80 | 80 | 50 | 80 | Existente |
+| server | 40 | 55 | 30 | 40 | Existente |
+| cli | 40 | 80 | 80 | 40 | Existente |
+| **ui** | **20** | **60** | **35** | **20** | **NOVO** |
+| **analysis-agent** | **15** | **70** | **45** | **15** | **NOVO** |
+| root/global | 25 | 15 | 25 | 25 | Mantido |
+
+### Arquivos modificados
+- `packages/ui/vitest.config.ts` — coverage section com thresholds adicionada
+- `packages/analysis-agent/vitest.config.ts` — coverage section com thresholds adicionada
+- `docs/governance/MASTER_COMPLIANCE_MATRIX.md` — MC-031 criado, MC-005 promovido a COMPLETO
+- `docs/governance/ROUND_STATUS_LOG.md` — entrada Rodada 17
+- `docs/governance/CRITICAL_OPEN_ITEMS.md` — COI-002 fechado
+
+### Validacao tecnica
+- lint: PASS
+- typecheck: PASS
+- build: PASS
+- test: PASS (441 testes: shared 35, ui 73, cli 25, analysis-agent 234, server 74)
+- pipeline: PASS (6/6)
+
+### Itens FECHADOS
+- MC-031: Governanca de coverage institucionalizada (COMPLETO)
+- MC-005: Coverage gate real no CI — promovido de PARCIAL a COMPLETO
+- COI-002: Coverage gate — FECHADO (definicao de concluido atingida: thresholds por pacote em todos os 5 pacotes)
+
+### Pendencias que permanecem abertas
+
+| ID | Item | Severidade | Status | Proxima acao |
+|----|------|------------|--------|--------------|
+| COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI (dependencia externa) |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL | Refatoracao sqlite/OpenAI mocking |
+
+### Conclusao da Rodada 17
+**Status geral:** COMPLETA
+**MC-031 criado com evidencia**
+**MC-005 promovido a COMPLETO (5/5 pacotes com thresholds)**
+**COI-002 fechado (todos os pacotes com coverage governance)**
+**Base verde: lint/typecheck/build/test/pipeline todos passando**
+
+---
+
+## Resumo pos-Rodada 17
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 4 | 1 |
+| **Total** | **16** | **2** |
+
+Nota: COI-002 fechado (coverage governance completa em todos os pacotes). Restam COI-001 (branch protection - dependencia externa) e COI-012 (exclusoes analysis-agent - divida tecnica).
+
+---
+
+**Ultima atualizacao:** 2026-03-15 (Rodada 17 - Fase 5)
+
+---
+
 ## Template para novas rodadas
 
 ### Rodada X

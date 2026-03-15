@@ -22,7 +22,18 @@ export default defineConfig({
       '**/agent.test.ts',
       '**/index.test.ts'
     ],
-    setupFiles: ['./src/__mocks__/setup.ts']
+    setupFiles: ['./src/__mocks__/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts'],
+      exclude: ['**/node_modules/**', '**/dist/**', '**/*.test.ts', '**/*.spec.ts', '**/*.d.ts', '**/__mocks__/**'],
+      thresholds: {
+        lines: 15,
+        functions: 45,
+        branches: 70,
+        statements: 15,
+      }
+    }
   },
   resolve: {
     alias: {
