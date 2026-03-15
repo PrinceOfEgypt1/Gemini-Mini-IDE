@@ -344,4 +344,29 @@ Nota: Contagem total nao mudou, mas COI-002 teve progresso significativo (thresh
 
 ---
 
-**Ultima atualizacao:** 2026-03-14 (Rodada 13 - Fase 5)
+## Progresso na Rodada 14
+
+### COI-002 avancado
+- **Antes:** ui sem testes dedicados; analysis-agent rich-schemas 0%
+- **Depois:** 56 testes novos UI; rich-schemas 100%; analysis-agent 14.9%->16.66%
+- **Status:** Permanece PARCIAL (thresholds por pacote nao adicionados a ui/analysis-agent; root nao elevado)
+
+### COI-012 nao alterado
+- Rodada 14 focou em UI e types; exclusoes do analysis-agent (esaa/agent/index) permanecem inalteradas
+
+---
+
+## Resumo pos-Rodada 14
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 3 | 2 |
+| **Total** | **15** | **3** |
+
+Nota: Contagem total nao mudou, mas COI-002 teve progresso real (87 novos testes, rich-schemas 100%).
+
+---
+
+**Ultima atualizacao:** 2026-03-15 (Rodada 14 - Fase D)

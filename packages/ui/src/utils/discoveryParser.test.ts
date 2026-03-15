@@ -18,7 +18,7 @@ describe('parseDiscoveryMessage', () => {
     });
 
     it('should not duplicate intents', () => {
-      const data = { ...emptyData, intent: ['Quero criar um app'] };
+      const data = { ...emptyData(), intent: ['Quero criar um app'] };
       const result = parseDiscoveryMessage('Quero criar um app', data);
       expect(result.intent).toHaveLength(1);
     });
@@ -41,7 +41,6 @@ describe('parseDiscoveryMessage', () => {
     });
 
     it('should filter short requirements (< 6 chars)', () => {
-      const result = parseDiscoveryMessage('Deve ab', emptyData());
       // After split/clean, "ab" (2 chars) is too short to be a requirement
       // But "Deve ab" itself may pass since > 5 chars — test the filter logic
       // The function checks val.length > 5 after clean
