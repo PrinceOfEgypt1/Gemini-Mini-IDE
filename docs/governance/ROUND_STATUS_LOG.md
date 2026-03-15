@@ -1182,6 +1182,80 @@ Todos os pontos de integracao importam e usam `analyzeImpact()` desta mesma font
 
 ---
 
+## Rodada 16 — OPERACAO FONTE UNICA
+**Status geral:** COMPLETA
+**Data:** 2026-03-15
+**Tipo:** UNIFICACAO ARQUITETURAL DO SERVER
+**Objetivo principal:** Eliminar concentracao excessiva de responsabilidades no entrypoint do server e consolidar fonte unica de verdade para rotas de conversacao.
+
+### Problema resolvido
+`packages/server/src/index.ts` concentrava 602 linhas com 5+ responsabilidades distintas:
+- Entrypoint e plugins Fastify
+- Gestao de instancias (agent singleton + orchestrator caching)
+- Rotas de analise (/analyze, /healthz, /impact-analysis, /export)
+- Rotas ESAA (12 endpoints)
+- Rotas de conversacao (8 endpoints + SSE)
+
+### Arquitetura resultante
+```
+packages/server/src/
+  index.ts                        (78 linhas — entrypoint fino)
+  helpers.ts                      (inalterado — schemas + extractLLMConfig)
+  routes/
+    analysis.routes.ts            (rotas /analyze, /healthz, /impact-analysis, /export)
+    conversation.routes.ts        (FONTE UNICA DE VERDADE — 8 endpoints /conversations/*)
+    esaa.routes.ts                (12 endpoints /esaa/*)
+  services/
+    agent-manager.ts              (singleton agent + orchestrator caching)
+  controllers/
+    export.controller.ts          (inalterado)
+```
+
+### Metricas
+| Metrica | Antes | Depois |
+|---|---|---|
+| index.ts linhas | 602 | 78 |
+| Modulos de rota | 0 (inline) | 3 |
+| Modulo de servico | 0 (inline) | 1 |
+| Testes passando | 441 | 441 |
+| Contratos de API | N/A | Inalterados |
+
+### Arquivos criados
+- `src/routes/analysis.routes.ts` — rotas de analise extraidas do index
+- `src/routes/conversation.routes.ts` — rotas de conversacao extraidas do index (FONTE UNICA DE VERDADE)
+- `src/routes/esaa.routes.ts` — rotas ESAA extraidas do index
+- `src/services/agent-manager.ts` — gestao de instancias extraida do index
+
+### Arquivos modificados
+- `src/index.ts` — reduzido de 602 para 78 linhas; agora apenas buildApp() + start()
+- `docs/governance/MASTER_COMPLIANCE_MATRIX.md` — MC-030 criado
+- `docs/governance/ROUND_STATUS_LOG.md` — entrada Rodada 16
+
+### Validacao tecnica
+- lint: PASS
+- typecheck: PASS
+- build: PASS
+- test: PASS (441 testes, 74 no server)
+- pipeline: PASS (6/6)
+
+### Pendencias que permanecem abertas
+
+| ID | Item | Severidade | Status | Proxima acao |
+|----|------|------------|--------|--------------|
+| COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI (dependencia externa) |
+| COI-002 | Coverage thresholds | MEDIA | PARCIAL | Avaliar thresholds para ui e analysis-agent |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL | Refatoracao sqlite/OpenAI mocking |
+
+### Conclusao da Rodada 16
+**Status geral:** COMPLETA
+**MC-030 criado com evidencia**
+**index.ts reduzido de 602 para 78 linhas**
+**4 novos modulos criados com separacao clara de responsabilidades**
+**Fonte unica de verdade para conversacao: routes/conversation.routes.ts**
+**Base verde: lint/typecheck/build/test/pipeline todos passando**
+
+---
+
 ## Template para novas rodadas
 
 ### Rodada X

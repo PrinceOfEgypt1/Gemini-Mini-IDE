@@ -397,4 +397,24 @@ Nota: Contagem total nao mudou. Rodada 15 focou em higiene estrutural, nao em it
 
 ---
 
-**Ultima atualizacao:** 2026-03-15 (Rodada 15 - Fase 5)
+### Rodada 16 — Operacao Fonte Unica (unificacao arquitetural do server)
+
+- Nenhum item critico novo criado
+- Nenhum item critico fechado (rodada focou em arquitetura, nao em itens criticos)
+- Rodada 16 reduziu risco arquitetural: index.ts monolitico (602 linhas) decomposto em 4 modulos com responsabilidade unica
+- Contagem de itens abertos inalterada
+
+## Resumo pos-Rodada 16
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 3 | 2 |
+| **Total** | **15** | **3** |
+
+Nota: Contagem total nao mudou. Rodada 16 focou em unificacao arquitetural do server, nao em itens criticos funcionais.
+
+---
+
+**Ultima atualizacao:** 2026-03-15 (Rodada 16 - Fase 5)
