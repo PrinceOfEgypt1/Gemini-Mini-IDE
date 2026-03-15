@@ -1099,6 +1099,67 @@ Todos os pontos de integracao importam e usam `analyzeImpact()` desta mesma font
 
 ---
 
+## Rodada 15 — OPERACAO TERRA LIMPA
+**Status geral:** COMPLETA
+**Objetivo principal:** Saneamento estrutural do repositorio — remocao de residuos historicos, backups, documentacao obsoleta, codigo morto e reforco do .gitignore
+**Escopo:** Higiene do repositorio; nenhuma feature ou refatoracao de produto
+
+### O que foi removido
+1. `scripts/quarantine/` — 331 scripts perigosos (residuos historicos com `cat >`)
+2. `packages/server/.esaa-events.db` — banco SQLite de runtime versionado indevidamente
+3. `packages/server/src/routes/conversations.ts` — codigo morto (0 imports, 0% coverage, duplicado em index.ts)
+4. `docs/governance/PR_BODY_ROUND_14.md` — artefato transitorio de rodada anterior
+5. `IMPLEMENTATION_REPORT.md` — documenta AppRefactored.tsx e hooks ja removidos na Rodada 7
+6. `FRONTEND_REFACTORING.md` — documenta arquitetura que nao existe mais
+7. `GOVERNANCE_GATE_REPORT.md` — relatorio pontual de dez/2025, branch historica
+8. `Relatorio de Governanca Padrao NASA e Otimizacao do Motor de Geracao do Gemini-Mini-IDE.md` — relatorio historico com linguagem hiperbólica
+9. `docs/AUDIT_PHASE0_MAP.md` — snapshot historico desatualizado (status FAILING, 256 scripts em root)
+10. `docs/DOSSIE-GEMINI-MINI-IDE.md` — dossie de nov/2025, referencia pipeline e estruturas que nao existem mais
+11. `docs/VISAO_ESTRATEGICA_TRANSFORMADORA.md` — documento visionario/conceitual, features nao implementadas
+
+### O que foi modificado
+- `.gitignore` — reforco contra recontaminacao (*.db, *.sqlite, *.backup, *.old, *.orig, scripts/quarantine/, PR_BODY_ROUND_*)
+- `scripts/README.md` — removida referencia a quarantine e legacy, atualizado historico
+
+### O que foi preservado (com justificativa)
+- `FORENSIC_AUDIT_REPORT.md` — auditoria recente (2026-03-15), referencia viva
+- `REMEDIATION_REPORT.md` — documenta decisoes historicas de governanca
+- `docs/AI_POLICY.md` — politica ativa
+- `docs/REVIEW_CHECKLIST.md` — checklist ativo
+- `docs/BACKLOG.md` — backlog ativo
+- `docs/ESAA_ARCHITECTURE.md` — documentacao de componente vivo
+- `docs/adr/001-remocao-overfitting-prompt7.md` — ADR permanente
+- `DEVELOPMENT.md`, `README.md`, `KNOWN_ISSUES.md` — documentacao ativa
+
+### Validacao tecnica
+- lint: PASS
+- typecheck: PASS
+- build: PASS
+- test: PASS (441 testes)
+- pipeline: PASS (6/6)
+
+### Metricas de limpeza
+- Arquivos removidos: 341
+- Linhas removidas: ~69.066
+- Diretorio quarantine eliminado por completo
+
+### Pendencias que permanecem abertas
+
+| ID | Item | Severidade | Status | Proxima acao |
+|----|------|------------|--------|--------------|
+| COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI (dependencia externa) |
+| COI-002 | Coverage thresholds | MEDIA | PARCIAL | Avaliar thresholds para ui e analysis-agent |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL | Refatoracao sqlite/OpenAI mocking |
+
+### Conclusao da Rodada 15
+**Status geral:** COMPLETA
+**341 arquivos removidos (331 quarantine + 7 docs obsoletos + 1 db + 1 PR body + 1 codigo morto)**
+**~69.066 linhas removidas do repositorio**
+**.gitignore reforçado contra recontaminacao**
+**Base verde: lint/typecheck/build/test/pipeline todos passando**
+
+---
+
 ## Template para novas rodadas
 
 ### Rodada X

@@ -369,4 +369,32 @@ Nota: Contagem total nao mudou, mas COI-002 teve progresso real (87 novos testes
 
 ---
 
-**Ultima atualizacao:** 2026-03-15 (Rodada 14 - Fase D)
+## Progresso na Rodada 15
+
+### Rodada 15 — Operacao Terra Limpa (saneamento estrutural)
+- **Foco:** Remocao de residuos historicos, documentacao obsoleta, codigo morto, artefatos operacionais
+- **Impacto em COI-002/COI-012:** Nenhum — rodada restrita a higiene
+- **Resultado direto:** 341 arquivos removidos (~69K linhas); scripts/quarantine eliminado; .gitignore reforçado; base verde preservada
+
+### COI-002 nao alterado
+- Rodada 15 focou em higiene; thresholds e coverage nao foram modificados
+
+### COI-012 nao alterado
+- Exclusoes do analysis-agent permanecem inalteradas
+
+---
+
+## Resumo pos-Rodada 15
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 3 | 2 |
+| **Total** | **15** | **3** |
+
+Nota: Contagem total nao mudou. Rodada 15 focou em higiene estrutural, nao em itens criticos funcionais.
+
+---
+
+**Ultima atualizacao:** 2026-03-15 (Rodada 15 - Fase 5)

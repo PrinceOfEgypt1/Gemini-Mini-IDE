@@ -26,3 +26,22 @@ logs/
 # Node.js runtime caches
 node-compile-cache/
 node-jiti/
+
+# Runtime databases (SQLite, etc.)
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup and temporary files
+*.backup
+*.old
+*.orig
+*.save
+*.tmp
+*~
+
+# Quarantine (historical scripts - permanently removed)
+scripts/quarantine/
+
+# PR body artifacts (transient)
+docs/governance/PR_BODY_ROUND_*.md

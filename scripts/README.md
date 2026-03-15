@@ -5,8 +5,6 @@
 ```
 scripts/
 ├── active/          # Scripts aprovados para uso
-├── legacy/          # Scripts antigos mantidos para referência
-├── quarantine/      # Scripts perigosos - NÃO EXECUTAR
 └── README.md        # Este arquivo
 ```
 
@@ -46,12 +44,6 @@ curl -X POST http://localhost:3200/impact-analysis \
 
 **Núcleo TypeScript:** `packages/shared/src/impact-analysis/` (fonte única de verdade)
 
-### Scripts em Quarentena (`quarantine/`)
-- 329 scripts legados movidos para quarentena
-- Contêm `cat >` que pode sobrescrever arquivos críticos
-- **NÃO DEVEM SER EXECUTADOS** sem revisão prévia
-- Mantidos apenas para referência histórica
-
 ## Arquivos Críticos (Protegidos)
 
 Os seguintes arquivos NÃO devem ser sobrescritos por scripts:
@@ -78,5 +70,5 @@ pnpm dev        # Iniciar dev server
 
 ## Histórico
 
-- **2026-03-07**: 329 scripts movidos para quarentena
-- Razão: Uso massivo de `cat >` representa risco de destruição de código
+- **2026-03-07**: 329 scripts perigosos quarentenados (uso massivo de `cat >`)
+- **2026-03-15**: Diretório `scripts/quarantine/` removido permanentemente (Rodada 15 — Operação Terra Limpa). Scripts não tinham valor operacional e `.gitignore` atualizado para impedir recontaminação.
