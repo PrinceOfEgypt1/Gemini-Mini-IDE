@@ -1100,26 +1100,52 @@ Todos os pontos de integracao importam e usam `analyzeImpact()` desta mesma font
 ---
 
 ## Rodada 15 — OPERACAO TERRA LIMPA
-**Status geral:** COMPLETA
-**Objetivo principal:** Saneamento estrutural do repositorio — remocao de residuos historicos, backups, documentacao obsoleta, codigo morto e reforco do .gitignore
+**Status geral:** PARCIAL (pendente criacao de PR)
+**Data:** 2026-03-15
+**Tipo:** SANEAMENTO ESTRUTURAL DO REPOSITORIO
+**Objetivo principal:** Remocao de residuos historicos, backups, documentacao obsoleta, codigo morto e reforco do .gitignore
 **Escopo:** Higiene do repositorio; nenhuma feature ou refatoracao de produto
+**Commits:** 2 (9585bcf + ae04f34)
 
-### O que foi removido
+### O que foi removido — 347 arquivos, 90.471 linhas
+
+**Commit 1 (9585bcf) — 343 arquivos, 69.078 linhas:**
 1. `scripts/quarantine/` — 331 scripts perigosos (residuos historicos com `cat >`)
-2. `packages/server/.esaa-events.db` — banco SQLite de runtime versionado indevidamente
-3. `packages/server/src/routes/conversations.ts` — codigo morto (0 imports, 0% coverage, duplicado em index.ts)
-4. `docs/governance/PR_BODY_ROUND_14.md` — artefato transitorio de rodada anterior
-5. `IMPLEMENTATION_REPORT.md` — documenta AppRefactored.tsx e hooks ja removidos na Rodada 7
+2. `packages/server/.esaa-events.db` + `.db-shm` + `.db-wal` — banco SQLite de runtime (3 arquivos)
+3. `packages/server/src/routes/conversations.ts` — codigo morto (0 imports, 0% coverage)
+4. `docs/governance/PR_BODY_ROUND_14.md` — artefato transitorio
+5. `IMPLEMENTATION_REPORT.md` — documenta AppRefactored.tsx removido na Rodada 7
 6. `FRONTEND_REFACTORING.md` — documenta arquitetura que nao existe mais
-7. `GOVERNANCE_GATE_REPORT.md` — relatorio pontual de dez/2025, branch historica
-8. `Relatorio de Governanca Padrao NASA e Otimizacao do Motor de Geracao do Gemini-Mini-IDE.md` — relatorio historico com linguagem hiperbólica
-9. `docs/AUDIT_PHASE0_MAP.md` — snapshot historico desatualizado (status FAILING, 256 scripts em root)
-10. `docs/DOSSIE-GEMINI-MINI-IDE.md` — dossie de nov/2025, referencia pipeline e estruturas que nao existem mais
-11. `docs/VISAO_ESTRATEGICA_TRANSFORMADORA.md` — documento visionario/conceitual, features nao implementadas
+7. `GOVERNANCE_GATE_REPORT.md` — relatorio pontual de dez/2025
+8. `Relatorio de Governanca Padrao NASA...md` — relatorio historico
+9. `docs/AUDIT_PHASE0_MAP.md` — snapshot historico desatualizado
+10. `docs/DOSSIE-GEMINI-MINI-IDE.md` — dossie de nov/2025 desatualizado
+11. `docs/VISAO_ESTRATEGICA_TRANSFORMADORA.md` — documento visionario nao operacional
 
-### O que foi modificado
-- `.gitignore` — reforco contra recontaminacao (*.db, *.sqlite, *.backup, *.old, *.orig, scripts/quarantine/, PR_BODY_ROUND_*)
-- `scripts/README.md` — removida referencia a quarantine e legacy, atualizado historico
+**Commit 2 (ae04f34) — 4 arquivos, 21.405 linhas:**
+12. `packages/analysis-agent/.mini-ide-cache.json` — cache de runtime (2.400 linhas)
+13. `packages/analysis-agent/src/agent.ts.bak_421` — backup temporario (196 linhas)
+14. `packages/analysis-agent/src/agent.ts.bak_422` — backup temporario (236 linhas)
+15. `packages/server/.mini-ide-cache.json` — cache de runtime (18.573 linhas)
+
+### Distribuicao por categoria
+
+| Categoria | Arquivos | Linhas |
+|---|---|---|
+| Scripts quarentenados | 331 | 65.446 |
+| Caches de runtime (.json) | 2 | 20.973 |
+| Documentos obsoletos | 8 | 3.407 |
+| Bancos SQLite | 3 | binario |
+| Backups .bak | 2 | 432 |
+| Codigo morto | 1 | 213 |
+| **TOTAL** | **347** | **90.471** |
+
+### O que foi modificado (5 arquivos)
+- `.gitignore` — 12 novas regras de contencao
+- `scripts/README.md` — removida referencia a quarantine e legacy
+- `docs/governance/CRITICAL_OPEN_ITEMS.md` — atualizacao
+- `docs/governance/MASTER_COMPLIANCE_MATRIX.md` — MC-014 atualizado, MC-029 criado
+- `docs/governance/ROUND_STATUS_LOG.md` — entrada da Rodada 15
 
 ### O que foi preservado (com justificativa)
 - `FORENSIC_AUDIT_REPORT.md` — auditoria recente (2026-03-15), referencia viva
@@ -1138,11 +1164,6 @@ Todos os pontos de integracao importam e usam `analyzeImpact()` desta mesma font
 - test: PASS (441 testes)
 - pipeline: PASS (6/6)
 
-### Metricas de limpeza
-- Arquivos removidos: 341
-- Linhas removidas: ~69.066
-- Diretorio quarantine eliminado por completo
-
 ### Pendencias que permanecem abertas
 
 | ID | Item | Severidade | Status | Proxima acao |
@@ -1152,11 +1173,12 @@ Todos os pontos de integracao importam e usam `analyzeImpact()` desta mesma font
 | COI-012 | Exclusoes de testes | MEDIA | PARCIAL | Refatoracao sqlite/OpenAI mocking |
 
 ### Conclusao da Rodada 15
-**Status geral:** COMPLETA
-**341 arquivos removidos (331 quarantine + 7 docs obsoletos + 1 db + 1 PR body + 1 codigo morto)**
-**~69.066 linhas removidas do repositorio**
-**.gitignore reforçado contra recontaminacao**
+**Status geral:** PARCIAL (pendente criacao de PR)
+**347 arquivos removidos em 2 commits (331 quarantine + 8 docs obsoletos + 2 caches + 2 backups + 3 SQLite + 1 codigo morto)**
+**90.471 linhas removidas do repositorio**
+**.gitignore reforçado com 12 novas regras de contencao**
 **Base verde: lint/typecheck/build/test/pipeline todos passando**
+**Relatorio final completo: docs/governance/ROUND_15_FINAL_REPORT.md**
 
 ---
 
