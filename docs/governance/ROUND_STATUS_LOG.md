@@ -1256,6 +1256,147 @@ packages/server/src/
 
 ---
 
+### Rodada 17 — OPERACAO GUARDA DE COBERTURA
+**Status geral:** PARCIAL (pendente criacao de PR)
+**Data:** 2026-03-15
+**Tipo:** GOVERNANCA DE COVERAGE INSTITUCIONALIZADA
+**Objetivo principal:** Institucionalizar coverage governance para UI e analysis-agent; consolidar policy de thresholds auditavel em todos os 5 pacotes.
+
+### Problema resolvido
+UI e analysis-agent nao tinham thresholds locais de coverage, permitindo regressao silenciosa. Apenas 3 de 5 pacotes tinham governanca de coverage. COI-002 permanecia aberto desde a Rodada 3.
+
+### Auditoria de coverage (Fase 1)
+| Pacote | Stmts | Branch | Funcs | Lines | Threshold? |
+|--------|-------|--------|-------|-------|-----------|
+| ui | 22.23% | 65.82% | 38.80% | 22.23% | NAO |
+| analysis-agent | 16.66% | 73.42% | 51.25% | 16.66% | NAO |
+| shared | - | - | - | - | SIM (80/80/50/80) |
+| server | - | - | - | - | SIM (40/55/30/40) |
+| cli | - | - | - | - | SIM (40/80/80/40) |
+| root/global | - | - | - | - | SIM (25/15/25/25) |
+
+### Tabela completa de coverage governance por pacote-alvo
+
+| Pacote | Coverage antes (stmts/branch/funcs/lines) | Coverage depois | Threshold antes (lines/branch/funcs/stmts) | Threshold depois (lines/branch/funcs/stmts) | Exclusoes antes | Exclusoes depois | Motivo da decisao |
+|--------|-------------------------------------------|-----------------|----------------------------------------------|------------------------------------------------|-----------------|------------------|-------------------|
+| shared | 93.7%/80%+/50%+/93.7% | Inalterado | 80/80/50/80 | Inalterado (80/80/50/80) | Nenhuma | Inalterado | Pacote maduro; threshold ja adequado |
+| server | 56.96%/55%+/30%+/56.96% | Inalterado | 40/55/30/40 | Inalterado (40/55/30/40) | Nenhuma | Inalterado | Threshold ja adequado; rotas testadas via app.inject() |
+| cli | 54.39%/80%+/80%+/54.39% | Inalterado | 40/80/80/40 | Inalterado (40/80/80/40) | Nenhuma | Inalterado | Threshold ja adequado; entrypoint testado via factory |
+| **ui** | **22.23/65.82/38.80/22.23** | **Inalterado** | **NENHUM** | **20/60/35/20** | **Nenhuma** | **Nenhuma (adicionado: coverage include/exclude)** | **Piso anti-regressao; margem ~2pp abaixo do atual** |
+| **analysis-agent** | **16.66/73.42/51.25/16.66** | **Inalterado** | **NENHUM** | **15/70/45/15** | **esaa/*.test.ts, agent.test.ts, index.test.ts** | **Inalterado + coverage exclude: __mocks__/** | **Piso anti-regressao; margem ~1.6pp abaixo do atual** |
+| root/global | N/A (agregado) | N/A (agregado) | 25/15/25/25 | Inalterado (25/15/25/25) | types/**, __mocks__/**, test/** | Inalterado | Safety net; governanca local por pacote e mais eficaz |
+
+### Tabela de decisoes de threshold
+
+| Pacote | Metrica | Coverage atual | Threshold definido | Margem | Justificativa |
+|--------|---------|----------------|--------------------|---------|----|
+| ui | lines | 22.23% | 20% | 2.23pp | Piso conservador anti-regressao; muitos componentes visuais sem teste unitario |
+| ui | branches | 65.82% | 60% | 5.82pp | Margem maior por volatilidade em branches de componentes React |
+| ui | functions | 38.80% | 35% | 3.80pp | Piso conservador; hooks e utils testados, componentes visuais nao |
+| ui | statements | 22.23% | 20% | 2.23pp | Identico a lines (V8 provider) |
+| analysis-agent | lines | 16.66% | 15% | 1.66pp | Margem menor mas suficiente; grandes areas sem testes por design |
+| analysis-agent | branches | 73.42% | 70% | 3.42pp | Branches cobertos por testes de validators e rich-schemas |
+| analysis-agent | functions | 51.25% | 45% | 6.25pp | Margem maior por volatilidade; funcoes de servico e prompts nao testadas |
+| analysis-agent | statements | 16.66% | 15% | 1.66pp | Identico a lines (V8 provider) |
+| shared | * | 93.7%+ | 80/80/50/80 | 13.7pp+ | Existente desde Rodada 11; sem alteracao |
+| server | * | 56.96%+ | 40/55/30/40 | 16.96pp+ | Existente desde Rodada 13; sem alteracao |
+| cli | * | 54.39%+ | 40/80/80/40 | 14.39pp+ | Existente desde Rodada 13; sem alteracao |
+| root/global | * | N/A | 25/15/25/25 | N/A | Existente desde Rodada 3; safety net; sem alteracao |
+
+### Tabela de itens preservados (sem alteracao nesta rodada)
+
+| Item | Localizacao | Motivo da preservacao |
+|------|-------------|----------------------|
+| Thresholds shared | `packages/shared/vitest.config.ts` | Ja adequados (80/80/50/80); coverage 93.7% |
+| Thresholds server | `packages/server/vitest.config.ts` | Ja adequados (40/55/30/40); coverage 56.96% |
+| Thresholds cli | `packages/cli/vitest.config.ts` | Ja adequados (40/80/80/40); coverage 54.39% |
+| Thresholds root/global | `vitest.config.ts` | Safety net adequado (25/15/25/25); governanca local e mais eficaz |
+| Exclusoes analysis-agent (testes) | `packages/analysis-agent/vitest.config.ts` | Divida tecnica documentada em DEVELOPMENT.md; esaa/agent/index dependem de sqlite/OpenAI mocking |
+| Coverage excludes root | `vitest.config.ts` | types/**, __mocks__/**, test/** sao padrao |
+| Coverage provider V8 | Todos os configs | Provider consistente em todo o monorepo |
+| perFile: false (root) | `vitest.config.ts` | Per-file enforcement nao e objetivo desta rodada |
+
+### Criterio de design dos thresholds
+- Thresholds definidos ABAIXO da coverage atual (margem de seguranca ~2-5pp)
+- Objetivo: impedir REGRESSAO, nao forcar crescimento imediato
+- Crescimento futuro deve ser gerido por rodadas dedicadas
+
+### Thresholds implementados (Fase 3)
+
+| Pacote | Lines | Branches | Functions | Statements | Status |
+|--------|-------|----------|-----------|------------|--------|
+| shared | 80 | 80 | 50 | 80 | Existente |
+| server | 40 | 55 | 30 | 40 | Existente |
+| cli | 40 | 80 | 80 | 40 | Existente |
+| **ui** | **20** | **60** | **35** | **20** | **NOVO** |
+| **analysis-agent** | **15** | **70** | **45** | **15** | **NOVO** |
+| root/global | 25 | 15 | 25 | 25 | Mantido |
+
+### Arquivos modificados (5 + 1 criado)
+
+| # | Arquivo | Tipo | Descricao |
+|---|---------|------|-----------|
+| 1 | `packages/ui/vitest.config.ts` | MODIFICADO | Adicionada secao coverage com thresholds 20/60/35/20 |
+| 2 | `packages/analysis-agent/vitest.config.ts` | MODIFICADO | Adicionada secao coverage com thresholds 15/70/45/15 |
+| 3 | `docs/governance/MASTER_COMPLIANCE_MATRIX.md` | MODIFICADO | MC-031 criado, MC-005 promovido a COMPLETO |
+| 4 | `docs/governance/ROUND_STATUS_LOG.md` | MODIFICADO | Entrada Rodada 17 |
+| 5 | `docs/governance/CRITICAL_OPEN_ITEMS.md` | MODIFICADO | COI-002 fechado |
+| 6 | `docs/governance/PR_BODY_ROUND_17.md` | CRIADO | PR body preparado para criacao de PR |
+
+### Validacao tecnica
+- lint: PASS
+- typecheck: PASS
+- build: PASS
+- test: PASS (441 testes: shared 35, ui 73, cli 25, analysis-agent 234, server 74)
+- pipeline: PASS (6/6)
+- UI coverage (22.23%) > threshold (20%): PASS
+- Analysis-agent coverage (16.66%) > threshold (15%): PASS
+
+### Itens FECHADOS
+- MC-031: Governanca de coverage institucionalizada (COMPLETO)
+- MC-005: Coverage gate real no CI — promovido de PARCIAL a COMPLETO
+- COI-002: Coverage gate — FECHADO (definicao de concluido atingida: thresholds por pacote em todos os 5 pacotes)
+
+### Pendencias que permanecem abertas
+
+| ID | Item | Severidade | Status | Proxima acao |
+|----|------|------------|--------|--------------|
+| COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI (dependencia externa) |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL | Refatoracao sqlite/OpenAI mocking |
+
+### Branch
+- **Canonica:** `claude/round-17-operacao-guarda-de-cobertura`
+- **Efetiva:** `claude/comprehensive-project-audit-eVbB5`
+- **Divergencia autorizada:** SIM — sistema de deploy exige sufixo de session ID
+
+### Conclusao da Rodada 17
+**Status geral:** PARCIAL (pendente criacao de PR)
+**MC-031 criado com evidencia**
+**MC-005 promovido a COMPLETO (5/5 pacotes com thresholds)**
+**COI-002 fechado (todos os pacotes com coverage governance)**
+**Base verde: lint/typecheck/build/test/pipeline todos passando**
+**PR body preparado: docs/governance/PR_BODY_ROUND_17.md**
+**Limitacao: `gh` CLI indisponivel neste ambiente; PR nao criado**
+
+---
+
+## Resumo pos-Rodada 17
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 4 | 1 |
+| **Total** | **16** | **2** |
+
+Nota: COI-002 fechado (coverage governance completa em todos os pacotes). Restam COI-001 (branch protection - dependencia externa) e COI-012 (exclusoes analysis-agent - divida tecnica).
+
+---
+
+**Ultima atualizacao:** 2026-03-15 (Rodada 17 - Fase 5)
+
+---
+
 ## Template para novas rodadas
 
 ### Rodada X
