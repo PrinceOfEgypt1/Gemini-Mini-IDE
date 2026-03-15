@@ -1393,7 +1393,189 @@ Nota: COI-002 fechado (coverage governance completa em todos os pacotes). Restam
 
 ---
 
-**Ultima atualizacao:** 2026-03-15 (Rodada 17 - Fase 5)
+## Rodada 18 — OPERACAO ESCUDO DO NUCLEO
+**Status geral:** PARCIAL (pendente criacao de PR)
+**Data:** 2026-03-15
+**Tipo:** BLINDAGEM DO CORE DO ANALYSIS-AGENT
+**Objetivo principal:** Blindar o nucleo do analysis-agent com testes reais: orchestrator-interactive.ts (680 linhas, 0% coverage), prompt-orchestrator.ts (0% coverage), cache.service.ts (0% coverage). Auditar agent.test.ts e ESAA trail.
+**Commit:** cc0f0c9
+
+### Baseline da Rodada 18
+- **Branch efetiva:** claude/comprehensive-project-audit-eVbB5
+- **Commit base:** 2e7f8d1 (Merge PR #34 - Rodada 17)
+- **Working tree:** LIMPA
+- **Diff inicial contra origin/main:** Apenas commits de rodadas anteriores (14-17)
+- **Testes baseline:** 441 (cli:25, shared:35, ui:73, analysis-agent:234, server:74)
+- **Pipeline:** 6/6 OK
+- **analysis-agent coverage baseline:** 16.73% stmts, 73.57% branches, 51.57% funcs, 16.73% lines
+
+### Trabalho realizado por fase
+
+**Fase 0 — Baseline limpo:**
+- Working tree limpa confirmada
+- Pipeline 6/6 verde: lint, typecheck, build, test (441), entrypoint, healthz
+- Coverage baseline do analysis-agent coletada: 16.73% stmts, 73.57% branches, 51.57% funcs
+
+**Fase 1 — Auditoria do core:**
+- Identificados 3 alvos primarios com 0% coverage: orchestrator-interactive.ts (680 linhas), prompt-orchestrator.ts (143 linhas), cache.service.ts (100 linhas)
+- Leitura completa dos 3 modulos para entender dependencias e pontos de mock
+- Identificacao da cadeia de dependencias: OpenAI -> SessionDatabase -> SessionManager -> 5 interactive agents -> AnalysisAgent
+
+**Fase 2 — Estrategia de blindagem:**
+- orchestrator-interactive.ts: mock de OpenAI, SessionDatabase, SessionManager, 5 interactive agents (vi.mock com factory functions)
+- prompt-orchestrator.ts: testes puros (apenas mock de SYSTEM_PROMPTS constant)
+- cache.service.ts: mock de fs module para disk persistence
+- Decisao de nao atacar agent.test.ts/ESAA nesta rodada (prioridades 4-5 na estrategia)
+
+**Fase 3 — Implementacao:**
+- Criado `orchestrator-interactive.test.ts` com 34 testes (constructor, startConversation, respondToAgent, advanceToNextAgent, skipCurrentAgent, generatePlan, generateCodeFromPlan, generateCodeFromPlanIncremental, generateFinalResult, getSession, listSessions, deleteSession, buildEnrichedPrompt, getFallbackMessage)
+- Criado `prompt-orchestrator.test.ts` com 22 testes (start, analysis/product/architecture/userStories management, 6 prompt getters)
+- Criado `cache.service.test.ts` com 16 testes (generateKey, get/set, invalidate, stats, disk persistence, TTL expiry)
+- Correcoes durante implementacao: async em test de disk persistence, TTL timing fix (0ms -> 1/60000ms com delay), unused variables removidas
+
+**Fase 4 — Revalidacao tecnica:**
+- pnpm lint: PASS
+- pnpm typecheck: PASS
+- pnpm build: PASS
+- pnpm test: PASS (513 testes: shared 35, ui 73, cli 25, analysis-agent 306, server 74)
+- pipeline.sh: PASS (6/6)
+- Coverage coletada: orchestrator-interactive.ts 95.58%, prompt-orchestrator.ts 98.6%, cache.service.ts 91%
+- analysis-agent overall: 22.93% stmts, 75.11% branches, 62.43% funcs
+
+**Fase 5 — Documentacao e governanca:**
+- MCM atualizado: MC-032 criado como COMPLETO
+- RSL atualizado: entrada Rodada 18 com tabela de blindagem e metricas
+- COI atualizado: COI-012 nota Rodada 18 adicionada com evidencia de re-auditoria
+- PR body criado: `docs/governance/PR_BODY_ROUND_18.md` (force-added, gitignored)
+
+**Fase 6 — Commit, push e fechamento:**
+- Commit cc0f0c9 criado com 7 arquivos (3 novos testes + 3 governance docs + 1 PR body)
+- Push para origin/claude/comprehensive-project-audit-eVbB5: SUCESSO
+- PR: NAO CRIADO (`gh` CLI indisponivel neste ambiente)
+- PR body preparado em `docs/governance/PR_BODY_ROUND_18.md` para criacao manual
+
+### PROVA I — Tabela de blindagem completa
+
+| Arquivo | Coverage antes (stmts/branch/funcs/lines) | Coverage depois | Exclusao antes | Exclusao depois | Risco antes | Risco depois | Decisao |
+|---------|-------------------------------------------|-----------------|----------------|-----------------|-------------|--------------|---------|
+| orchestrator-interactive.ts (680 linhas) | 0%/0%/0%/0% | 95.58%/72.82%/94.11%/95.58% | Nao | Nao | CRITICO (core sem testes) | BAIXO | 34 testes com mock de OpenAI, SessionDB, SessionManager, 5 agents, AnalysisAgent |
+| prompt-orchestrator.ts (143 linhas) | 0%/0%/0%/0% | 98.6%/96.15%/100%/98.6% | Nao | Nao | ALTO (logica de prompts sem testes) | BAIXO | 22 testes puros cobrindo state mgmt e prompt generation |
+| cache.service.ts (100 linhas) | 0%/0%/0%/0% | 91%/83.33%/100%/91% | Nao | Nao | MEDIO (cache sem testes) | BAIXO | 16 testes com mock de fs; TTL, eviction, disk persistence |
+| agent.test.ts | N/A (excluido) | N/A (excluido) | SIM | SIM (inalterado) | MEDIO | MEDIO | Bloqueio tecnico confirmado: ILLMClient mismatch + OpenAI client internals |
+| esaa/*.test.ts | N/A (excluido) | N/A (excluido) | SIM | SIM (inalterado) | MEDIO | MEDIO | Bloqueio tecnico confirmado: better-sqlite3 mock retorna vazios |
+| index.test.ts | N/A (excluido) | N/A (excluido) | SIM | SIM (inalterado) | BAIXO | BAIXO | Cadeia de imports acoplada ao esaa |
+
+### Metricas de coverage do analysis-agent
+
+| Metrica | Antes | Depois | Delta |
+|---------|-------|--------|-------|
+| Statements | 16.73% | 22.93% | +6.20pp |
+| Branches | 73.57% | 75.11% | +1.54pp |
+| Functions | 51.57% | 62.43% | +10.86pp |
+| Lines | 16.73% | 22.93% | +6.20pp |
+
+### Testes criados (72 novos)
+
+| # | Arquivo | Testes | Descricao |
+|---|---------|--------|-----------|
+| 1 | `src/orchestrator-interactive.test.ts` | 34 | Mock de OpenAI, SessionDB, SessionManager, 5 interactive agents, AnalysisAgent; cobre constructor, startConversation, respondToAgent, advanceToNextAgent, skipCurrentAgent, generatePlan, generateCodeFromPlan, generateCodeFromPlanIncremental, generateFinalResult, getSession, listSessions, deleteSession, buildEnrichedPrompt, getFallbackMessage |
+| 2 | `src/services/prompt-orchestrator.test.ts` | 22 | Testes puros de state management e prompt generation; cobre start, analysis/product/architecture/userStories management, getAnalysisPrompt, getProductPrompt, getArchitecturePrompt, getUserStoriesPrompt, getCodeGenPrompt, getUserPrompt |
+| 3 | `src/services/cache.service.test.ts` | 16 | Mock de fs; cobre generateKey, get/set, invalidate, stats, disk persistence, TTL expiry |
+
+### Auditoria de exclusoes (agent.test.ts / ESAA trail)
+
+**agent.test.ts — BLOQUEADO (confirmado Rodada 18):**
+- Falha 1: Mock retorna `complexity: "Media"` mas Zod schema espera objeto `{level, score, justification}`
+- Falha 2: `agent.client.chat` e `undefined` — estrutura interna do OpenAI client mudou entre versoes
+- Resolucao requer: atualizacao de mock data + descoberta da nova API interna do OpenAI client
+- Escopo estimado: moderado (refatoracao de mocks, nao de producao)
+
+**esaa/*.test.ts — BLOQUEADO (confirmado Rodada 18):**
+- Mock de better-sqlite3 retorna arrays vazios por design (evita dependencia nativa)
+- Testes esperam dados reais de queries SQL
+- Resolucao requer: dependency injection no codigo de producao ou mock mais sofisticado
+- Escopo estimado: alto (refatoracao de producao necessaria)
+
+**index.test.ts — BLOQUEADO (confirmado Rodada 18):**
+- Cadeia de imports acoplada ao modulo esaa
+- Resolucao depende de esaa ser desacoplado primeiro
+
+### Thresholds
+- analysis-agent thresholds inalterados: 15/70/45/15 (lines/branches/functions/statements)
+- Coverage atual (22.93/75.11/62.43/22.93) esta ACIMA dos thresholds com margem confortavel
+- Nao elevados nesta rodada para manter margem de seguranca
+
+### Validacao tecnica
+- lint: PASS
+- typecheck: PASS
+- build: PASS
+- test: PASS (513 testes: shared 35, ui 73, cli 25, analysis-agent 306, server 74)
+- pipeline: PASS (6/6)
+
+### Lista exata de arquivos criados e modificados
+
+| # | Arquivo | Tipo | Descricao |
+|---|---------|------|-----------|
+| 1 | `packages/analysis-agent/src/orchestrator-interactive.test.ts` | NOVO | 34 testes para modulo central de 680 linhas |
+| 2 | `packages/analysis-agent/src/services/prompt-orchestrator.test.ts` | NOVO | 22 testes para logica de prompts |
+| 3 | `packages/analysis-agent/src/services/cache.service.test.ts` | NOVO | 16 testes para cache com TTL |
+| 4 | `docs/governance/MASTER_COMPLIANCE_MATRIX.md` | MODIFICADO | MC-032 criado; historico de alteracoes atualizado |
+| 5 | `docs/governance/ROUND_STATUS_LOG.md` | MODIFICADO | Entrada Rodada 18 completa |
+| 6 | `docs/governance/CRITICAL_OPEN_ITEMS.md` | MODIFICADO | COI-012 nota Rodada 18; Resumo pos-Rodada 18 |
+| 7 | `docs/governance/PR_BODY_ROUND_18.md` | NOVO (force-added) | PR body com guard keywords (Justificativa, Motivo, Refactor, Cleanup, Deletion) |
+
+### Prova de identidade da branch
+
+| Campo | Valor |
+|-------|-------|
+| Branch canonica | `claude/round-18-operacao-escudo-do-nucleo-analysis-agent` |
+| Branch efetiva | `claude/comprehensive-project-audit-eVbB5` |
+| Divergencia | SIM — sistema de deploy exige sufixo de session ID |
+| Commit da rodada | cc0f0c9 (`Round 18: Operação Escudo do Núcleo — blindage core analysis-agent`) |
+| Commit base | 2e7f8d1 (`Merge pull request #34`) |
+| Push | SUCESSO para origin/claude/comprehensive-project-audit-eVbB5 |
+
+### Itens FECHADOS
+- MC-032: Blindagem do core do analysis-agent (COMPLETO)
+
+### Pendencias remanescentes
+
+| ID | Item | Severidade | Status | Proxima acao |
+|----|------|------------|--------|--------------|
+| COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI (dependencia externa) |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL (re-auditado R18) | Refatoracao de producao para DI (esaa) + atualizacao de mocks (agent) |
+| — | PR da Rodada 18 | — | NAO CRIADO | `gh` CLI indisponivel; PR body em `docs/governance/PR_BODY_ROUND_18.md` |
+
+### Conclusao da Rodada 18
+**Status geral:** PARCIAL (pendente criacao de PR)
+**MC-032 criado com evidencia**
+**orchestrator-interactive.ts de 0% para 95.58% (alvo primario atingido)**
+**prompt-orchestrator.ts de 0% para 98.6%**
+**cache.service.ts de 0% para 91%**
+**analysis-agent coverage stmts 16.73% -> 22.93% (+6.20pp)**
+**analysis-agent coverage funcs 51.57% -> 62.43% (+10.86pp)**
+**72 testes novos; 513 testes totais**
+**agent.test.ts e ESAA trail: bloqueios tecnicos confirmados e documentados**
+**Base verde: lint/typecheck/build/test/pipeline todos passando**
+**PR body preparado: docs/governance/PR_BODY_ROUND_18.md**
+**Limitacao: `gh` CLI indisponivel neste ambiente; PR nao criado**
+
+---
+
+## Resumo pos-Rodada 18
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 4 | 1 |
+| **Total** | **16** | **2** |
+
+Nota: Contagem total nao mudou (COI-012 permanece PARCIAL com nota atualizada). Coverage do core do analysis-agent significativamente aumentada.
+
+---
+
+**Ultima atualizacao:** 2026-03-15 (Rodada 18 - Fase 5)
 
 ---
 
