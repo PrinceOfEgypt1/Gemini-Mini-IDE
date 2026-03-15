@@ -1393,7 +1393,131 @@ Nota: COI-002 fechado (coverage governance completa em todos os pacotes). Restam
 
 ---
 
-**Ultima atualizacao:** 2026-03-15 (Rodada 17 - Fase 5)
+## Rodada 18 — OPERACAO ESCUDO DO NUCLEO
+**Status geral:** PARCIAL (pendente criacao de PR)
+**Data:** 2026-03-15
+**Tipo:** BLINDAGEM DO CORE DO ANALYSIS-AGENT
+**Objetivo principal:** Blindar o nucleo do analysis-agent com testes reais: orchestrator-interactive.ts (680 linhas, 0% coverage), prompt-orchestrator.ts (0% coverage), cache.service.ts (0% coverage). Auditar agent.test.ts e ESAA trail.
+
+### Baseline da Rodada 18
+- **Branch efetiva:** claude/comprehensive-project-audit-eVbB5
+- **Working tree:** LIMPA
+- **Testes baseline:** 441 (cli:25, shared:35, ui:73, analysis-agent:234, server:74)
+- **Pipeline:** 6/6 OK
+- **analysis-agent coverage baseline:** 16.73% stmts, 73.57% branches, 51.57% funcs, 16.73% lines
+
+### PROVA I — Tabela de blindagem completa
+
+| Arquivo | Coverage antes (stmts/branch/funcs/lines) | Coverage depois | Exclusao antes | Exclusao depois | Risco antes | Risco depois | Decisao |
+|---------|-------------------------------------------|-----------------|----------------|-----------------|-------------|--------------|---------|
+| orchestrator-interactive.ts (680 linhas) | 0%/0%/0%/0% | 95.58%/72.82%/94.11%/95.58% | Nao | Nao | CRITICO (core sem testes) | BAIXO | 34 testes com mock de OpenAI, SessionDB, SessionManager, 5 agents, AnalysisAgent |
+| prompt-orchestrator.ts (143 linhas) | 0%/0%/0%/0% | 98.6%/96.15%/100%/98.6% | Nao | Nao | ALTO (logica de prompts sem testes) | BAIXO | 22 testes puros cobrindo state mgmt e prompt generation |
+| cache.service.ts (100 linhas) | 0%/0%/0%/0% | 91%/83.33%/100%/91% | Nao | Nao | MEDIO (cache sem testes) | BAIXO | 16 testes com mock de fs; TTL, eviction, disk persistence |
+| agent.test.ts | N/A (excluido) | N/A (excluido) | SIM | SIM (inalterado) | MEDIO | MEDIO | Bloqueio tecnico confirmado: ILLMClient mismatch + OpenAI client internals |
+| esaa/*.test.ts | N/A (excluido) | N/A (excluido) | SIM | SIM (inalterado) | MEDIO | MEDIO | Bloqueio tecnico confirmado: better-sqlite3 mock retorna vazios |
+| index.test.ts | N/A (excluido) | N/A (excluido) | SIM | SIM (inalterado) | BAIXO | BAIXO | Cadeia de imports acoplada ao esaa |
+
+### Metricas de coverage do analysis-agent
+
+| Metrica | Antes | Depois | Delta |
+|---------|-------|--------|-------|
+| Statements | 16.73% | 22.93% | +6.20pp |
+| Branches | 73.57% | 75.11% | +1.54pp |
+| Functions | 51.57% | 62.43% | +10.86pp |
+| Lines | 16.73% | 22.93% | +6.20pp |
+
+### Testes criados (72 novos)
+
+| # | Arquivo | Testes | Descricao |
+|---|---------|--------|-----------|
+| 1 | `src/orchestrator-interactive.test.ts` | 34 | Mock de OpenAI, SessionDB, SessionManager, 5 interactive agents, AnalysisAgent; cobre constructor, startConversation, respondToAgent, advanceToNextAgent, skipCurrentAgent, generatePlan, generateCodeFromPlan, generateCodeFromPlanIncremental, generateFinalResult, getSession, listSessions, deleteSession, buildEnrichedPrompt, getFallbackMessage |
+| 2 | `src/services/prompt-orchestrator.test.ts` | 22 | Testes puros de state management e prompt generation; cobre start, analysis/product/architecture/userStories management, getAnalysisPrompt, getProductPrompt, getArchitecturePrompt, getUserStoriesPrompt, getCodeGenPrompt, getUserPrompt |
+| 3 | `src/services/cache.service.test.ts` | 16 | Mock de fs; cobre generateKey, get/set, invalidate, stats, disk persistence, TTL expiry |
+
+### Auditoria de exclusoes (agent.test.ts / ESAA trail)
+
+**agent.test.ts — BLOQUEADO (confirmado Rodada 18):**
+- Falha 1: Mock retorna `complexity: "Media"` mas Zod schema espera objeto `{level, score, justification}`
+- Falha 2: `agent.client.chat` e `undefined` — estrutura interna do OpenAI client mudou entre versoes
+- Resolucao requer: atualizacao de mock data + descoberta da nova API interna do OpenAI client
+- Escopo estimado: moderado (refatoracao de mocks, nao de producao)
+
+**esaa/*.test.ts — BLOQUEADO (confirmado Rodada 18):**
+- Mock de better-sqlite3 retorna arrays vazios por design (evita dependencia nativa)
+- Testes esperam dados reais de queries SQL
+- Resolucao requer: dependency injection no codigo de producao ou mock mais sofisticado
+- Escopo estimado: alto (refatoracao de producao necessaria)
+
+**index.test.ts — BLOQUEADO (confirmado Rodada 18):**
+- Cadeia de imports acoplada ao modulo esaa
+- Resolucao depende de esaa ser desacoplado primeiro
+
+### Thresholds
+- analysis-agent thresholds inalterados: 15/70/45/15 (lines/branches/functions/statements)
+- Coverage atual (22.93/75.11/62.43/22.93) esta ACIMA dos thresholds com margem confortavel
+- Nao elevados nesta rodada para manter margem de seguranca
+
+### Validacao tecnica
+- lint: PASS
+- typecheck: PASS
+- build: PASS
+- test: PASS (513 testes: shared 35, ui 73, cli 25, analysis-agent 306, server 74)
+- pipeline: PASS (6/6)
+
+### Arquivos criados/modificados
+
+| # | Arquivo | Tipo | Descricao |
+|---|---------|------|-----------|
+| 1 | `packages/analysis-agent/src/orchestrator-interactive.test.ts` | NOVO | 34 testes para modulo central de 680 linhas |
+| 2 | `packages/analysis-agent/src/services/prompt-orchestrator.test.ts` | NOVO | 22 testes para logica de prompts |
+| 3 | `packages/analysis-agent/src/services/cache.service.test.ts` | NOVO | 16 testes para cache com TTL |
+| 4 | `docs/governance/MASTER_COMPLIANCE_MATRIX.md` | MODIFICADO | MC-032 criado |
+| 5 | `docs/governance/ROUND_STATUS_LOG.md` | MODIFICADO | Entrada Rodada 18 |
+| 6 | `docs/governance/CRITICAL_OPEN_ITEMS.md` | MODIFICADO | COI-012 atualizado com nota Rodada 18 |
+
+### Itens FECHADOS
+- MC-032: Blindagem do core do analysis-agent (COMPLETO)
+
+### Pendencias que permanecem abertas
+
+| ID | Item | Severidade | Status | Proxima acao |
+|----|------|------------|--------|--------------|
+| COI-001 | Branch protection | CRITICA | PARCIAL | GitHub UI (dependencia externa) |
+| COI-012 | Exclusoes de testes | MEDIA | PARCIAL (re-auditado) | Refatoracao de producao para DI (esaa) + atualizacao de mocks (agent) |
+
+### Branch
+- **Canonica:** `claude/round-18-operacao-escudo-do-nucleo-analysis-agent`
+- **Efetiva:** `claude/comprehensive-project-audit-eVbB5`
+- **Divergencia autorizada:** SIM — sistema de deploy exige sufixo de session ID
+
+### Conclusao da Rodada 18
+**Status geral:** PARCIAL (pendente criacao de PR)
+**MC-032 criado com evidencia**
+**orchestrator-interactive.ts de 0% para 95.58% (alvo primario atingido)**
+**prompt-orchestrator.ts de 0% para 98.6%**
+**cache.service.ts de 0% para 91%**
+**analysis-agent coverage stmts 16.73% -> 22.93% (+6.20pp)**
+**analysis-agent coverage funcs 51.57% -> 62.43% (+10.86pp)**
+**72 testes novos; 513 testes totais**
+**agent.test.ts e ESAA trail: bloqueios tecnicos confirmados e documentados**
+**Base verde: lint/typecheck/build/test/pipeline todos passando**
+
+---
+
+## Resumo pos-Rodada 18
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 4 | 1 |
+| **Total** | **16** | **2** |
+
+Nota: Contagem total nao mudou (COI-012 permanece PARCIAL com nota atualizada). Coverage do core do analysis-agent significativamente aumentada.
+
+---
+
+**Ultima atualizacao:** 2026-03-15 (Rodada 18 - Fase 5)
 
 ---
 
