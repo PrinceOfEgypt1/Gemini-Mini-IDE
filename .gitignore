@@ -8,6 +8,7 @@ coverage
 .pnpm-debug.log*
 bundles/
 *.bak
+*.bak_*
 *.log.*
 *.tsbuildinfo
 data/
@@ -42,6 +43,9 @@ node-jiti/
 
 # Quarantine (historical scripts - permanently removed)
 scripts/quarantine/
+
+# LLM response caches
+.mini-ide-cache.json
 
 # PR body artifacts (transient)
 docs/governance/PR_BODY_ROUND_*.md
