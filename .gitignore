@@ -22,3 +22,7 @@ logs/
 
 # Windows artifacts
 *:Zone.Identifier
+
+# Node.js runtime caches
+node-compile-cache/
+node-jiti/
