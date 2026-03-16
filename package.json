@@ -13,7 +13,7 @@
     "dev": "pnpm --filter @gemini-mini-ide/ui dev",
     "start": "pnpm --filter @gemini-mini-ide/server start",
     "clean": "pnpm -r exec rm -rf dist node_modules",
-    "prepare": "pnpm -r build"
+    "prepare": "husky && pnpm -r build"
   },
   "keywords": [
     "ide",
@@ -37,10 +37,17 @@
     "@vitest/coverage-v8": "1.6.1",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.6.2",
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.47.0",
     "vitest": "^1.6.1"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --max-warnings 0"
+    ]
   },
   "pnpm": {
     "overrides": {
