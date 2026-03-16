@@ -1,9 +1,9 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 11.0 (Generic Governance)
-> **Software Version:** v0.16.0 (Repository Recovery)
-> **Date:** 2026-03-07
+> **Document Version:** 12.0 (Reconciliação Documental)
+> **Date:** 2026-03-16
 > **Pipeline:** CI/CD via GitHub Actions (lint, typecheck, test, build)
+> **Testes:** 513 passando (vitest)
 
 ---
 
@@ -163,23 +163,31 @@ See `docs/adr/001-remocao-overfitting-prompt7.md` for details.
 
 ## Documentation
 
-| Document | Purpose |
-|----------|---------|
-| `README.md` | Quick start and overview |
-| `DEVELOPMENT.md` | This file - engineering details |
-| `docs/AI_POLICY.md` | Guidelines for AI-assisted development |
-| `docs/REVIEW_CHECKLIST.md` | Code review checklist |
-| `docs/adr/*.md` | Architecture Decision Records |
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `README.md` | Quick start and overview | Active |
+| `DEVELOPMENT.md` | This file - engineering details | Active |
+| `KNOWN_ISSUES.md` | Known limitations and exclusions | Active |
+| `FORENSIC_AUDIT_REPORT.md` | Forensic audit of project state | Active |
+| `docs/AI_POLICY.md` | Guidelines for AI-assisted development | Active |
+| `docs/REVIEW_CHECKLIST.md` | Code review checklist | Active |
+| `docs/ESAA_ARCHITECTURE.md` | ESAA architecture (experimental) | Aspirational |
+| `docs/BACKLOG.md` | Backlog and roadmap | Active + Aspirational |
+| `docs/adr/*.md` | Architecture Decision Records | Historical |
+| `REMEDIATION_REPORT.md` | Recovery report (Rounds 1-5) | Historical |
 
 ---
 
 ## Future Roadmap
+
+> **Nota: Esta seção é ASPIRACIONAL.** Os itens abaixo são visão futura, não funcionalidades implementadas.
 
 - [ ] UI/UX Premium (animations, micro-interactions)
 - [ ] Real-time collaboration
 - [ ] Plugin system for custom validators
 - [ ] Database persistence (SQLite/Postgres)
 - [ ] Docker deployment
+- [ ] ESAA habilitado por padrão (atualmente experimental, `ESAA_ENABLED=false`)
 
 ---
 

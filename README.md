@@ -3,79 +3,107 @@
 Ambiente de desenvolvimento assistido por IA para transformar intenções em planos e código.
 
 > **Status:** Em desenvolvimento ativo
-> **Testes:** 176 passando (vitest) - cli:1, shared:1, ui:17, analysis-agent:155, server:2
-> **Build:** Todos os pacotes compilam com sucesso (pnpm build)
+> **Testes:** 513 passando (vitest) — shared:35, ui:73, cli:25, analysis-agent:306, server:74
+> **Build:** Todos os pacotes compilam com sucesso (`pnpm build`)
+> **Pipeline:** lint, typecheck, build e test verdes
 
-## 🚀 Funcionalidades Principais
-1. **API Robusta:** Documentação Swagger (/docs), Tratamento de Erros, Validação.
-2. **Inteligência:** Otimização de prompts e Controle de Orçamento.
-3. **Interface Visual:** React + Vite com histórico persistente.
-4. **Persistência:** Sistema de arquivos e logs de auditoria.
+## Funcionalidades Atuais
 
-## 🛠️ Como Rodar
+1. **API Backend (Fastify):** Rotas REST para análise, conversação e exportação de projetos.
+2. **Motor de Análise:** 8 agentes especializados (Analysis, Product, Architect, Engine, UX, Quality, Ops, Phoenix) com governança genérica.
+3. **Interface Visual:** React + Vite + Tailwind + Framer Motion com wizard de projeto, galeria de templates e histórico persistente.
+4. **CLI:** Interface de linha de comando para análise de prompts.
+5. **Multi-Modelos:** Suporte a OpenAI, Anthropic, Google Gemini, DeepSeek e Ollama (local).
+6. **Exportação ZIP:** Download de projetos gerados com documentação e scripts.
+7. **Governança de Código:** Validators genéricos (Completeness, Category, Contract, Manifest) integrados ao CI.
 
-### 1. Iniciar o Cérebro (Backend)
-Porta 3200. Swagger em http://localhost:3200/docs
+## Como Rodar
+
+### Pré-requisitos
+
+- Node.js 20+
+- pnpm 8+
+
+### Setup
+
 ```bash
-# Terminal 1
-export DEEPSEEK_API_KEY="sua-chave" # Opcional
+git clone <repo>
+cd Gemini-Mini-IDE
+pnpm install
+```
+
+### 1. Backend (porta 3200)
+
+```bash
 pnpm --filter @gemini-mini-ide/server start
 ```
 
-### 2. Iniciar a Interface (Frontend)
-Porta 5173.
+### 2. Frontend (porta 5173)
+
 ```bash
-# Terminal 2
 pnpm --filter @gemini-mini-ide/ui dev
 ```
 
 ### 3. CLI
+
 ```bash
-# Terminal 3
 node packages/cli/dist/index.js analyze "Criar um CRUD"
 ```
 
-### 🆕 Novidades da Versão v0.11.0
-- **Exportação de Projetos (.zip):** Baixe todo o código gerado, documentação e scripts em um clique.
-- **Painel de Configurações:** Configure sua API Key (DeepSeek/OpenAI) diretamente na interface.
-- **Backend Estabilizado:** Correção completa de dependências Fastify e Pipeline de CI local.
+### Pipeline de Validação
 
-### 🆕 Novidades da Versão v0.12.0 (UX & Security)
-- **Tour Guiado:** Um passo a passo interativo para novos usuários.
-- **Galeria de Templates:** Comece rápido com *API Node*, *React Dashboard*, *Python Script* e mais.
-- **Manual Integrado:** Documentação completa de uso sem sair da aplicação.
-- **Segurança de Verdade:** Sua API Key agora trafega via Headers HTTP seguros e nunca é logada.
-- **Multi-Modelos:** Suporte nativo para OpenAI, Anthropic, Google Gemini, DeepSeek e **Ollama (Local)**.
-- **Inteligência Local:** O sistema entende intenções, requisitos e restrições em tempo real enquanto você digita.
-
-### Versão Atual
-- Integração com LLMs (GPT-4, DeepSeek, Gemini) para geração de código
-- Exportação de projetos em ZIP
-- Temas Dark/Light
-- UI com Framer Motion para animações suaves
-
-## Limitações Conhecidas
-
-Consulte [KNOWN_ISSUES.md](./KNOWN_ISSUES.md) para lista completa de:
-- Testes excluídos e suas razões
-- Issues de build no analysis-agent (resolvidos em Rodada 4/5)
+```bash
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm test
+bash scripts/active/pipeline.sh
+```
 
 ## Arquitetura
 
 ```
 packages/
-├── ui/            # Frontend React + Vite + Framer Motion
-├── server/        # Backend Fastify
-├── cli/           # Interface de linha de comando
-├── shared/        # Tipos e utilitários compartilhados
-└── analysis-agent/# Motor de análise e geração de código
+├── analysis-agent/  # Motor de análise e governança (306 testes)
+├── ui/              # Frontend React + Vite + Tailwind (73 testes)
+├── server/          # Backend Fastify (74 testes)
+├── shared/          # Tipos e utilitários compartilhados (35 testes)
+└── cli/             # Interface de linha de comando (25 testes)
 ```
+
+Todos os pacotes usam namespace `@gemini-mini-ide/*`.
 
 ## Governança de Código
 
-O projeto inclui validadores para qualidade de código:
-- **CompletenessValidator**: Detecta TODOs, FIXMEs, any types, suppressions
-- **CategoryValidator**: Valida estrutura de manifesto
-- **BaseProjectAuditor**: Audita e corrige projetos gerados
+O projeto inclui validadores genéricos para qualidade de código:
+
+| Validador | Função |
+|-----------|--------|
+| `CompletenessValidator` | Anti-lazy — detecta TODOs, FIXMEs, any types, suppressions |
+| `CategoryValidator` | Valida distribuição de categorias arquiteturais |
+| `ContractValidator` | Valida que código entrega funcionalidade prometida |
+| `ManifestValidator` | Valida estrutura de manifesto de arquivos |
+| `BaseProjectAuditor` | Injeta arquivos essenciais (README, package.json, tsconfig, CI) |
 
 Estes validadores são integrados ao CI em modo blocking.
+
+## Feature Experimental: ESAA
+
+O sistema Event-Sourced Agent Architecture (ESAA) existe no código mas está **desabilitado por padrão** (`ESAA_ENABLED=false`). Consulte `docs/ESAA_ARCHITECTURE.md` para detalhes da arquitetura planejada.
+
+## Limitações Conhecidas
+
+Consulte [KNOWN_ISSUES.md](./KNOWN_ISSUES.md) para lista completa de limitações e exclusões de teste.
+
+## Documentação
+
+| Documento | Descrição |
+|-----------|-----------|
+| [DEVELOPMENT.md](./DEVELOPMENT.md) | Manual de engenharia e desenvolvimento |
+| [KNOWN_ISSUES.md](./KNOWN_ISSUES.md) | Limitações e issues conhecidas |
+| [docs/AI_POLICY.md](./docs/AI_POLICY.md) | Política de desenvolvimento com IA |
+| [docs/REVIEW_CHECKLIST.md](./docs/REVIEW_CHECKLIST.md) | Checklist de code review |
+| [docs/BACKLOG.md](./docs/BACKLOG.md) | Backlog e roadmap do projeto |
+| [docs/ESAA_ARCHITECTURE.md](./docs/ESAA_ARCHITECTURE.md) | Arquitetura ESAA (experimental) |
+| [FORENSIC_AUDIT_REPORT.md](./FORENSIC_AUDIT_REPORT.md) | Auditoria forense do projeto |
+| [REMEDIATION_REPORT.md](./REMEDIATION_REPORT.md) | Relatório histórico de recuperação |
