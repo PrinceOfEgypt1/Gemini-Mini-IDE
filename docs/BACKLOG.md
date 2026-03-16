@@ -1,6 +1,10 @@
 # Backlog de Histórias de Usuário — Gemini Mini-IDE
 
-**Status Geral:** Fase 15 Concluída. Foco em Refinamento de Inteligência e Persistência.
+> **Nota de classificação:** Este documento mistura itens concluídos (estado real) com itens pendentes (aspiracionais).
+> Itens marcados 📅 são **visão futura**, não funcionalidades implementadas.
+> Última atualização de status geral: Rodada 18 concluída.
+
+**Status Geral:** Rodada 18 Concluída. Projeto em fase de reconciliação documental e estabilização.
 
 ## Legenda
 - ✅ **Concluído**: Implementado, testado e mergeado na main.
@@ -16,7 +20,7 @@
 - ✅ **1.3 HU-Server-Analyze-500**: Tratamento 5xx e fallback.
 - ✅ **1.4 HU-Server-Healthz**: Endpoint GET /healthz.
 - ✅ **1.5 HU-Server-Logging-JSON**: Logs estruturados.
-- ✅ **1.6 HU-Server-OpenAPI**: Documentação Swagger.
+- ⚠️ **1.6 HU-Server-OpenAPI**: Documentação Swagger. *(Dependência instalada mas não registrada no servidor — endpoint /docs não funcional.)*
 - ✅ **1.7 HU-Server-Analyze-Shape-Contract**: Contrato TypeScript compartilhado.
 
 ## 2. Épico E-Analysis: Gateway Único (✅ Concluído)

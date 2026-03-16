@@ -1,5 +1,10 @@
 # ESAA Hardened v2 — Arquitetura
 
+> **Classificação: FEATURE EXPERIMENTAL / DESABILITADA**
+> O ESAA existe no código (`packages/analysis-agent/src/esaa/`) mas está **desabilitado por padrão** (`ESAA_ENABLED=false`).
+> Este documento descreve a arquitetura planejada, não o comportamento atual em produção.
+> Para ativar: defina `ESAA_ENABLED=true` como variável de ambiente.
+
 **Event-Sourced Agent Architecture** com orquestração determinística, promoção protegida por gates e capacidade de recovery.
 
 ---
