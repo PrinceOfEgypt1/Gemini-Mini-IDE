@@ -1647,6 +1647,57 @@ Reconciliacao documental real executada com provas. Base verde preservada.
 
 ---
 
+### Rodada 20 — OPERACAO TRAVA OPERACIONAL
+**Status geral:** COMPLETA
+**Objetivo principal:** Endurecer protecao operacional do repositorio
+**Escopo:** Hooks locais, branch protection audit, dependencias fantasma, suppressions
+**Branch canonica:** claude/round-20-operacao-trava-operacional
+**Branch efetiva:** claude/reconcile-docs-governance-9RXSX (restricao do ambiente)
+
+#### Itens criticos atacados
+1. Ausencia total de hooks locais (pre-commit / pre-push)
+2. Branch protection da main nao verificavel (gh indisponivel, API 401)
+3. Dependencia @fastify/swagger instalada mas nao utilizada
+4. Auditoria de suppressions e erros silenciosos
+
+#### Itens fechados
+- Hooks locais implementados: husky + lint-staged com pre-commit (eslint) e pre-push (typecheck + build + test)
+- Dependencia @fastify/swagger e @fastify/swagger-ui removidas (fantasma confirmada na R19)
+- Auditoria completa de suppressions: 51 no-console (justificados), 6 no-explicit-any (justificados), zero @ts-ignore/@ts-nocheck
+- Auditoria de erros silenciosos: nenhum catch vazio; todos logam e retornam erro
+
+#### Itens parcialmente resolvidos
+- Branch protection: impossibilidade operacional comprovada — gh CLI indisponivel, GitHub API retorna 401
+
+#### Itens ainda abertos
+- COI-001: Branch protection (dependencia externa GitHub UI)
+- COI-012: Exclusoes de testes (bloqueio tecnico documentado)
+
+#### Arquivos/documentos principais alterados
+1. package.json — husky, lint-staged, prepare script
+2. packages/server/package.json — swagger removido
+3. pnpm-lock.yaml — atualizado
+4. .husky/pre-commit — lint-staged hook
+5. .husky/pre-push — typecheck + build + test
+6. docs/governance/ROUND_STATUS_LOG.md — entrada R20
+7. docs/governance/MASTER_COMPLIANCE_MATRIX.md — MC-034
+8. docs/governance/CRITICAL_OPEN_ITEMS.md — atualizacao R20
+
+#### Validacao tecnica
+- lint: VERDE
+- typecheck: VERDE
+- build: VERDE
+- test: VERDE (513 testes)
+- pipeline: VERDE (6/6 passos)
+
+#### Conclusao da Rodada 20
+**Status geral:** COMPLETA
+Hooks locais implementados. Dependencia fantasma removida. Suppressions e erros silenciosos auditados com honestidade. Branch protection permanece como dependencia externa com impossibilidade comprovada.
+
+**Ultima atualizacao:** 2026-03-16 (Rodada 20 - Fase 5)
+
+---
+
 ## Template para novas rodadas
 
 ### Rodada X

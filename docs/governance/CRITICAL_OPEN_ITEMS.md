@@ -460,4 +460,27 @@ Nota: Contagem total inalterada. Rodada 19 focou em reconciliacao documental. RE
 
 ---
 
-**Ultima atualizacao:** 2026-03-16 (Rodada 19 - Fase 5)
+### Rodada 20 — Operacao Trava Operacional (endurecimento operacional)
+
+- Nenhum item critico novo criado
+- Nenhum item critico fechado (rodada focou em travas operacionais locais)
+- COI-001 permanece PARCIAL: branch protection nao verificavel — gh CLI indisponivel, GitHub API retorna 401 sem autenticacao. Impossibilidade operacional comprovada
+- COI-012 permanece PARCIAL (exclusoes de testes com bloqueio tecnico documentado)
+- Hooks locais implementados: husky + lint-staged com pre-commit (eslint --max-warnings 0) e pre-push (typecheck + build + test)
+- Dependencia @fastify/swagger removida (fantasma confirmada na R19, removida na R20)
+- Suppressions auditadas: 51 no-console (justificados), 6 no-explicit-any (justificados), zero @ts-ignore/@ts-nocheck, zero catch vazios
+
+## Resumo pos-Rodada 20
+
+| Categoria | Fechados | Abertos |
+|-----------|----------|---------|
+| CRITICO | 4 | 1 |
+| ALTO | 8 | 0 |
+| MEDIO | 4 | 1 |
+| **Total** | **16** | **2** |
+
+Nota: Contagem total inalterada. Rodada 20 reduziu risco operacional com hooks locais e remocao de dependencia fantasma. Branch protection permanece como dependencia externa com impossibilidade operacional comprovada.
+
+---
+
+**Ultima atualizacao:** 2026-03-16 (Rodada 20 - Fase 5)
