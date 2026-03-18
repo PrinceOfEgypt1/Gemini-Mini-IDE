@@ -1,0 +1,66 @@
+# Sanitation Compliance Matrix
+
+> **Document Version:** 1.0
+> **Created:** 2026-03-18
+> **Purpose:** Living compliance matrix for tracking technical sanitation executions
+
+---
+
+## 1. Purpose
+
+This matrix is the single source of truth for tracking all technical sanitation executions applied to the Gemini-Mini-IDE project. Each execution that modifies governance, documentation, CI, or codebase hygiene must be registered here with full traceability.
+
+## 2. Scope of Technical Sanitation
+
+Technical sanitation covers:
+
+- Governance documentation (policies, processes, decision records)
+- CI/CD pipeline alignment
+- Branch policy enforcement
+- Code hygiene (dead code removal, dependency cleanup)
+- Documentation coherence
+
+Technical sanitation does **not** cover:
+
+- Feature development
+- Bug fixes in application code
+- Architectural changes
+- Performance optimization
+
+## 3. Branch Policy
+
+| Rule | Description |
+|------|-------------|
+| **Official branch** | `main` is the only official branch |
+| **Provisional branches** | Temporary branches for development; must be merged or discarded promptly |
+| **Merge destination** | All work must have a clear path to `main` |
+| **No orphan branches** | Branches without a merge target are considered abandoned |
+
+## 4. Minimum Merge Gate
+
+Every merge into `main` must pass:
+
+| Gate | Command |
+|------|---------|
+| Lint | `pnpm lint` |
+| Type check | `pnpm typecheck` |
+| Tests | `pnpm test` |
+| Pipeline | `bash scripts/active/pipeline.sh` |
+
+No execution is considered complete if it does not pass all gates.
+
+## 5. Compliance Tracking Table
+
+| ID | Execution | Theme | Type | Prior Status | Action | Files Created | Files Modified | Files Deleted | Existing Feature Removed? | Existing Feature Modified? | Validations Run | Result | Remaining Risks | Final Commit |
+|----|-----------|-------|------|--------------|--------|---------------|----------------|---------------|---------------------------|----------------------------|-----------------|--------|-----------------|--------------|
+| FG-BASE-01 | Governance Base + Matrix + CI | Governance foundation, compliance matrix, CI alignment | Governance / Documentation / CI | No formal sanitation tracking; CI referenced nonexistent `develop` branch; no documented branch policy or merge gates | Created compliance matrix; added branch policy and merge gates to DEVELOPMENT.md; removed `develop` from CI triggers | `docs/governance/SANITATION_COMPLIANCE_MATRIX.md` | `DEVELOPMENT.md`, `.github/workflows/ci.yml` | None | No | No | lint, typecheck, test, pipeline.sh | Passed | None identified | *(see commit hash after push)* |
+
+---
+
+## 6. How to Use This Matrix
+
+1. **Before starting** a sanitation execution: add a new row with status fields marked as *(pending)*.
+2. **During execution**: update the Action and Files columns as work progresses.
+3. **After validation**: fill in Validations Run and Result.
+4. **After commit**: fill in Final Commit hash.
+5. **Never** mark Result as passed if any validation gate failed.
