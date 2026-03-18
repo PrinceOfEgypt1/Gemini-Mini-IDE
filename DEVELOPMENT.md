@@ -1,6 +1,6 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 13.0 (Governance Base)
+> **Document Version:** 14.0 (Repository Hygiene)
 > **Date:** 2026-03-18
 > **Pipeline:** CI/CD via GitHub Actions (lint, typecheck, test, build)
 > **Testes:** 513 passando (vitest)
@@ -220,6 +220,23 @@ No PR should be merged if any gate fails. CI enforces lint, typecheck, test, and
 Technical sanitation executions are tracked in [`docs/governance/SANITATION_COMPLIANCE_MATRIX.md`](docs/governance/SANITATION_COMPLIANCE_MATRIX.md). Every governance or hygiene change must be registered there.
 
 ---
+
+
+## Versioning Hygiene Policy
+
+The following artifacts must never be committed to the repository:
+
+| Category | Examples | Covered by .gitignore |
+|----------|----------|------------------------|
+| Build output | `dist/`, `build/`, `*.tsbuildinfo` | Yes |
+| Sourcemaps in source dirs | `packages/*/src/**/*.js.map`, `packages/*/src/**/*.d.ts.map` | Yes |
+| Runtime logs | `logs/`, `*.log`, `*.log.*` | Yes |
+| Runtime bundles | `bundles/` | Yes |
+| Database files | `*.db`, `*.sqlite`, `*.sqlite3` | Yes |
+| Environment secrets | `.env` | Yes |
+| OS artifacts | `.DS_Store`, `*:Zone.Identifier` | Yes |
+
+If a file matching these patterns is found tracked in the repository, it should be removed from tracking via `git rm --cached` (preserving the local copy) and the corresponding `.gitignore` rule should be verified or added.
 
 ## Contributing
 

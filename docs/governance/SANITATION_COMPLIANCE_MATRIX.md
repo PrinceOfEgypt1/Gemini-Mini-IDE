@@ -56,6 +56,7 @@ No execution is considered complete if it does not pass all gates.
 | FG-BASE-01 | Governance Base + Matrix + CI | Governance foundation, compliance matrix, CI alignment | Governance / Documentation / CI | No formal sanitation tracking; CI referenced nonexistent `develop` branch; no documented branch policy or merge gates | Created compliance matrix; added branch policy and merge gates to DEVELOPMENT.md; removed `develop` from CI triggers | `docs/governance/SANITATION_COMPLIANCE_MATRIX.md` | `DEVELOPMENT.md`, `.github/workflows/ci.yml` | None | No | No | lint, typecheck, test, pipeline.sh | Passed | None identified | `1943f55` |
 
 ---
+| BG-03 | Repository Hygiene | Remove versioned transient artifacts, align `.gitignore`, document versioning policy | Hygiene / Versioning | 8 TypeScript sourcemaps tracked in `src/` dirs; 1 log file tracked; 2 bundle JSONs tracked; `.gitignore` missing `src/` sourcemap rules | Removed 11 transient artifacts from tracking via `git rm --cached`; added specific `.gitignore` rules for `src/` sourcemaps; documented versioning hygiene policy | None | `.gitignore`, `DEVELOPMENT.md`, `docs/governance/SANITATION_COMPLIANCE_MATRIX.md` | 8x `*.map` in `packages/*/src/`, `packages/server/logs/audit.log.1`, 2x bundle JSONs in `packages/server/bundles/` | No | No | lint, typecheck, test, pipeline.sh | Passed | None identified | set post-merge |
 
 ## 6. How to Use This Matrix
 
