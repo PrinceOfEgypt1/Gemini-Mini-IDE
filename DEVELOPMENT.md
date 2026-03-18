@@ -1,7 +1,7 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 12.0 (Reconciliação Documental)
-> **Date:** 2026-03-16
+> **Document Version:** 13.0 (Governance Base)
+> **Date:** 2026-03-18
 > **Pipeline:** CI/CD via GitHub Actions (lint, typecheck, test, build)
 > **Testes:** 513 passando (vitest)
 
@@ -191,10 +191,40 @@ See `docs/adr/001-remocao-overfitting-prompt7.md` for details.
 
 ---
 
+## Branch Policy
+
+| Rule | Description |
+|------|-------------|
+| **Official branch** | `main` is the only official branch of the project |
+| **Provisional branches** | Temporary branches used for development; must be merged into `main` or discarded promptly |
+| **Merge destination** | Every execution must have a clear merge path to `main` |
+| **No orphan branches** | Branches without a defined merge target are considered abandoned |
+
+> There is no `develop` branch. All integration happens directly on `main`.
+
+## Minimum Merge Gate
+
+Every merge into `main` must pass all of the following:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+bash scripts/active/pipeline.sh
+```
+
+No PR should be merged if any gate fails. CI enforces lint, typecheck, test, and build automatically.
+
+## Sanitation Compliance
+
+Technical sanitation executions are tracked in [`docs/governance/SANITATION_COMPLIANCE_MATRIX.md`](docs/governance/SANITATION_COMPLIANCE_MATRIX.md). Every governance or hygiene change must be registered there.
+
+---
+
 ## Contributing
 
 1. Create feature branch from `main`
 2. Follow existing code patterns
 3. Add tests for new functionality
-4. Ensure pipeline passes
+4. Ensure all merge gates pass (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `bash scripts/active/pipeline.sh`)
 5. Request review from core maintainers for governance changes
