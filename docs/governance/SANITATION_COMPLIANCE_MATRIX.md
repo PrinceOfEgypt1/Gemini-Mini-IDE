@@ -53,7 +53,7 @@ No execution is considered complete if it does not pass all gates.
 
 | ID | Execution | Theme | Type | Prior Status | Action | Files Created | Files Modified | Files Deleted | Existing Feature Removed? | Existing Feature Modified? | Validations Run | Result | Remaining Risks | Final Commit |
 |----|-----------|-------|------|--------------|--------|---------------|----------------|---------------|---------------------------|----------------------------|-----------------|--------|-----------------|--------------|
-| FG-BASE-01 | Governance Base + Matrix + CI | Governance foundation, compliance matrix, CI alignment | Governance / Documentation / CI | No formal sanitation tracking; CI referenced nonexistent `develop` branch; no documented branch policy or merge gates | Created compliance matrix; added branch policy and merge gates to DEVELOPMENT.md; removed `develop` from CI triggers | `docs/governance/SANITATION_COMPLIANCE_MATRIX.md` | `DEVELOPMENT.md`, `.github/workflows/ci.yml` | None | No | No | lint, typecheck, test, pipeline.sh | Passed | None identified | *(see commit hash after push)* |
+| FG-BASE-01 | Governance Base + Matrix + CI | Governance foundation, compliance matrix, CI alignment | Governance / Documentation / CI | No formal sanitation tracking; CI referenced nonexistent `develop` branch; no documented branch policy or merge gates | Created compliance matrix; added branch policy and merge gates to DEVELOPMENT.md; removed `develop` from CI triggers | `docs/governance/SANITATION_COMPLIANCE_MATRIX.md` | `DEVELOPMENT.md`, `.github/workflows/ci.yml` | None | No | No | lint, typecheck, test, pipeline.sh | Passed | None identified | `1943f55` |
 
 ---
 
