@@ -221,6 +221,209 @@ describe('Server Routes', () => {
       expect(res.statusCode).toBe(200);
       expect(res.headers['content-type']).toContain('application/zip');
     });
+
+    it('should export ZIP with nested relative path', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [
+                { path: 'src/index.ts', content: 'export {}' },
+                { path: 'docs/guide.md', content: '# Guide' },
+                { path: 'nested/folder/file.txt', content: 'data' },
+              ],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.headers['content-type']).toContain('application/zip');
+    });
+
+    it('should reject path traversal with ../', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: '../../evil.txt', content: 'malicious' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('inseguro');
+    });
+
+    it('should reject absolute path', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: '/tmp/evil.txt', content: 'malicious' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('inseguro');
+    });
+
+    it('should reject backslash traversal', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: '..\\evil.txt', content: 'malicious' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('inseguro');
+    });
+
+    it('should reject mid-path traversal a/../b.txt', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: 'a/../b.txt', content: 'data' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('inseguro');
+    });
+
+    it('should reject dot segment ./file.txt', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: './file.txt', content: 'data' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('inseguro');
+    });
+
+    it('should silently skip entry with empty path (preserved original behavior)', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: '', content: 'data' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should reject path with empty segments (double slash)', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: 'src//file.txt', content: 'data' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('inseguro');
+    });
+
+    it('should reject path with backslash in middle', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: 'src\\file.txt', content: 'data' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('inseguro');
+    });
+
+    it('should reject path ending with slash', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: 'src/folder/', content: 'data' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('inseguro');
+    });
+
+    it('should reject entire request if any file has unsafe path', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [
+                { path: 'safe/file.txt', content: 'ok' },
+                { path: '../../evil.txt', content: 'bad' },
+              ],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('inseguro');
+    });
+
   });
 
   // ── ESAA Endpoints ────────────────────────────────────────────────────

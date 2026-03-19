@@ -17,6 +17,33 @@ interface ExportBody {
   };
 }
 
+/**
+ * Validates that a file path is safe for inclusion in a ZIP archive.
+ * Returns the validated path if safe, or null if the path is rejected.
+ *
+ * Rejection rules (applied to the raw path, no normalization forgiveness):
+ * - empty string
+ * - contains backslash (\)
+ * - starts with / (absolute path)
+ * - contains segment . or .. (dot traversal)
+ * - contains empty segments (consecutive slashes //)
+ * - ends with /
+ */
+export function validateZipEntryPath(rawPath: string): string | null {
+  if (!rawPath || rawPath.length === 0) return null;
+  if (rawPath.includes("\\")) return null;
+  if (rawPath.startsWith("/")) return null;
+  if (rawPath.endsWith("/")) return null;
+  if (rawPath.includes("//")) return null;
+
+  const segments = rawPath.split("/");
+  for (const segment of segments) {
+    if (segment === "" || segment === "." || segment === "..") return null;
+  }
+
+  return rawPath;
+}
+
 export const exportController = async (
   request: FastifyRequest,
   reply: FastifyReply
@@ -39,6 +66,15 @@ export const exportController = async (
     const format = body.format ?? "zip";
 
     if (format === "zip") {
+      // Validate paths before creating the archive (fail-fast on unsafe paths)
+      for (const file of files) {
+        if (file.path && validateZipEntryPath(file.path) === null) {
+          return reply.status(400).send({
+            error: `Caminho de arquivo inseguro ou inválido: ${file.path}`
+          });
+        }
+      }
+
       const stream = new PassThrough();
       const archive = archiver("zip", { zlib: { level: 9 } });
 
@@ -53,9 +89,7 @@ export const exportController = async (
 
       for (const file of files) {
         if (file.path && file.content) {
-          // Remove barras iniciais do path
-          const safePath = file.path.replace(/^[/\\]/, "");
-          archive.append(file.content, { name: safePath });
+          archive.append(file.content, { name: file.path });
         }
       }
 
