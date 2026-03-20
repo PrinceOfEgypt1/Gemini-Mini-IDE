@@ -1,9 +1,9 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 14.0 (Repository Hygiene)
-> **Date:** 2026-03-18
+> **Document Version:** 15.0 (Server Auth Centralization — BG-02 + BG-09)
+> **Date:** 2026-03-20
 > **Pipeline:** CI/CD via GitHub Actions (lint, typecheck, test, build)
-> **Testes:** 513 passando (vitest)
+> **Testes:** 527 passando (vitest)
 
 ---
 
