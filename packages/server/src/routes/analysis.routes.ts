@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { analyzeImpact, formatImpactReport } from "@gemini-mini-ide/shared";
-import { AnalyzeRequestSchema, ImpactAnalysisSchema } from "../helpers.js";
+import { extractLLMConfig, AnalyzeRequestSchema, ImpactAnalysisSchema } from "../helpers.js";
 import { exportController } from "../controllers/export.controller.js";
 import { getAgent } from "../services/agent-manager.js";
 
@@ -71,13 +71,8 @@ export async function registerAnalysisRoutes(
 
     const { text } = parseResult.data;
 
-    const authHeader = request.headers["authorization"];
-    const apiKey =
-      authHeader && authHeader.startsWith("Bearer ")
-        ? authHeader.substring(7)
-        : defaultApiKey;
-
-    if (!apiKey) {
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>, defaultApiKey);
+    if (!llmConfig.apiKey) {
       return reply.status(401).send({
         error: "API Key não configurada",
         message: "Configure a variável OPENAI_API_KEY ou envie via header Authorization"
@@ -85,8 +80,8 @@ export async function registerAnalysisRoutes(
     }
 
     try {
-      const agent = getAgent(apiKey);
-      const isReused = apiKey === defaultApiKey;
+      const agent = getAgent(llmConfig.apiKey);
+      const isReused = llmConfig.apiKey === defaultApiKey;
       request.log.info(isReused ? "Reusing Global AnalysisAgent Instance" : "Creating New AnalysisAgent Instance (Custom Key)");
 
       const result = await agent.analyze(text);

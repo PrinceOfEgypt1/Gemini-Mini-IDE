@@ -168,6 +168,19 @@ describe('Server Routes', () => {
       const body = JSON.parse(res.payload);
       expect(body.error).toContain('API Key');
     });
+
+    // BG-09: verify /analyze uses canonical extractLLMConfig source (Bearer token accepted)
+    it('should accept Bearer token via canonical source and return analysis result', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/analyze',
+        headers: { authorization: 'Bearer test-key' },
+        payload: { text: 'test input' },
+      });
+      expect(res.statusCode).toBe(200);
+      const body = JSON.parse(res.payload);
+      expect(body.summary).toBe('mock analysis');
+    });
   });
 
   // ── Export endpoint ───────────────────────────────────────────────────
@@ -625,6 +638,19 @@ describe('Server Routes', () => {
       expect(res.statusCode).toBe(401);
     });
 
+    // BG-02: verify /conversations/start preserves distinct { error, message } contract
+    it('should return 401 with both error and message fields (distinct contract)', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/conversations/start',
+        payload: { userId: 'u1', message: 'hello' },
+      });
+      expect(res.statusCode).toBe(401);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toBeDefined();
+      expect(body.message).toBeDefined();
+    });
+
     it('should return 400 for invalid body', async () => {
       const res = await app.inject({
         method: 'POST',
@@ -644,6 +670,19 @@ describe('Server Routes', () => {
         payload: { message: 'hello' },
       });
       expect(res.statusCode).toBe(401);
+    });
+
+    // BG-02: verify session handlers preserve { error } only (no message) contract
+    it('should return 401 with error field only and no message field', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/conversations/sess-1/respond',
+        payload: { message: 'hello' },
+      });
+      expect(res.statusCode).toBe(401);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toBeDefined();
+      expect(body.message).toBeUndefined();
     });
 
     it('should return 400 for empty message', async () => {
