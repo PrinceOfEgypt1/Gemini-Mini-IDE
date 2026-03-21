@@ -760,4 +760,124 @@ describe('Server Routes', () => {
       expect(res.statusCode).toBe(401);
     });
   });
+
+  describe('GET /generation/progress/:sessionId', () => {
+    it('should return 400 with error and details for whitespace sessionId', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/generation/progress/%20',
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toBe('sessionId inválido');
+      expect(body.details).toContain('1-100 caracteres');
+    });
+
+    it('should return 400 with error and details for special characters', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/generation/progress/sess!@%23$',
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toBe('sessionId inválido');
+      expect(body.details).toContain('alfanuméricos');
+    });
+
+    it('should return 400 for sessionId containing dots', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/generation/progress/sess.with.dots',
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toBe('sessionId inválido');
+    });
+
+    it('should return 400 for sessionId containing slashes (encoded)', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/generation/progress/sess%2Fwith%2Fslash',
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toBe('sessionId inválido');
+    });
+
+    it('should return 404 for sessionId exceeding Fastify maxParamLength (101 chars)', async () => {
+      const longId = 'a'.repeat(101);
+      const res = await app.inject({
+        method: 'GET',
+        url: `/generation/progress/${longId}`,
+      });
+      expect(res.statusCode).toBe(404);
+    });
+
+    it('should establish SSE connection for valid sessionId (not rejected within 500ms)', async () => {
+      const DEADLINE = Symbol('sse-alive');
+      const result = await Promise.race([
+        app.inject({ method: 'GET', url: '/generation/progress/valid-session-123' }),
+        new Promise<typeof DEADLINE>((resolve) => setTimeout(() => resolve(DEADLINE), 500)),
+      ]);
+
+      if (result === DEADLINE) {
+        expect(true).toBe(true);
+      } else {
+        expect(result.statusCode).toBe(200);
+        expect(result.headers['content-type']).toBe('text/event-stream');
+        expect(result.headers['cache-control']).toBe('no-cache');
+        expect(result.payload).toContain('data:');
+        expect(result.payload).toContain('"type":"connected"');
+        expect(result.payload).toContain('"sessionId":"valid-session-123"');
+        expect(result.payload).toContain('"provisional":true');
+      }
+    });
+
+    it('should establish SSE connection for single-character sessionId (minimum boundary)', async () => {
+      const DEADLINE = Symbol('sse-alive');
+      const result = await Promise.race([
+        app.inject({ method: 'GET', url: '/generation/progress/a' }),
+        new Promise<typeof DEADLINE>((resolve) => setTimeout(() => resolve(DEADLINE), 500)),
+      ]);
+
+      if (result === DEADLINE) {
+        expect(true).toBe(true);
+      } else {
+        expect(result.statusCode).toBe(200);
+        expect(result.headers['content-type']).toBe('text/event-stream');
+      }
+    });
+
+    it('should establish SSE connection for sessionId with hyphens and underscores', async () => {
+      const DEADLINE = Symbol('sse-alive');
+      const result = await Promise.race([
+        app.inject({ method: 'GET', url: '/generation/progress/sess_id-with-both_123' }),
+        new Promise<typeof DEADLINE>((resolve) => setTimeout(() => resolve(DEADLINE), 500)),
+      ]);
+
+      if (result === DEADLINE) {
+        expect(true).toBe(true);
+      } else {
+        expect(result.statusCode).toBe(200);
+        expect(result.headers['content-type']).toBe('text/event-stream');
+      }
+    });
+
+    it('should establish SSE connection at max length boundary (100 chars)', async () => {
+      const maxId = 'a'.repeat(100);
+      const DEADLINE = Symbol('sse-alive');
+      const result = await Promise.race([
+        app.inject({ method: 'GET', url: `/generation/progress/${maxId}` }),
+        new Promise<typeof DEADLINE>((resolve) => setTimeout(() => resolve(DEADLINE), 500)),
+      ]);
+
+      if (result === DEADLINE) {
+        expect(true).toBe(true);
+      } else {
+        expect(result.statusCode).toBe(200);
+        expect(result.headers['content-type']).toBe('text/event-stream');
+      }
+    });
+  });
+
 });

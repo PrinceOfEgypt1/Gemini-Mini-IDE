@@ -1,8 +1,8 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 17.0 (Critical Lint Hardening — Prompt 6)
-> **Date:** 2026-03-20
-> **Reference State:** `main @ 5d6b1da`
+> **Document Version:** 18.1 (SSE Endpoint Formalization + Regularization — Prompt 7 / BG-07)
+> **Date:** 2026-03-21
+> **Reference State:** `main @ 6f7dbb7`
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`)
 > **Testes:** 39 arquivos executados / 42 escritos — 3 excluídos ativamente em `analysis-agent`
 
@@ -323,6 +323,54 @@ See `docs/adr/001-remocao-overfitting-prompt7.md` for details.
 | `docs/BACKLOG.md` | Backlog and roadmap | Active |
 | `docs/adr/*.md` | Architecture Decision Records | Historical |
 | `REMEDIATION_REPORT.md` | Recovery report (Rounds 1–5) | Historical |
+
+## SSE Endpoint — Provisional Status (BG-07)
+
+The endpoint GET /generation/progress/:sessionId is explicitly provisional.
+
+### What it does today
+
+- Validates sessionId format: 1–100 characters, alphanumeric, hyphens, and underscores only
+- Returns 400 for invalid sessionId
+- Establishes a valid SSE connection (text/event-stream)
+- Sends a connected event with `{ type: "connected", sessionId, provisional: true }`
+- Sends heartbeat comments every 15 seconds
+- Enforces a 5-minute connection timeout (sends timeout event, then closes)
+- Cleans up all resources (timers, listeners) on close, timeout, or error
+- Uses `reply.hijack()` to prevent Fastify from interfering with the raw stream
+
+### What it does NOT do
+
+- Stream actual generation progress events
+- Validate that sessionId corresponds to an existing session
+- Bridge with `generate-incremental` progress callbacks
+- Require authentication (unlike other conversation endpoints)
+
+### Why it is provisional
+
+The `generate-incremental` endpoint logs progress via `request.log.info` server-side, but there is no pub/sub mechanism to push those events to the SSE stream. Building that bridge would require an event emitter or channel system per session, which is outside the scope of the current hardening execution.
+
+### Hardening applied (BG-07)
+
+| Aspect | Before | After |
+|---|---|---|
+| sessionId validation | None | Regex: `^[a-zA-Z0-9_-]{1,100}$` |
+| Timeout | None (indefinite) | 5 minutes, with explicit timeout event |
+| Cleanup | Only heartbeat cleared on close | All timers cleared + stream ended on close, timeout, or error |
+| Fastify integration | No `hijack()` — potential double-response | `reply.hijack()` used |
+| Error handling | None | `reply.raw.on("error", cleanup)` |
+| Provisional marker | None | `connected` event includes `provisional: true` |
+
+### Boundary contract for sessionId
+
+| Input | Behavior | Origin |
+|---|---|---|
+| Valid (1–100 chars, `[a-zA-Z0-9_-]`) | SSE connection established | Handler |
+| Invalid format (special chars, empty, dots) | 400 with `{ error, details }` | Handler |
+| Exceeds 100 chars | 404 (route does not match) | Fastify `maxParamLength` default (100) |
+
+The handler's own regex (`^[a-zA-Z0-9_-]{1,100}$`) and Fastify's `maxParamLength` are aligned at 100 characters. For inputs > 100 chars, Fastify intercepts before the handler runs and returns 404. There is no gap between the two boundaries.
+
 
 ## Future Roadmap
 

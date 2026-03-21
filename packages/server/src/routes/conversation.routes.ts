@@ -179,9 +179,52 @@ export async function registerConversationRoutes(
     }
   });
 
-  // SSE endpoint for generation progress streaming
+  /**
+   * SSE endpoint for generation progress streaming — PROVISIONAL
+   *
+   * STATUS: This endpoint is explicitly provisional. It establishes a valid SSE
+   * connection with heartbeat keep-alive but does NOT stream real progress data.
+   * The generate-incremental endpoint logs progress server-side via request.log
+   * but there is no pub/sub bridge to push events to this SSE stream.
+   *
+   * WHAT IT DOES TODAY:
+   * - Validates sessionId format (1-100 alphanumeric/hyphen/underscore characters)
+   * - Sends a "connected" event upon successful connection
+   * - Sends heartbeat comments every 15 seconds
+   * - Enforces a 5-minute connection timeout
+   * - Cleans up all resources (timers, listeners) on close, timeout, or error
+   *
+   * WHAT IT DOES NOT DO:
+   * - Stream actual generation progress events
+   * - Validate that sessionId corresponds to an existing session
+   * - Bridge with generate-incremental progress callbacks
+   *
+   * BOUNDARY CONTRACT:
+   * - sessionId must match /^[a-zA-Z0-9_-]{1,100}$/
+   * - Invalid sessionId → handler returns 400 with { error, details }
+   * - sessionId > 100 chars → Fastify's default maxParamLength (100) intercepts
+   *   before the handler runs, returning 404 (framework-level, not handler-level)
+   *
+   * RISKS:
+   * - Clients may assume they will receive progress events; they will not
+   * - sessionId existence is not verified (would require auth + orchestrator lookup)
+   *
+   * BG-07: Hardened in sanitation execution to make behavior explicit and safe.
+   */
+  const SSE_SESSION_ID_PATTERN = /^[a-zA-Z0-9_-]{1,100}$/;
+  const SSE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+
   app.get<{ Params: { sessionId: string } }>("/generation/progress/:sessionId", async (request, reply) => {
     const { sessionId } = request.params;
+
+    if (!SSE_SESSION_ID_PATTERN.test(sessionId)) {
+      return reply.status(400).send({
+        error: "sessionId inválido",
+        details: "sessionId deve conter 1-100 caracteres alfanuméricos, hífens ou underscores"
+      });
+    }
+
+    reply.hijack();
 
     reply.raw.writeHead(200, {
       "Content-Type": "text/event-stream",
@@ -190,14 +233,34 @@ export async function registerConversationRoutes(
       "Access-Control-Allow-Origin": "*"
     });
 
+    let cleaned = false;
+
+    const cleanup = (): void => {
+      if (cleaned) return;
+      cleaned = true;
+      clearInterval(heartbeat);
+      clearTimeout(timeout);
+      if (!reply.raw.writableEnded) {
+        reply.raw.end();
+      }
+    };
+
     const heartbeat = setInterval(() => {
-      reply.raw.write(": heartbeat\n\n");
+      if (!reply.raw.writableEnded) {
+        reply.raw.write(": heartbeat\n\n");
+      }
     }, 15000);
 
-    reply.raw.write(`data: ${JSON.stringify({ type: "connected", sessionId })}\n\n`);
+    const timeout = setTimeout(() => {
+      if (!reply.raw.writableEnded) {
+        reply.raw.write(`data: ${JSON.stringify({ type: "timeout", reason: "Connection timeout after 5 minutes" })}\n\n`);
+      }
+      cleanup();
+    }, SSE_TIMEOUT_MS);
 
-    request.raw.on("close", () => {
-      clearInterval(heartbeat);
-    });
+    reply.raw.write(`data: ${JSON.stringify({ type: "connected", sessionId, provisional: true })}\n\n`);
+
+    request.raw.on("close", cleanup);
+    reply.raw.on("error", cleanup);
   });
 }
