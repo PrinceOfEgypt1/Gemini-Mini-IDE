@@ -302,7 +302,6 @@ describe('AcceptanceCriterionSchema', () => {
   });
 
   it('should reject missing when field', () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { when: _when, ...partial } = validAcceptanceCriterion();
     expect(() => AcceptanceCriterionSchema.parse(partial)).toThrow();
   });
