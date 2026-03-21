@@ -1,8 +1,8 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 16.0 (Testing Transparency — Prompt 5)
+> **Document Version:** 17.0 (Critical Lint Hardening — Prompt 6)
 > **Date:** 2026-03-20
-> **Reference State:** `main @ 21d77f4`
+> **Reference State:** `main @ 5d6b1da`
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`)
 > **Testes:** 39 arquivos executados / 42 escritos — 3 excluídos ativamente em `analysis-agent`
 
@@ -12,7 +12,7 @@
 
 **Strategy:** monorepo with strict types, Clean Architecture and generic governance.
 
-### Package Structure
+## Package Structure
 
 ```text
 packages/
@@ -25,8 +25,6 @@ packages/
 
 All packages use namespace `@gemini-mini-ide/*`.
 
----
-
 ## Governance System
 
 The governance system ensures code quality without being coupled to any specific domain.
@@ -35,11 +33,11 @@ The governance system ensures code quality without being coupled to any specific
 
 | Validator | Purpose | Domain-Agnostic? |
 |---|---|---|
-| `BaseProjectAuditor` | Injects essential files (`README`, `package.json`, `tsconfig`, CI) | Yes |
-| `CategoryValidator` | Validates architectural category distribution | Yes |
-| `CompletenessValidator` | Anti-lazy validation (no placeholders, stubs) | Yes |
-| `ContractValidator` | Validates code delivers promised functionality | Yes |
-| `ManifestValidator` | Validates file manifest structure | Yes |
+| BaseProjectAuditor | Injects essential files (README, package.json, tsconfig, CI) | Yes |
+| CategoryValidator | Validates architectural category distribution | Yes |
+| CompletenessValidator | Anti-lazy validation (no placeholders, stubs) | Yes |
+| ContractValidator | Validates code delivers promised functionality | Yes |
+| ManifestValidator | Validates file manifest structure | Yes |
 
 ### What the Governance System Does Not Do
 
@@ -50,22 +48,18 @@ The governance system ensures code quality without being coupled to any specific
 
 ### Files Protected by CODEOWNERS
 
-```text
-packages/analysis-agent/src/agent.ts @core-maintainers
-packages/analysis-agent/src/governance/ @core-maintainers
-packages/analysis-agent/src/validators/ @core-maintainers
-packages/analysis-agent/src/prompts/ @core-maintainers
-```
-
----
+- `packages/analysis-agent/src/agent.ts @core-maintainers`
+- `packages/analysis-agent/src/governance/ @core-maintainers`
+- `packages/analysis-agent/src/validators/ @core-maintainers`
+- `packages/analysis-agent/src/prompts/ @core-maintainers`
 
 ## Testing Strategy
 
 ### Test Categories
 
-1. **Unit Tests:** individual validator and auditor logic.
-2. **Generality Tests:** multi-prompt tests ensuring no overfitting.
-3. **Integration Tests:** full pipeline validation.
+- **Unit Tests:** individual validator and auditor logic.
+- **Generality Tests:** multi-prompt tests ensuring no overfitting.
+- **Integration Tests:** full pipeline validation.
 
 ### Running Tests
 
@@ -90,42 +84,42 @@ This suite:
 - verifies there are no hardcoded data-structure references;
 - ensures validators work for any project type.
 
-### Test Suite Transparency
+## Test Suite Transparency
 
-> **AVISO DE GOVERNANÇA:** esta seção é a fonte de verdade para interpretação correta da suíte de testes. Não usar contagens brutas sem ler esta seção.
+**AVISO DE GOVERNANÇA:** esta seção é a fonte de verdade para interpretação correta da suíte de testes. Não usar contagens brutas sem ler esta seção.
 
-#### Como `pnpm test` executa os testes
+### Como `pnpm test` executa os testes
 
-O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada pacote individualmente. Cada pacote usa seu próprio `vitest.config.ts`. O `vitest.config.ts` da raiz **não** é usado pelo fluxo real de `pnpm test` e só serve para referência ou execução manual a partir da raiz.
+O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada pacote individualmente. Cada pacote usa seu próprio `vitest.config.ts`. O `vitest.config.ts` da raiz não é usado pelo fluxo real de `pnpm test` e só serve para referência ou execução manual a partir da raiz.
 
-#### Distinção fundamental: escrito vs. executado
+### Distinção fundamental: escrito vs. executado
 
 | Conceito | Definição |
 |---|---|
 | Arquivo de teste escrito | Arquivo `.test.ts` ou `.test.tsx` presente fisicamente no repositório |
 | Arquivo de teste executado | Arquivo alcançado pelo padrão `include` do runner e não excluído pelo padrão `exclude` |
 | Arquivo de teste excluído | Arquivo escrito, mas removido da execução por configuração explícita em `vitest.config.ts` |
-| Asserção (`assertion`) | Verificação individual dentro de um teste (`expect(...)`) |
-| Contagem de asserções passando | Total de asserções aprovadas em uma execução específica; varia por execução |
+| Test passing | Caso de teste individual (`it()` / `test()`) aprovado pelo runner |
+| Assertion | Verificação individual dentro de um teste (`expect(...)`) |
 
-#### Erros comuns a evitar
+### Erros comuns a evitar
 
 - Tratar o número de arquivos escritos como igual ao número de arquivos executados.
-- Tratar o número de asserções de uma execução anterior como representativo do estado atual.
+- Tratar o número de tests passing de uma execução anterior como representativo do estado atual sem revalidação local.
 - Assumir que todos os pacotes têm cobertura homogênea.
 
-#### Contagem real por pacote (`main @ 21d77f4`)
+### Contagem real por pacote (`main @ 5d6b1da`)
 
 | Pacote | Arquivos escritos | Arquivos executados | Arquivos excluídos | Participação | Observações |
 |---|---:|---:|---:|---|---|
-| `analysis-agent` | 22 | 19 | 3 | Parcial | 3 arquivos explicitamente excluídos por débito técnico |
-| `ui` | 14 | 14 | 0 | Total | `src/` e `test/` cobertos |
-| `server` | 3 | 3 | 0 | Total | — |
-| `shared` | 2 | 2 | 0 | Total | — |
-| `cli` | 1 | 1 | 0 | Total | — |
+| analysis-agent | 22 | 19 | 3 | Parcial | 3 arquivos explicitamente excluídos por débito técnico |
+| ui | 14 | 14 | 0 | Total | `src/` e `test/` cobertos |
+| server | 3 | 3 | 0 | Total | — |
+| shared | 2 | 2 | 0 | Total | — |
+| cli | 1 | 1 | 0 | Total | — |
 | **TOTAL** | **42** | **39** | **3** | — | — |
 
-#### Arquivos de teste excluídos ativamente (`analysis-agent`)
+### Arquivos de teste excluídos ativamente (`analysis-agent`)
 
 Os arquivos abaixo estão presentes no repositório, mas não são executados pelo runner:
 
@@ -135,11 +129,11 @@ Os arquivos abaixo estão presentes no repositório, mas não são executados pe
 | `packages/analysis-agent/src/esaa/esaa.test.ts` | `**/esaa/**/*.test.ts` | `better-sqlite3` nativo com requisitos complexos de mock |
 | `packages/analysis-agent/src/index.test.ts` | `**/index.test.ts` | Problemas não resolvidos de importação de sqlite |
 
-**Configuração:** as exclusões estão declaradas em `packages/analysis-agent/vitest.config.ts`, no campo `test.exclude`.
+Configuração: as exclusões estão declaradas em `packages/analysis-agent/vitest.config.ts`, no campo `test.exclude`.
 
 **Risco de governança:** o `vitest.config.ts` raiz não replica essas exclusões. Se alguém rodar `vitest` diretamente da raiz, esses 3 arquivos podem entrar na execução e falhar.
 
-#### Exclusões de coverage por pacote
+### Exclusões de coverage por pacote
 
 Cada pacote exclui das métricas de cobertura:
 
@@ -150,33 +144,33 @@ Cada pacote exclui das métricas de cobertura:
 
 O `analysis-agent` adicionalmente exclui `*.spec.ts`.
 
-#### Thresholds de cobertura por pacote
+### Thresholds de cobertura por pacote
 
 | Pacote | Lines | Functions | Branches | Statements | Observação |
 |---|---:|---:|---:|---:|---|
-| `analysis-agent` | 15% | 45% | 70% | 15% | Threshold de lines/statements baixo |
-| `cli` | 40% | 80% | 80% | 40% | — |
-| `server` | 40% | 30% | 55% | 40% | Threshold de functions baixo |
-| `shared` | 80% | 50% | 80% | 80% | Functions threshold abaixo das demais métricas |
-| `ui` | 20% | 35% | 60% | 20% | Thresholds baixos para pacote React |
+| analysis-agent | 15% | 45% | 70% | 15% | Threshold de lines/statements baixo |
+| cli | 40% | 80% | 80% | 40% | — |
+| server | 40% | 30% | 55% | 40% | Threshold de functions baixo |
+| shared | 80% | 50% | 80% | 80% | Functions threshold abaixo das demais métricas |
+| ui | 20% | 35% | 60% | 20% | Thresholds baixos para pacote React |
 
-**Nota:** thresholds não representam a cobertura real alcançada; são apenas pisos mínimos configurados. Thresholds baixos em `analysis-agent` e `ui` indicam que áreas não cobertas podem passar pelo gate.
+Nota: thresholds não representam a cobertura real alcançada; são apenas pisos mínimos configurados. Thresholds baixos em `analysis-agent` e `ui` indicam que áreas não cobertas podem passar pelo gate.
 
-#### Contagens de asserções (referência histórica)
+### Contagens históricas de tests passing
 
 As contagens abaixo são referências de execuções anteriores e precisam ser revalidadas no ambiente do operador:
 
-| Pacote | Asserções (última execução conhecida) |
+| Pacote | Tests passing (última execução conhecida) |
 |---|---:|
-| `analysis-agent` | ~306 |
-| `ui` | ~73 |
-| `server` | ~74 |
-| `shared` | ~35 |
-| `cli` | ~25 |
+| analysis-agent | 306 |
+| ui | 73 |
+| server | 88 |
+| shared | 35 |
+| cli | 25 |
 
-**ATENÇÃO:** `README.md` reportava “513 passando” e `DEVELOPMENT.md` reportava “527 passando” simultaneamente. Essa divergência foi registrada em `KNOWN_ISSUES.md`. Por isso, os cabeçalhos agora usam contagens de **arquivos de teste**, que são mais auditáveis.
+**ATENÇÃO:** `README.md` reportava “513 passando” e `DEVELOPMENT.md` reportava “527 passando” simultaneamente. Essa divergência foi registrada em `KNOWN_ISSUES.md`. Por isso, os cabeçalhos agora usam contagens de arquivos de teste, que são mais auditáveis.
 
-#### Como auditar a suíte daqui em diante
+### Como auditar a suíte daqui em diante
 
 ```bash
 # Contar arquivos escritos em analysis-agent
@@ -191,8 +185,6 @@ pnpm --filter @gemini-mini-ide/analysis-agent test -- --reporter=verbose
 # Ver cobertura real
 pnpm --filter @gemini-mini-ide/analysis-agent test -- --coverage
 ```
-
----
 
 ## Development Workflow
 
@@ -231,20 +223,71 @@ pnpm test
 pnpm build
 ```
 
----
-
 ## CI/CD Pipeline
 
 GitHub Actions workflow (`.github/workflows/ci.yml`):
 
-- **Lint:** ESLint across all packages
-- **Typecheck:** TypeScript strict mode
-- **Test:** Vitest with coverage
-- **Build:** production builds
-- **Critical Files Detection:** warns on changes to governance files
-- **Large Deletion Warning:** alerts on deletions above the configured threshold
+- Lint: ESLint across all packages
+- Typecheck: TypeScript strict mode
+- Test: Vitest with coverage
+- Build: production builds
+- Critical Files Detection: warns on changes to governance files
+- Large Deletion Warning: alerts on deletions above the configured threshold
 
----
+## Lint Governance
+
+ESLint configuration lives in `eslint.config.mjs` (flat config, ESLint v9).
+
+### Global rules (`warn` — applies everywhere)
+
+| Rule | Level | Rationale |
+|---|---|---|
+| `no-console` | warn | Signal but do not block — packages without a structured logger may use console |
+| `@typescript-eslint/no-unused-vars` | warn | Extended ignore pattern: args, vars, destructured array elements and caught errors starting with `_` |
+| `@typescript-eslint/no-explicit-any` | warn | Signal but do not block globally |
+
+The `no-unused-vars` rule uses `varsIgnorePattern: "^_"` and `destructuredArrayIgnorePattern: "^_"` in addition to `argsIgnorePattern: "^_"`. This covers intentional no-op destructuring (e.g. `const { key: _removed, ...rest } = obj`) without requiring manual `eslint-disable` comments.
+
+### Critical area overrides (`error` — fail the build)
+
+#### `packages/server/src/**` (production only, not `*.test.ts`)
+
+| Rule | Level | Rationale |
+|---|---|---|
+| `no-console` | error | Server uses Fastify structured logger (`app.log`); `console.*` is the wrong channel |
+| `@typescript-eslint/no-explicit-any` | error | HTTP handlers are a public boundary — opaque types undermine contract safety |
+| `@typescript-eslint/no-unused-vars` | error | Dead variables in request handlers signal incomplete logic |
+
+#### `packages/analysis-agent/src/**` (production only, not `*.test.ts` / `*.spec.ts`)
+
+| Rule | Level | Rationale |
+|---|---|---|
+| `@typescript-eslint/no-explicit-any` | error | Core analysis engine must maintain explicit type contracts |
+| `@typescript-eslint/no-unused-vars` | error | Silent dead code in the agent pipeline is a regression risk |
+
+Note: `no-console` is kept at `warn` for the general `analysis-agent` because agents and the orchestrator use `console.warn` / `console.error` as a legitimate operational channel (no injected logger in these modules).
+
+#### `packages/analysis-agent/src/{esaa,governance,generation,session,planning}/**` (production only)
+
+| Rule | Level | Rationale |
+|---|---|---|
+| `no-console` | error | Governance and infrastructure sub-areas have no legitimate console usage; any addition would be noise |
+
+### Existing suppressions (by design)
+
+The following `eslint-disable-next-line` comments remain in production code and are intentional:
+
+| File | Rule suppressed | Reason |
+|---|---|---|
+| `packages/server/src/index.ts` | `no-console` | Last-resort `console.error` in the uncatchable top-level catch before Fastify logger is available |
+| `packages/server/src/services/agent-manager.ts` | `no-explicit-any` | `InteractiveOrchestrator` is lazily imported; native type is not available at declaration site |
+| `packages/server/src/routes/esaa.routes.ts` | `no-explicit-any` (×3) | ESAA orchestrator is typed as `any` pending full ESAA type export; tracked as technical debt |
+
+### Package-specific overrides
+
+| Package | Override | Rationale |
+|---|---|---|
+| `packages/cli/src/**` | `no-console: off`, `no-process-exit: off` | CLI is a terminal tool; `console.log` and `process.exit` are its primary I/O mechanisms |
 
 ## Key Technical Decisions
 
@@ -252,21 +295,19 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
 
 Removed domain-specific code that was coupled to “Prompt 7” (data-structures visualization).
 
-**Correctly removed:**
+Correctly removed:
 
 - hardcoded data-structure patterns;
 - visualization-specific validators;
 - animation-specific requirements.
 
-**Recovered:**
+Recovered:
 
 - generic governance mechanisms;
 - universal file validation;
 - category distribution checks.
 
 See `docs/adr/001-remocao-overfitting-prompt7.md` for details.
-
----
 
 ## Documentation
 
@@ -283,11 +324,9 @@ See `docs/adr/001-remocao-overfitting-prompt7.md` for details.
 | `docs/adr/*.md` | Architecture Decision Records | Historical |
 | `REMEDIATION_REPORT.md` | Recovery report (Rounds 1–5) | Historical |
 
----
-
 ## Future Roadmap
 
-> **Nota:** esta seção é aspiracional. Os itens abaixo são visão futura, não funcionalidades implementadas.
+Nota: esta seção é aspiracional. Os itens abaixo são visão futura, não funcionalidades implementadas.
 
 - UI/UX premium (animations, micro-interactions)
 - Real-time collaboration
@@ -295,8 +334,6 @@ See `docs/adr/001-remocao-overfitting-prompt7.md` for details.
 - Database persistence (SQLite/Postgres)
 - Docker deployment
 - ESAA habilitado por padrão (atualmente experimental, `ESAA_ENABLED=false`)
-
----
 
 ## Branch Policy
 
@@ -309,28 +346,20 @@ See `docs/adr/001-remocao-overfitting-prompt7.md` for details.
 
 There is no `develop` branch. All integration happens directly on `main`.
 
----
-
 ## Minimum Merge Gate
 
 Every merge into `main` must pass all of the following:
 
-```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-bash scripts/active/pipeline.sh
-```
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm test`
+- `bash scripts/active/pipeline.sh`
 
 No PR should be merged if any gate fails.
-
----
 
 ## Sanitation Compliance
 
 Technical sanitation executions are tracked in `docs/governance/SANITATION_COMPLIANCE_MATRIX.md`. Every governance or hygiene change must be registered there.
-
----
 
 ## Versioning Hygiene Policy
 
@@ -348,12 +377,10 @@ The following artifacts must never be committed to the repository:
 
 If a file matching these patterns is found tracked in the repository, it should be removed from tracking via `git rm --cached` while preserving the local copy, and the corresponding `.gitignore` rule should be verified.
 
----
-
 ## Contributing
 
-1. Create a feature branch from `main`.
-2. Follow existing code patterns.
-3. Add tests for new functionality.
-4. Ensure all merge gates pass.
-5. Request review from core maintainers for governance changes.
+- Create a feature branch from `main`.
+- Follow existing code patterns.
+- Add tests for new functionality.
+- Ensure all merge gates pass.
+- Request review from core maintainers for governance changes.
