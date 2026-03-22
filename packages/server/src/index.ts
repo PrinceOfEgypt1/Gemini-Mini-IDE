@@ -2,7 +2,7 @@ import Fastify, { FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import dotenv from "dotenv";
-import { globalESAAOrchestrator } from "@gemini-mini-ide/analysis-agent";
+import { getGlobalESAAOrchestrator } from "@gemini-mini-ide/analysis-agent";
 import { registerAnalysisRoutes } from "./routes/analysis.routes.js";
 import { registerConversationRoutes } from "./routes/conversation.routes.js";
 import { registerESAARoutes } from "./routes/esaa.routes.js";
@@ -57,7 +57,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   const defaultApiKey = getDefaultApiKey();
   await registerAnalysisRoutes(app, defaultApiKey);
   await registerConversationRoutes(app, defaultApiKey);
-  await registerESAARoutes(app, globalESAAOrchestrator);
+  await registerESAARoutes(app, getGlobalESAAOrchestrator());
 
   return app;
 }

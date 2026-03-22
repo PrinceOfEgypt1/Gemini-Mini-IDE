@@ -96,5 +96,30 @@ export class CacheService {
   }
 }
 
-// Singleton Exportado
-export const globalAnalysisCache = new CacheService();
+// ─── Lazy Singleton ───────────────────────────────────────────────────────────
+
+let _globalAnalysisCache: CacheService | null = null;
+
+/**
+ * Returns the global CacheService instance, creating it lazily on first access.
+ *
+ * BG-05: Converted from import-time instantiation to lazy init.
+ * Disk read (.mini-ide-cache.json) now deferred until first actual use.
+ */
+export function getGlobalAnalysisCache(): CacheService {
+  if (!_globalAnalysisCache) {
+    _globalAnalysisCache = new CacheService();
+  }
+  return _globalAnalysisCache;
+}
+
+/**
+ * Resets the global CacheService (nullify reference).
+ * Next call to getGlobalAnalysisCache() creates a fresh instance.
+ * Primarily for testing.
+ *
+ * BG-05: Explicit lifecycle reset.
+ */
+export function resetGlobalAnalysisCache(): void {
+  _globalAnalysisCache = null;
+}

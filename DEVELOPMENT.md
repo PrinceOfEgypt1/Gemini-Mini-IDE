@@ -1,10 +1,10 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 19.0 (Orchestrator Cache Lifecycle — Prompt 9 / BG-06)
+> **Document Version:** 20.0 (Singletons & Import-Time Side Effects — Prompt 10 / BG-05 + FG-09)
 > **Date:** 2026-03-22
-> **Reference State:** `main @ 7f26e2d`
+> **Reference State:** `main @ fd816d9` (BG-05 + FG-09 pending merge)
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`)
-> **Testes:** 40 arquivos executados / 43 escritos — 3 excluídos ativamente em `analysis-agent`
+> **Testes:** 41 arquivos executados / 44 escritos — 3 excluídos ativamente em `analysis-agent`
 
 ---
 
@@ -461,6 +461,52 @@ Tests in `packages/server/src/services/agent-manager.test.ts` cover:
 - Cleanup timer lifecycle (start, stop, idempotency)
 - clearCache behavior
 - No regression on constructor arguments and composite cache key
+
+
+## BG-05 + FG-09 — Singletons & Import-Time Side Effects
+
+Critical singletons that previously initialized at import time have been converted to lazy initialization with explicit lifecycle management.
+
+### Problem
+
+Four critical singletons were creating heavy side effects when their modules were first imported:
+
+| Singleton | Module | Side Effect |
+|---|---|---|
+| `globalEventStore` | `analysis-agent/esaa/store/event-store.ts` | Opens SQLite DB + runs DDL |
+| `globalESAAOrchestrator` | `analysis-agent/esaa/orchestrator.ts` | Creates 8+ sub-components + 2nd DB |
+| `globalAnalysisCache` | `analysis-agent/services/cache.service.ts` | Reads `.mini-ide-cache.json` from disk |
+| `defaultAgentInstance` | `server/services/agent-manager.ts` | Creates `AnalysisAgent` (TCP/TLS setup) |
+
+This made bootstrap fragile, testing harder, and initialization order-dependent.
+
+### Solution
+
+All four singletons now use lazy initialization via getter functions:
+
+| Old API | New API | Lifecycle Functions |
+|---|---|---|
+| `globalEventStore` | `getGlobalEventStore()` | `closeGlobalEventStore()`, `resetGlobalEventStore()` |
+| `globalESAAOrchestrator` | `getGlobalESAAOrchestrator()` | `closeGlobalESAAOrchestrator()`, `resetGlobalESAAOrchestrator()` |
+| `globalAnalysisCache` | `getGlobalAnalysisCache()` | `resetGlobalAnalysisCache()` |
+| `defaultAgentInstance` (internal) | Lazy in `getAgent()` | `resetDefaultAgent()` |
+
+### Behavior Preserved
+
+- First call to a getter creates the instance (same configuration as before).
+- Subsequent calls return the same instance.
+- `close*()` / `reset*()` releases resources and allows fresh creation on next access.
+- All existing functional flows continue to work identically.
+
+### Excluded from This Round
+
+Stateless or lightweight singletons (`globalPolicyEngine`, `globalInvariantEngine`, `baseProjectAuditor`, `categoryValidator`, `globalGenerationContext`) were excluded — they create empty in-memory structures with no I/O side effects.
+
+### Remaining Risks
+
+- Consumers must now call getter functions instead of accessing bare constants. The old export names (`globalEventStore`, `globalESAAOrchestrator`, `globalAnalysisCache`) are removed.
+- No automatic process-exit cleanup hook is installed; callers are responsible for calling `close*()` on shutdown if needed.
+- `dotenv.config()` in `server/src/index.ts` still runs at import time (acceptable — needed before any env-dependent code).
 
 
 ## Future Roadmap

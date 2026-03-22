@@ -357,10 +357,47 @@ export class ESAAOrchestrator {
   }
 }
 
-// ─── Singleton Global ─────────────────────────────────────────────────────────
+// ─── Lazy Singleton Global ────────────────────────────────────────────────────
 
-/** Instância global do ESAA Orchestrator. */
-export const globalESAAOrchestrator = new ESAAOrchestrator({
-  enabled: process.env["ESAA_ENABLED"] === "true",
-  dbPath: process.env["ESAA_DB_PATH"],
-});
+let _globalESAAOrchestrator: ESAAOrchestrator | null = null;
+
+/**
+ * Returns the global ESAA Orchestrator instance, creating it lazily on first access.
+ * Configuration via ESAA_ENABLED and ESAA_DB_PATH environment variables.
+ *
+ * BG-05: Converted from import-time instantiation to lazy init.
+ */
+export function getGlobalESAAOrchestrator(): ESAAOrchestrator {
+  if (!_globalESAAOrchestrator) {
+    _globalESAAOrchestrator = new ESAAOrchestrator({
+      enabled: process.env["ESAA_ENABLED"] === "true",
+      dbPath: process.env["ESAA_DB_PATH"],
+    });
+  }
+  return _globalESAAOrchestrator;
+}
+
+/**
+ * Closes and releases the global ESAA Orchestrator instance.
+ * Closes the underlying EventStore database connection.
+ * Safe to call when no instance exists (no-op).
+ *
+ * BG-05: Explicit lifecycle cleanup.
+ */
+export function closeGlobalESAAOrchestrator(): void {
+  if (_globalESAAOrchestrator) {
+    _globalESAAOrchestrator.close();
+    _globalESAAOrchestrator = null;
+  }
+}
+
+/**
+ * Resets the global ESAA Orchestrator (close + nullify).
+ * Next call to getGlobalESAAOrchestrator() creates a fresh instance.
+ * Primarily for testing.
+ *
+ * BG-05: Explicit lifecycle reset.
+ */
+export function resetGlobalESAAOrchestrator(): void {
+  closeGlobalESAAOrchestrator();
+}
