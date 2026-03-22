@@ -9,12 +9,14 @@
 // ── Orchestrator (ponto de entrada principal) ─────────────────────────────────
 export {
   ESAAOrchestrator,
-  globalESAAOrchestrator,
+  getGlobalESAAOrchestrator,
+  closeGlobalESAAOrchestrator,
+  resetGlobalESAAOrchestrator,
 } from "./orchestrator.js";
 export type { ESAAConfig, ESAAHealthStatus } from "./orchestrator.js";
 
 // ── Event Store ───────────────────────────────────────────────────────────────
-export { EventStore, globalEventStore } from "./store/event-store.js";
+export { EventStore, getGlobalEventStore, closeGlobalEventStore, resetGlobalEventStore } from "./store/event-store.js";
 export type { AppendResult, EventQueryOptions } from "./store/event-store.js";
 
 // ── Projections ───────────────────────────────────────────────────────────────

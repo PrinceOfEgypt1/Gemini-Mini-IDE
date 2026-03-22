@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import { z } from "zod";
-import { globalAnalysisCache } from "./services/cache.service.js";
+import { getGlobalAnalysisCache } from "./services/cache.service.js";
 import { PromptOrchestrator } from "./services/prompt-orchestrator.js";
 import { CodeGenerationService } from "./services/code-generation-service.js";
 import { ValidationService } from "./services/validation-service.js";
@@ -301,8 +301,8 @@ export class AnalysisAgent extends EventEmitter {
   }
 
   private async callLLM<T>(prompt: { system: string; user: string }, schema: z.ZodType<T, z.ZodTypeDef, unknown>): Promise<T> {
-    const cacheKey = globalAnalysisCache.generateKey(prompt.system, prompt.user, this.options.model, this.options.temperature);
-    const cached = globalAnalysisCache.get<T>(cacheKey);
+    const cacheKey = getGlobalAnalysisCache().generateKey(prompt.system, prompt.user, this.options.model, this.options.temperature);
+    const cached = getGlobalAnalysisCache().get<T>(cacheKey);
     if (cached) {
       return cached;
     }
@@ -313,7 +313,7 @@ export class AnalysisAgent extends EventEmitter {
     ]);
 
     const parsed = schema.parse(JSON.parse(response.content || "{}"));
-    globalAnalysisCache.set(cacheKey, parsed);
+    getGlobalAnalysisCache().set(cacheKey, parsed);
     return parsed;
   }
 }

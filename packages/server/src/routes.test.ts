@@ -10,7 +10,7 @@ vi.mock('@gemini-mini-ide/analysis-agent', () => {
         requestId: 'mock-id',
       }),
     })),
-    globalESAAOrchestrator: {
+    getGlobalESAAOrchestrator: vi.fn().mockReturnValue({
       healthStatus: vi.fn().mockReturnValue({ status: 'ok', uptime: 123 }),
       queryEvents: vi.fn().mockReturnValue([]),
       getOperationalProjection: vi.fn().mockReturnValue({
@@ -44,7 +44,7 @@ vi.mock('@gemini-mini-ide/analysis-agent', () => {
       promotion: {
         rollback: vi.fn().mockResolvedValue(undefined),
       },
-    },
+    }),
     InteractiveOrchestrator: vi.fn(),
   };
 });

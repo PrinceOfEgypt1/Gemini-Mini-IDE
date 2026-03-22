@@ -14,11 +14,9 @@ import type { LLMConfig } from "../helpers.js";
 
 const DEFAULT_API_KEY = process.env["OPENAI_API_KEY"] ?? "";
 
-// HU-MINI-IDE-PERF-001: Global singleton — avoids recreating TCP/TLS connection
+// BG-05: Lazy singleton — avoids creating TCP/TLS connection at import time.
+// Previously created eagerly (HU-MINI-IDE-PERF-001); now deferred to first getAgent() call.
 let defaultAgentInstance: AnalysisAgent | null = null;
-if (DEFAULT_API_KEY) {
-  defaultAgentInstance = new AnalysisAgent(DEFAULT_API_KEY);
-}
 
 // Lazy-load InteractiveOrchestrator (depends on better-sqlite3 native)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,12 +47,28 @@ export function getDefaultApiKey(): string {
 /**
  * Returns the singleton AnalysisAgent for the default key,
  * or creates a new instance for custom keys.
+ *
+ * BG-05: Default agent created lazily on first call instead of at import time.
  */
 export function getAgent(apiKey: string): AnalysisAgent {
-  if (apiKey === DEFAULT_API_KEY && defaultAgentInstance) {
+  if (apiKey === DEFAULT_API_KEY && DEFAULT_API_KEY) {
+    if (!defaultAgentInstance) {
+      defaultAgentInstance = new AnalysisAgent(DEFAULT_API_KEY);
+    }
     return defaultAgentInstance;
   }
   return new AnalysisAgent(apiKey);
+}
+
+/**
+ * Resets the default agent singleton.
+ * Next call to getAgent() with the default key creates a fresh instance.
+ * Primarily for testing.
+ *
+ * BG-05: Explicit lifecycle reset.
+ */
+export function resetDefaultAgent(): void {
+  defaultAgentInstance = null;
 }
 
 /**

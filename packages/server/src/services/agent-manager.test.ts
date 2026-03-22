@@ -1,11 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   getOrchestrator,
+  getAgent,
   cleanupExpiredEntries,
   getCacheSize,
   clearCache,
   startCleanupTimer,
   stopCleanupTimer,
+  resetDefaultAgent,
   ORCHESTRATOR_TTL_MS,
   ORCHESTRATOR_MAX_ENTRIES,
 } from "./agent-manager.js";
@@ -22,8 +24,16 @@ const { MockOrchestrator } = vi.hoisted(() => {
   return { MockOrchestrator };
 });
 
+const { MockAnalysisAgent } = vi.hoisted(() => {
+  const MockAnalysisAgent = vi.fn().mockImplementation((apiKey: string) => ({
+    apiKey,
+    _mock: true,
+  }));
+  return { MockAnalysisAgent };
+});
+
 vi.mock("@gemini-mini-ide/analysis-agent", () => ({
-  AnalysisAgent: vi.fn(),
+  AnalysisAgent: MockAnalysisAgent,
   InteractiveOrchestrator: MockOrchestrator,
 }));
 
@@ -286,5 +296,36 @@ describe("agent-manager orchestrator cache lifecycle (BG-06)", () => {
       expect(getCacheSize()).toBe(2);
       expect(MockOrchestrator).toHaveBeenCalledTimes(2);
     });
+  });
+});
+
+describe("agent-manager default agent lazy init (BG-05)", () => {
+  beforeEach(() => {
+    resetDefaultAgent();
+    MockAnalysisAgent.mockClear();
+  });
+
+  afterEach(() => {
+    resetDefaultAgent();
+  });
+
+  it("should not create AnalysisAgent at import time", () => {
+    // Module was already imported — verify AnalysisAgent was NOT
+    // called during import (the eager `if (DEFAULT_API_KEY)` block was removed)
+    // Since OPENAI_API_KEY is not set in test env, no instance should exist
+    expect(MockAnalysisAgent).not.toHaveBeenCalled();
+  });
+
+  it("should create a new agent for non-default keys", () => {
+    const agent = getAgent("custom-key-123");
+    expect(agent).toBeDefined();
+    expect(MockAnalysisAgent).toHaveBeenCalledWith("custom-key-123");
+  });
+
+  it("resetDefaultAgent should not throw when no instance exists", () => {
+    expect(() => {
+      resetDefaultAgent();
+      resetDefaultAgent();
+    }).not.toThrow();
   });
 });

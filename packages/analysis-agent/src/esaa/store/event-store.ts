@@ -620,9 +620,43 @@ export class EventStore {
   }
 }
 
-// ─── Singleton ────────────────────────────────────────────────────────────────
+// ─── Lazy Singleton ───────────────────────────────────────────────────────────
 
-/** Instância global do EventStore. Caminho configurável via ESAA_DB_PATH. */
-export const globalEventStore = new EventStore(
-  process.env["ESAA_DB_PATH"]
-);
+let _globalEventStore: EventStore | null = null;
+
+/**
+ * Returns the global EventStore instance, creating it lazily on first access.
+ * Path configurable via ESAA_DB_PATH environment variable.
+ *
+ * BG-05: Converted from import-time instantiation to lazy init.
+ */
+export function getGlobalEventStore(): EventStore {
+  if (!_globalEventStore) {
+    _globalEventStore = new EventStore(process.env["ESAA_DB_PATH"]);
+  }
+  return _globalEventStore;
+}
+
+/**
+ * Closes and releases the global EventStore instance.
+ * Safe to call when no instance exists (no-op).
+ *
+ * BG-05: Explicit lifecycle cleanup.
+ */
+export function closeGlobalEventStore(): void {
+  if (_globalEventStore) {
+    _globalEventStore.close();
+    _globalEventStore = null;
+  }
+}
+
+/**
+ * Resets the global EventStore (close + nullify).
+ * Next call to getGlobalEventStore() creates a fresh instance.
+ * Primarily for testing.
+ *
+ * BG-05: Explicit lifecycle reset.
+ */
+export function resetGlobalEventStore(): void {
+  closeGlobalEventStore();
+}
