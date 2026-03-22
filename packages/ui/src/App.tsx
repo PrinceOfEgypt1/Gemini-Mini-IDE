@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DiscoveryNotes } from './components/DiscoveryNotes';
-import { ExploreTimeline } from './components/ExploreTimeline';
+import { ExploreTimeline } from './components/explore/ExploreTimeline';
 import { WorkspaceTabs } from './components/WorkspaceTabs';
 import { Sidebar } from './components/Sidebar';
 import { HUsPanel } from './components/hus/HUsPanel';

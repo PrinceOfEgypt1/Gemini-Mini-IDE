@@ -5,7 +5,7 @@ import { HUsPanel } from '../hus/HUsPanel';
 import { DocsPanel } from '../docs/DocsPanel';
 import { TestsPanel } from '../tests/TestsPanel';
 import { ExploreTimeline } from '../explore/ExploreTimeline';
-import { DiscoveryNotes } from '../discovery/DiscoveryNotes';
+import { DiscoveryNotes } from '../DiscoveryNotes';
 import { Button } from '../common/Button';
 import { WorkspaceTabs } from './WorkspaceTabs';
 import type { GeneratedFile, UserStory } from '../../types';

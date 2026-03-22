@@ -1,8 +1,8 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 18.1 (SSE Endpoint Formalization + Regularization — Prompt 7 / BG-07)
+> **Document Version:** 18.2 (UI Duplicate Elimination + Consumer Regression Coverage — Prompt 8 / BG-08)
 > **Date:** 2026-03-21
-> **Reference State:** `main @ 6f7dbb7`
+> **Reference State:** `main @ 1638c6c`
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`)
 > **Testes:** 39 arquivos executados / 42 escritos — 3 excluídos ativamente em `analysis-agent`
 
@@ -370,6 +370,37 @@ The `generate-incremental` endpoint logs progress via `request.log.info` server-
 | Exceeds 100 chars | 404 (route does not match) | Fastify `maxParamLength` default (100) |
 
 The handler's own regex (`^[a-zA-Z0-9_-]{1,100}$`) and Fastify's `maxParamLength` are aligned at 100 characters. For inputs > 100 chars, Fastify intercepts before the handler runs and returns 404. There is no gap between the two boundaries.
+
+
+## BG-08 — UI Duplicate Elimination + Consumer Regression Coverage
+
+Prepared as technical handoff for local application. This execution consolidates the official UI implementations for timeline and discovery notes, removes duplicate stubs, and adds consumer-level regression coverage.
+
+### Scope Applied
+
+- `packages/ui/src/App.tsx` now imports the official `ExploreTimeline` from `./components/explore/ExploreTimeline`.
+- `packages/ui/src/components/layout/MainContent.tsx` now imports the official `DiscoveryNotes` from `../DiscoveryNotes`.
+- Duplicate stub components removed:
+  - `packages/ui/src/components/ExploreTimeline.tsx`
+  - `packages/ui/src/components/discovery/DiscoveryNotes.tsx`
+- Consumer-level regression coverage added in `packages/ui/test/integration/AppConsumer.test.tsx`.
+
+### Regression Coverage Goal
+
+The new integration tests render `App.tsx` as the real consumer and verify:
+
+- the `timeline` tab uses the official `ExploreTimeline` implementation, not the deleted stub;
+- the overview flow uses the official `DiscoveryNotes` implementation, not the deleted stub;
+- the tests fail if imports are reverted to the duplicate/stub implementations.
+
+### Validation Status
+
+This handoff is prepared for local application and still requires operator validation before official materialization on `main`:
+
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm test`
+- `bash scripts/active/pipeline.sh`
 
 
 ## Future Roadmap
