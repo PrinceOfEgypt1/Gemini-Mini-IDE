@@ -2,7 +2,7 @@
 
 > **Document Version:** 19.0 (Orchestrator Cache Lifecycle — Prompt 9 / BG-06)
 > **Date:** 2026-03-22
-> **Reference State:** `main @ 56b1122`
+> **Reference State:** `main @ 7f26e2d`
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`)
 > **Testes:** 40 arquivos executados / 43 escritos — 3 excluídos ativamente em `analysis-agent`
 
