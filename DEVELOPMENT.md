@@ -1,10 +1,10 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 18.2 (UI Duplicate Elimination + Consumer Regression Coverage — Prompt 8 / BG-08)
-> **Date:** 2026-03-21
-> **Reference State:** `main @ 1638c6c`
+> **Document Version:** 19.0 (Orchestrator Cache Lifecycle — Prompt 9 / BG-06)
+> **Date:** 2026-03-22
+> **Reference State:** `main @ 56b1122`
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`)
-> **Testes:** 39 arquivos executados / 42 escritos — 3 excluídos ativamente em `analysis-agent`
+> **Testes:** 40 arquivos executados / 43 escritos — 3 excluídos ativamente em `analysis-agent`
 
 ---
 
@@ -114,10 +114,10 @@ O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada paco
 |---|---:|---:|---:|---|---|
 | analysis-agent | 22 | 19 | 3 | Parcial | 3 arquivos explicitamente excluídos por débito técnico |
 | ui | 14 | 14 | 0 | Total | `src/` e `test/` cobertos |
-| server | 3 | 3 | 0 | Total | — |
+| server | 4 | 4 | 0 | Total | — |
 | shared | 2 | 2 | 0 | Total | — |
 | cli | 1 | 1 | 0 | Total | — |
-| **TOTAL** | **42** | **39** | **3** | — | — |
+| **TOTAL** | **43** | **40** | **3** | — | — |
 
 ### Arquivos de teste excluídos ativamente (`analysis-agent`)
 
@@ -401,6 +401,66 @@ This handoff is prepared for local application and still requires operator valid
 - `pnpm typecheck`
 - `pnpm test`
 - `bash scripts/active/pipeline.sh`
+
+
+## BG-06 — Orchestrator Cache Lifecycle
+
+The orchestrator cache in `packages/server/src/services/agent-manager.ts` now has an explicit lifecycle policy to prevent unbounded growth.
+
+### Policy Summary
+
+| Parameter | Value | Description |
+|---|---|---|
+| TTL | 30 minutes | Entries expire after 30 minutes without access |
+| Max entries | 50 | Cache holds at most 50 entries |
+| Eviction strategy | LRU (least recently accessed) | When full, the entry with the oldest `lastAccessed` is evicted |
+| Cleanup interval | 5 minutes | Periodic sweep removes expired entries |
+
+### Behavior
+
+- **Cache hit (valid):** `lastAccessed` is updated; same orchestrator instance is returned.
+- **Cache hit (expired):** entry is removed; a new orchestrator is created and cached.
+- **Cache miss (under capacity):** new orchestrator is created and cached.
+- **Cache miss (at capacity):** the least recently accessed entry is evicted first, then the new entry is added.
+- **Periodic cleanup:** a background timer (started on first cache population, `unref`'d so it does not prevent process exit) sweeps expired entries every 5 minutes.
+
+### Exported Utilities
+
+| Function | Purpose |
+|---|---|
+| `cleanupExpiredEntries()` | Manually trigger a sweep of expired entries; returns count removed |
+| `startCleanupTimer()` / `stopCleanupTimer()` | Control the periodic cleanup timer |
+| `getCacheSize()` | Return current number of cached entries |
+| `clearCache()` | Remove all cached entries (for testing/shutdown) |
+
+### Constants
+
+| Constant | Value |
+|---|---|
+| `ORCHESTRATOR_TTL_MS` | `30 * 60 * 1000` (30 minutes) |
+| `ORCHESTRATOR_MAX_ENTRIES` | `50` |
+| `CLEANUP_INTERVAL_MS` | `5 * 60 * 1000` (5 minutes) |
+
+### Remaining Risks
+
+- TTL and max entries are compile-time constants; changing them requires a code change and redeploy.
+- The cleanup timer `unref()` relies on Node.js behavior; in non-Node runtimes this may behave differently.
+- Orchestrator instances may hold internal state (e.g., SQLite connections); eviction does not call a `close()` or `dispose()` method on the orchestrator because the `InteractiveOrchestrator` API does not expose one.
+
+### Test Coverage
+
+Tests in `packages/server/src/services/agent-manager.test.ts` cover:
+
+- Cache reuse for identical and different configs
+- TTL expiration and re-creation
+- TTL reset on access (keep-alive)
+- Cleanup of expired entries (manual and count verification)
+- Max-size eviction (oldest by lastAccessed)
+- LRU eviction correctness (recently accessed entry survives)
+- Cache never exceeds max size under burst
+- Cleanup timer lifecycle (start, stop, idempotency)
+- clearCache behavior
+- No regression on constructor arguments and composite cache key
 
 
 ## Future Roadmap
