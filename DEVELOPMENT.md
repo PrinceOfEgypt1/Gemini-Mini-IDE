@@ -1,6 +1,6 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 20.0 (Singletons & Import-Time Side Effects — Prompt 10 / BG-05 + FG-09)
+> **Document Version:** 20.1 (Prompt 10 completed + external main protection recorded)
 > **Date:** 2026-03-22
 > **Reference State:** `main @ fd816d9` (BG-05 + FG-09 pending merge)
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`)
@@ -569,3 +569,27 @@ If a file matching these patterns is found tracked in the repository, it should 
 - Add tests for new functionality.
 - Ensure all merge gates pass.
 - Request review from core maintainers for governance changes.
+
+
+## External Step — Real Main Protection
+
+Date of recording: 2026-03-23
+
+Official reference state recorded after Prompt 10 completion:
+- main @ `865f3e2`
+- PR #49 merged successfully
+- branch protection active on `main`
+- required reviews active
+- required status checks active and strict
+- conversation resolution active
+- enforce_admins active
+- force-push disabled
+- deletion disabled
+- additional ruleset `14243549` active with `update` restriction on `refs/heads/main`
+- bypass mode for the configured repository role: `pull_request`
+
+Practical result:
+- changes to `main` are governed by PR + review + green checks
+- direct branch update is explicitly restricted by ruleset
+- `main` is now materially hardened as the official protected branch
+
