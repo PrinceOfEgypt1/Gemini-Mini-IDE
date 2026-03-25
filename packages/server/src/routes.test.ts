@@ -437,6 +437,93 @@ describe('Server Routes', () => {
       expect(body.error).toContain('inseguro');
     });
 
+    it('should reject Windows drive letter absolute path C:/', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: 'C:/Windows/evil.txt', content: 'malicious' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('inseguro');
+    });
+
+    it('should reject Windows drive letter without slash D:file.txt', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: 'D:file.txt', content: 'malicious' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('inseguro');
+    });
+
+    it('should reject path containing null byte', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: 'safe.txt\0../../evil.txt', content: 'malicious' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('inseguro');
+    });
+
+    it('should accept valid deeply nested path', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: 'src/components/ui/Button.tsx', content: 'export default Button' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.headers['content-type']).toContain('application/zip');
+    });
+
+    it('should silently skip entry with empty content (file not added to archive)', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/export',
+        payload: {
+          format: 'zip',
+          project: {
+            engine: {
+              files: [{ path: 'empty.txt', content: '' }],
+            },
+          },
+        },
+      });
+      expect(res.statusCode).toBe(200);
+    });
+
   });
 
   // ── ESAA Endpoints ────────────────────────────────────────────────────

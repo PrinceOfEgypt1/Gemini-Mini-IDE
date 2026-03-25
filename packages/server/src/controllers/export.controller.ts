@@ -23,18 +23,24 @@ interface ExportBody {
  *
  * Rejection rules (applied to the raw path, no normalization forgiveness):
  * - empty string
+ * - contains null byte
  * - contains backslash (\)
  * - starts with / (absolute path)
+ * - Windows drive letter absolute path (e.g. C:/ or D:\)
  * - contains segment . or .. (dot traversal)
  * - contains empty segments (consecutive slashes //)
  * - ends with /
  */
 export function validateZipEntryPath(rawPath: string): string | null {
   if (!rawPath || rawPath.length === 0) return null;
+  if (rawPath.includes("\0")) return null;
   if (rawPath.includes("\\")) return null;
   if (rawPath.startsWith("/")) return null;
   if (rawPath.endsWith("/")) return null;
   if (rawPath.includes("//")) return null;
+
+  // Reject Windows drive letter paths (e.g. "C:/file.txt", "D:file.txt")
+  if (/^[a-zA-Z]:/.test(rawPath)) return null;
 
   const segments = rawPath.split("/");
   for (const segment of segments) {
