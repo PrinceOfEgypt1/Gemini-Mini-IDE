@@ -112,26 +112,24 @@ O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada paco
 
 | Pacote | Arquivos escritos | Arquivos executados | Arquivos excluídos | Participação | Observações |
 |---|---:|---:|---:|---|---|
-| analysis-agent | 22 | 19 | 3 | Parcial | 3 arquivos explicitamente excluídos por débito técnico |
+| analysis-agent | 23 | 23 | 0 | Total | Todos os arquivos de teste executam (P03 resolvido) |
 | ui | 14 | 14 | 0 | Total | `src/` e `test/` cobertos |
 | server | 4 | 4 | 0 | Total | — |
 | shared | 2 | 2 | 0 | Total | — |
 | cli | 1 | 1 | 0 | Total | — |
-| **TOTAL** | **43** | **40** | **3** | — | — |
+| **TOTAL** | **44** | **44** | **0** | — | — |
 
-### Arquivos de teste excluídos ativamente (`analysis-agent`)
+### Arquivos de teste anteriormente excluídos (`analysis-agent`) — RESOLVIDO
 
-Os arquivos abaixo estão presentes no repositório, mas não são executados pelo runner:
+Os 3 arquivos que estavam excluídos foram reabilitados no Prompt 03:
 
-| Arquivo | Padrão de exclusão | Motivo documentado |
+| Arquivo | Status | Correção aplicada |
 |---|---|---|
-| `packages/analysis-agent/src/agent.test.ts` | `**/agent.test.ts` | Estrutura do cliente OpenAI desatualizada nos mocks |
-| `packages/analysis-agent/src/esaa/esaa.test.ts` | `**/esaa/**/*.test.ts` | `better-sqlite3` nativo com requisitos complexos de mock |
-| `packages/analysis-agent/src/index.test.ts` | `**/index.test.ts` | Problemas não resolvidos de importação de sqlite |
+| `packages/analysis-agent/src/agent.test.ts` | **REABILITADO** | Mock atualizado para usar `ILLMClient` interface em vez de `vi.mock('openai')` |
+| `packages/analysis-agent/src/esaa/esaa.test.ts` | **REABILITADO** | Shim `node-sqlite.ts` com `createRequire` + alias em `vitest.config.ts` |
+| `packages/analysis-agent/src/index.test.ts` | **REABILITADO** | Mesmo shim resolve a cadeia de imports |
 
-Configuração: as exclusões estão declaradas em `packages/analysis-agent/vitest.config.ts`, no campo `test.exclude`.
-
-**Risco de governança:** o `vitest.config.ts` raiz não replica essas exclusões. Se alguém rodar `vitest` diretamente da raiz, esses 3 arquivos podem entrar na execução e falhar.
+Nenhuma exclusão de arquivos de teste resta no `vitest.config.ts` do analysis-agent.
 
 ### Exclusões de coverage por pacote
 

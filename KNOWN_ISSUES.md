@@ -16,25 +16,25 @@ This document honestly tracks incomplete work and known limitations.
 
 ## 2. Test Exclusions (packages/analysis-agent)
 
-**Status:** exclusões ativas documentadas — 3 arquivos excluídos de 22 escritos.
+**Status:** RESOLVIDO (Prompt 03) — todas as exclusões foram eliminadas.
 
 ### Resumo quantitativo
 
-- Arquivos de teste escritos em `analysis-agent`: **22**
-- Arquivos de teste efetivamente executados: **19**
-- Arquivos de teste excluídos pelo runner: **3**
+- Arquivos de teste escritos em `analysis-agent`: **23**
+- Arquivos de teste efetivamente executados: **23**
+- Arquivos de teste excluídos pelo runner: **0**
 
-### Arquivos excluídos e padrões de exclusão
+### Resolução aplicada (P03)
 
-| Arquivo | Padrão em `vitest.config.ts` | Motivo |
-|---|---|---|
-| `src/agent.test.ts` | `**/agent.test.ts` | Estrutura do cliente OpenAI desatualizada nos mocks |
-| `src/esaa/esaa.test.ts` | `**/esaa/**/*.test.ts` | `better-sqlite3` nativo com requisitos complexos de mock |
-| `src/index.test.ts` | `**/index.test.ts` | Problemas não resolvidos de importação de sqlite |
+Os 3 arquivos anteriormente excluídos foram reabilitados:
 
-**Risco de governança adicional:** o `vitest.config.ts` na raiz do repositório **não replica** essas exclusões. Se alguém rodar `vitest` diretamente da raiz, os 3 arquivos excluídos podem entrar na execução e falhar. O fluxo oficial usa `pnpm -r test`, que respeita o config de cada pacote.
+| Arquivo | Correção |
+|---|---|
+| `src/agent.test.ts` | Mock reescrito usando `ILLMClient`/`IIncrementalLLMClient` interfaces; `resetGlobalAnalysisCache()` no `beforeEach` |
+| `src/esaa/esaa.test.ts` | Shim `src/__mocks__/node-sqlite.ts` usando `createRequire` para contornar Vite não reconhecer `node:sqlite` como built-in |
+| `src/index.test.ts` | Resolve alias `node:sqlite` no `vitest.config.ts` aponta para o mesmo shim |
 
-**Resolution path:** corrigir mocking de módulos nativos ou reestruturar com injeção de dependência. Também considerar replicar as exclusões no `vitest.config.ts` raiz para consistência.
+O `vitest.config.ts` do analysis-agent agora exclui apenas `node_modules` e `dist` (padrão Vitest).
 
 ---
 
