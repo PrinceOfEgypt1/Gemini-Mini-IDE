@@ -17,10 +17,10 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       exclude: ['**/node_modules/**', '**/dist/**', '**/*.test.ts', '**/*.spec.ts', '**/*.d.ts', '**/__mocks__/**'],
       thresholds: {
-        lines: 15,
-        functions: 45,
+        lines: 55,
+        functions: 55,
         branches: 70,
-        statements: 15,
+        statements: 55,
       }
     }
   },
