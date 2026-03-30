@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 
 export interface LoadingAnimationProps {
   message?: string;
@@ -25,7 +25,7 @@ export const LoadingAnimation: React.FC<LoadingAnimationProps> = ({
     lg: { container: 'w-16 h-16', dot: 'w-4 h-4' },
   };
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     animate: {
       rotate: 360,
       transition: {
@@ -36,7 +36,7 @@ export const LoadingAnimation: React.FC<LoadingAnimationProps> = ({
     },
   };
 
-  const dotVariants = {
+  const dotVariants: Variants = {
     animate: (i: number) => ({
       y: [0, -10, 0],
       transition: {
@@ -48,7 +48,7 @@ export const LoadingAnimation: React.FC<LoadingAnimationProps> = ({
     }),
   };
 
-  const pulseVariants = {
+  const pulseVariants: Variants = {
     animate: {
       scale: [1, 1.2, 1],
       opacity: [1, 0.5, 1],
@@ -127,7 +127,7 @@ export const WaveLoadingAnimation: React.FC<LoadingAnimationProps> = ({
     lg: { height: 'h-12', width: 'w-2' },
   };
 
-  const barVariants = {
+  const barVariants: Variants = {
     animate: (i: number) => ({
       height: ['100%', '50%', '100%'],
       transition: {

@@ -1,9 +1,9 @@
 import React, { useState, ChangeEvent } from 'react';
-import { motion, Variants } from 'framer-motion';
+import { motion, type Variants, type HTMLMotionProps } from 'framer-motion';
 import { TRANSITIONS } from '../../config/animations';
 
 export interface AnimatedInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+  extends Omit<HTMLMotionProps<'input'>, 'children'> {
   label?: string;
   error?: string;
   icon?: React.ReactNode;

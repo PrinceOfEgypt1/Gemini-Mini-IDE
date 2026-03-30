@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { Sidebar } from '../Sidebar';
 
 export interface SidebarLayoutProps {
@@ -12,7 +12,7 @@ export interface SidebarLayoutProps {
  * Oferece uma transição suave ao abrir/fechar.
  */
 export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ files, onSelectFile }) => {
-  const sidebarVariants = {
+  const sidebarVariants: Variants = {
     hidden: { opacity: 0, x: -20 },
     visible: {
       opacity: 1,

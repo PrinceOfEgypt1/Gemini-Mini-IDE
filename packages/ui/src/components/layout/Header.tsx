@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { Button } from '../common/Button';
 
 export interface HeaderProps {
@@ -19,7 +19,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSettingsClick,
   onHelpClick,
 }) => {
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0, y: -20 },
     visible: {
       opacity: 1,
@@ -31,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, x: -10 },
     visible: (i: number) => ({
       opacity: 1,
@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
     }),
   };
 
-  const buttonHoverVariants = {
+  const buttonHoverVariants: Variants = {
     hover: {
       scale: 1.05,
       transition: {
