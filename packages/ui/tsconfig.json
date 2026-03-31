@@ -26,12 +26,5 @@
     "declarationMap": true
   },
   "include": ["src"],
-  "exclude": [
-    "src/components/layout/**",
-    "src/components/animation/**",
-    "src/components/common/Animated*.tsx",
-    "src/components/common/animated-index.ts",
-    "src/components/wizard/ProjectWizardRefactored.tsx"
-  ],
   "references": [{ "path": "../shared" }]
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { Button } from '../common/Button';
 import type { GeneratedProject } from '../../hooks';
 
@@ -174,7 +174,7 @@ export const ProjectWizardRefactored: React.FC<ProjectWizardRefactoredProps> = (
     visible: { scaleX: 1 },
   };
 
-  const modalVariants = {
+  const modalVariants: Variants = {
     hidden: { opacity: 0, scale: 0.9 },
     visible: {
       opacity: 1,
@@ -194,7 +194,7 @@ export const ProjectWizardRefactored: React.FC<ProjectWizardRefactoredProps> = (
     },
   };
 
-  const contentVariants = {
+  const contentVariants: Variants = {
     hidden: { opacity: 0, x: 20 },
     visible: {
       opacity: 1,

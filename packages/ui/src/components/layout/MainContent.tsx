@@ -7,8 +7,9 @@ import { TestsPanel } from '../tests/TestsPanel';
 import { ExploreTimeline } from '../explore/ExploreTimeline';
 import { DiscoveryNotes } from '../DiscoveryNotes';
 import { Button } from '../common/Button';
-import { WorkspaceTabs } from './WorkspaceTabs';
-import type { GeneratedFile, UserStory } from '../../types';
+import { WorkspaceTabs } from '../WorkspaceTabs';
+import type { GeneratedFile } from '../../hooks/useAnalysisStream';
+import type { UserStory } from '../hus/UserStoryCard';
 import type { DiscoveryData } from '../../utils/discoveryParser';
 
 export interface MainContentProps {

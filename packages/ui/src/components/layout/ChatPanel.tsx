@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { ConversationChat } from '../chat/ConversationChat';
 import type { ConversationChatHandle } from '../chat/ConversationChat';
 import type { GeneratedProject } from '../../hooks';
@@ -23,7 +23,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 }) => {
   const conversationChatRef = useRef<ConversationChatHandle>(null);
 
-  const panelVariants = {
+  const panelVariants: Variants = {
     hidden: { opacity: 0, x: 20 },
     visible: {
       opacity: 1,
@@ -35,7 +35,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     },
   };
 
-  const modeButtonVariants = {
+  const modeButtonVariants: Variants = {
     active: {
       borderBottomColor: 'var(--brand-primary)',
       color: 'var(--brand-primary)',
@@ -84,7 +84,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       {chatMode === 'interactive' ? (
         <ConversationChat
           ref={conversationChatRef}
-          onProjectGenerated={onProjectGenerated}
+          onProjectGenerated={(result: unknown) => onProjectGenerated(result as GeneratedProject)}
           onToast={onToast}
         />
       ) : (

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 
 export interface TimelineEvent {
   id: string;
@@ -40,7 +40,7 @@ export const AnimatedTimeline: React.FC<AnimatedTimelineProps> = ({
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, x: -20, y: 20 },
     visible: {
       opacity: 1,
@@ -56,7 +56,7 @@ export const AnimatedTimeline: React.FC<AnimatedTimelineProps> = ({
     },
   };
 
-  const dotVariants = {
+  const dotVariants: Variants = {
     hidden: { scale: 0 },
     visible: {
       scale: 1,
@@ -76,7 +76,7 @@ export const AnimatedTimeline: React.FC<AnimatedTimelineProps> = ({
     },
   };
 
-  const lineVariants = {
+  const lineVariants: Variants = {
     hidden: { scaleY: 0 },
     visible: (i: number) => ({
       scaleY: 1,
@@ -88,7 +88,7 @@ export const AnimatedTimeline: React.FC<AnimatedTimelineProps> = ({
     }),
   };
 
-  const contentVariants = {
+  const contentVariants: Variants = {
     hidden: { opacity: 0, y: 10 },
     visible: {
       opacity: 1,
