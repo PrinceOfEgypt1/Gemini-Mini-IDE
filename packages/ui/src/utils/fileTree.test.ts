@@ -11,9 +11,12 @@ describe('FileTree Utils', () => {
     const tree = buildFileTree(input);
     
     // Estrutura esperada: src -> backend -> [controllers, index.ts]
-    expect(tree[0].name).toBe('src');
-    expect(tree[0].children?.[0].name).toBe('backend');
-    expect(tree[0].children?.[0].children).toHaveLength(2);
+    const root = tree[0];
+    expect(root).toBeDefined();
+    expect(root?.name).toBe('src');
+    const backend = root?.children?.[0];
+    expect(backend?.name).toBe('backend');
+    expect(backend?.children).toHaveLength(2);
   });
 
   it('deve ser resiliente a caminhos malformados', () => {

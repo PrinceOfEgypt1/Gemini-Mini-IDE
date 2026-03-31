@@ -236,6 +236,9 @@ export const ProjectWizardRefactored: React.FC<ProjectWizardRefactoredProps> = (
 
   if (!isOpen) return null;
 
+  const currentStepData = steps[currentStep];
+  if (!currentStepData) return null;
+
   return (
     <AnimatePresence>
       <motion.div
@@ -257,8 +260,8 @@ export const ProjectWizardRefactored: React.FC<ProjectWizardRefactoredProps> = (
           <div className="px-8 py-6 border-b border-[var(--border-main)]">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h2 className="text-2xl font-bold">{steps[currentStep].title}</h2>
-                <p className="text-[var(--text-muted)] text-sm mt-1">{steps[currentStep].description}</p>
+                <h2 className="text-2xl font-bold">{currentStepData.title}</h2>
+                <p className="text-[var(--text-muted)] text-sm mt-1">{currentStepData.description}</p>
               </div>
               <motion.button
                 onClick={onClose}
@@ -294,7 +297,7 @@ export const ProjectWizardRefactored: React.FC<ProjectWizardRefactoredProps> = (
                 animate="visible"
                 exit="exit"
               >
-                {steps[currentStep].component}
+                {currentStepData.component}
               </motion.div>
             </AnimatePresence>
           </div>
