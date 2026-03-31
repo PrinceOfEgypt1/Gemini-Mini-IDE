@@ -188,7 +188,9 @@ export async function registerConversationRoutes(
    * but there is no pub/sub bridge to push events to this SSE stream.
    *
    * WHAT IT DOES TODAY:
+   * - Requires authentication (same API key check as all conversation endpoints)
    * - Validates sessionId format (1-100 alphanumeric/hyphen/underscore characters)
+   * - Validates that sessionId corresponds to an existing session
    * - Sends a "connected" event upon successful connection
    * - Sends heartbeat comments every 15 seconds
    * - Enforces a 5-minute connection timeout
@@ -196,25 +198,32 @@ export async function registerConversationRoutes(
    *
    * WHAT IT DOES NOT DO:
    * - Stream actual generation progress events
-   * - Validate that sessionId corresponds to an existing session
    * - Bridge with generate-incremental progress callbacks
    *
    * BOUNDARY CONTRACT:
+   * - Requires valid API key via Authorization header or server default
+   * - Missing/invalid API key → 401 { error }
    * - sessionId must match /^[a-zA-Z0-9_-]{1,100}$/
-   * - Invalid sessionId → handler returns 400 with { error, details }
+   * - Invalid sessionId → 400 { error, details }
    * - sessionId > 100 chars → Fastify's default maxParamLength (100) intercepts
    *   before the handler runs, returning 404 (framework-level, not handler-level)
+   * - Non-existent session → 404 { error }
+   * - Connected event includes provisional: true to signal no real progress streaming
    *
-   * RISKS:
-   * - Clients may assume they will receive progress events; they will not
-   * - sessionId existence is not verified (would require auth + orchestrator lookup)
-   *
-   * BG-07: Hardened in sanitation execution to make behavior explicit and safe.
+   * P11: Authentication and session validation added. Endpoint secured with same
+   * auth pattern as all other conversation endpoints. Session existence verified
+   * before establishing SSE connection.
    */
   const SSE_SESSION_ID_PATTERN = /^[a-zA-Z0-9_-]{1,100}$/;
   const SSE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
   app.get<{ Params: { sessionId: string } }>("/generation/progress/:sessionId", async (request, reply) => {
+    // P11: Authentication — same pattern as all other conversation endpoints
+    const llmConfig = extractLLMConfig(request.headers as Record<string, string | string[] | undefined>, defaultApiKey);
+    if (!llmConfig.apiKey) {
+      return reply.status(401).send({ error: "API Key não configurada" });
+    }
+
     const { sessionId } = request.params;
 
     if (!SSE_SESSION_ID_PATTERN.test(sessionId)) {
@@ -222,6 +231,19 @@ export async function registerConversationRoutes(
         error: "sessionId inválido",
         details: "sessionId deve conter 1-100 caracteres alfanuméricos, hífens ou underscores"
       });
+    }
+
+    // P11: Session existence validation — verify session exists before opening SSE
+    try {
+      const orchestrator = await getOrchestrator(llmConfig);
+      const session = orchestrator.getSession(sessionId);
+      if (!session) {
+        return reply.status(404).send({ error: "Sessão não encontrada" });
+      }
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      request.log.error({ err }, "Falha ao validar sessão para SSE");
+      return reply.status(500).send({ error: "Falha ao validar sessão", details: errorMessage });
     }
 
     reply.hijack();
