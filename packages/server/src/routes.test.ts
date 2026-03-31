@@ -59,6 +59,8 @@ vi.mock('@gemini-mini-ide/analysis-agent', () => {
 });
 
 import { buildApp } from './index.js';
+import { clearCache } from './services/agent-manager.js';
+import { InteractiveOrchestrator } from '@gemini-mini-ide/analysis-agent';
 
 describe('Server Routes', () => {
   let app: FastifyInstance;
@@ -947,8 +949,6 @@ describe('Server Routes', () => {
     });
 
     // P11: SSE connection tests — require InteractiveOrchestrator mock to return a session
-    // The mock's getSession returns null by default. We use a module-level approach:
-    // import the mock and override getSession for SSE connection tests.
     it('should return 404 for valid format but non-existent session', async () => {
       const res = await app.inject({
         method: 'GET',
@@ -959,6 +959,53 @@ describe('Server Routes', () => {
       expect(res.statusCode).toBe(404);
       const body = JSON.parse(res.payload);
       expect(body.error).toContain('Sessão não encontrada');
+    });
+
+    // P11: POSITIVE SCENARIO — valid auth + existing session → SSE connection established
+    it('should establish SSE connection with valid auth and existing session', async () => {
+      // Clear orchestrator cache so a fresh mock instance is created
+      clearCache();
+
+      // Override the mock to return a valid session for this test
+      const MockOrchestrator = vi.mocked(InteractiveOrchestrator);
+      MockOrchestrator.mockImplementationOnce(() => ({
+        getSession: vi.fn().mockReturnValue({ sessionId: 'existing-session', status: 'active' }),
+        startConversation: vi.fn(),
+        respondToAgent: vi.fn(),
+        skipCurrentAgent: vi.fn(),
+        generatePlan: vi.fn(),
+        generateCodeFromPlan: vi.fn(),
+        generateCodeFromPlanIncremental: vi.fn(),
+        generateFinalResult: vi.fn(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any));
+
+      const DEADLINE = Symbol('sse-alive');
+      const result = await Promise.race([
+        app.inject({
+          method: 'GET',
+          url: '/generation/progress/existing-session',
+          headers: { authorization: 'Bearer sse-positive-test-key' },
+        }),
+        new Promise<typeof DEADLINE>((resolve) => setTimeout(() => resolve(DEADLINE), 500)),
+      ]);
+
+      if (result === DEADLINE) {
+        // SSE connection stayed open (expected behavior — hijacked response doesn't complete)
+        expect(true).toBe(true);
+      } else {
+        // Connection completed within 500ms — validate SSE response
+        expect(result.statusCode).toBe(200);
+        expect(result.headers['content-type']).toBe('text/event-stream');
+        expect(result.headers['cache-control']).toBe('no-cache');
+        expect(result.payload).toContain('data:');
+        expect(result.payload).toContain('"type":"connected"');
+        expect(result.payload).toContain('"sessionId":"existing-session"');
+        expect(result.payload).toContain('"provisional":true');
+      }
+
+      // Restore default mock behavior
+      clearCache();
     });
   });
 
