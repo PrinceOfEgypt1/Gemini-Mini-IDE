@@ -37,7 +37,7 @@ export const UserStoryCard: React.FC<UserStoryCardProps> = ({ story }) => {
       const pattern = keywords.join('|');
       const regex = new RegExp(`(?:##|\\*\\*|\\n)\\s*(?:${pattern})[:\\s]*([\\s\\S]*?)(?=(?:##|\\*\\*|\\n[A-Z][a-z]+:|$))`, 'i');
       const match = rawText.match(regex);
-      return match ? match[1].trim() : null;
+      return match?.[1]?.trim() ?? null;
     };
 
     const textToList = (text: string | null): string[] => {
@@ -53,7 +53,7 @@ export const UserStoryCard: React.FC<UserStoryCardProps> = ({ story }) => {
     // Fallback para extração de texto bruto se os campos estruturados falharem
     if (role === "Não especificado" && rawText) {
        const match = rawText.match(/Como\s+([^,.]+)/i);
-       if (match) role = match[1].trim();
+       if (match?.[1]) role = match[1].trim();
     }
 
     return {
