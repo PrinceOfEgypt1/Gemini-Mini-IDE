@@ -43,7 +43,7 @@ export { TransformativeContext } from "./context/transformative-context.js";
 export * from "./types/index.js";
 export * from "./governance/index.js";
 
-// Exporta o sistema ESAA Hardened v2
+// Exporta o sistema ESAA Hardened v2 (experimental — desabilitado por padrão via ESAA_ENABLED=false)
 export * from "./esaa/index.js";
 
 // Exporta o sistema de geração incremental

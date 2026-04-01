@@ -265,7 +265,7 @@ The `no-unused-vars` rule uses `varsIgnorePattern: "^_"` and `destructuredArrayI
 
 Note: `no-console` is kept at `warn` for the general `analysis-agent` because agents and the orchestrator use `console.warn` / `console.error` as a legitimate operational channel (no injected logger in these modules).
 
-#### `packages/analysis-agent/src/{esaa,governance,generation,session,planning}/**` (production only)
+#### `packages/analysis-agent/src/{esaa,governance,generation,session,planning}/**` (production only — `esaa/` is experimental/disabled by default)
 
 | Rule | Level | Rationale |
 |---|---|---|
@@ -469,12 +469,12 @@ Critical singletons that previously initialized at import time have been convert
 
 Four critical singletons were creating heavy side effects when their modules were first imported:
 
-| Singleton | Module | Side Effect |
-|---|---|---|
-| `globalEventStore` | `analysis-agent/esaa/store/event-store.ts` | Opens SQLite DB + runs DDL |
-| `globalESAAOrchestrator` | `analysis-agent/esaa/orchestrator.ts` | Creates 8+ sub-components + 2nd DB |
-| `globalAnalysisCache` | `analysis-agent/services/cache.service.ts` | Reads `.mini-ide-cache.json` from disk |
-| `defaultAgentInstance` | `server/services/agent-manager.ts` | Creates `AnalysisAgent` (TCP/TLS setup) |
+| Singleton | Module | Side Effect | Status |
+|---|---|---|---|
+| `globalEventStore` | `analysis-agent/esaa/store/event-store.ts` | Opens SQLite DB + runs DDL | **Experimental** (ESAA) |
+| `globalESAAOrchestrator` | `analysis-agent/esaa/orchestrator.ts` | Creates 8+ sub-components + 2nd DB | **Experimental** (ESAA) |
+| `globalAnalysisCache` | `analysis-agent/services/cache.service.ts` | Reads `.mini-ide-cache.json` from disk | Production |
+| `defaultAgentInstance` | `server/services/agent-manager.ts` | Creates `AnalysisAgent` (TCP/TLS setup) | Production |
 
 This made bootstrap fragile, testing harder, and initialization order-dependent.
 
@@ -482,12 +482,12 @@ This made bootstrap fragile, testing harder, and initialization order-dependent.
 
 All four singletons now use lazy initialization via getter functions:
 
-| Old API | New API | Lifecycle Functions |
-|---|---|---|
-| `globalEventStore` | `getGlobalEventStore()` | `closeGlobalEventStore()`, `resetGlobalEventStore()` |
-| `globalESAAOrchestrator` | `getGlobalESAAOrchestrator()` | `closeGlobalESAAOrchestrator()`, `resetGlobalESAAOrchestrator()` |
-| `globalAnalysisCache` | `getGlobalAnalysisCache()` | `resetGlobalAnalysisCache()` |
-| `defaultAgentInstance` (internal) | Lazy in `getAgent()` | `resetDefaultAgent()` |
+| Old API | New API | Lifecycle Functions | Status |
+|---|---|---|---|
+| `globalEventStore` | `getGlobalEventStore()` | `closeGlobalEventStore()`, `resetGlobalEventStore()` | **Experimental** (ESAA) |
+| `globalESAAOrchestrator` | `getGlobalESAAOrchestrator()` | `closeGlobalESAAOrchestrator()`, `resetGlobalESAAOrchestrator()` | **Experimental** (ESAA) |
+| `globalAnalysisCache` | `getGlobalAnalysisCache()` | `resetGlobalAnalysisCache()` | Production |
+| `defaultAgentInstance` (internal) | Lazy in `getAgent()` | `resetDefaultAgent()` | Production |
 
 ### Behavior Preserved
 
@@ -516,7 +516,7 @@ Nota: esta seção é aspiracional. Os itens abaixo são visão futura, não fun
 - Plugin system for custom validators
 - Database persistence (SQLite/Postgres)
 - Docker deployment
-- ESAA habilitado por padrão (atualmente experimental, `ESAA_ENABLED=false`)
+- ESAA habilitado por padrão (atualmente **experimental e desabilitado**, `ESAA_ENABLED=false`; ver `docs/ESAA_ARCHITECTURE.md`)
 
 ## Branch Policy
 
