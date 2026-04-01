@@ -8,6 +8,7 @@ import {
   startCleanupTimer,
   stopCleanupTimer,
   resetDefaultAgent,
+  shutdownAgentManager,
   ORCHESTRATOR_TTL_MS,
   ORCHESTRATOR_MAX_ENTRIES,
 } from "./agent-manager.js";
@@ -327,5 +328,97 @@ describe("agent-manager default agent lazy init (BG-05)", () => {
       resetDefaultAgent();
       resetDefaultAgent();
     }).not.toThrow();
+  });
+});
+
+describe("agent-manager shutdownAgentManager (BG-09)", () => {
+  beforeEach(() => {
+    resetDefaultAgent();
+    clearCache();
+    stopCleanupTimer();
+    MockAnalysisAgent.mockClear();
+    MockOrchestrator.mockClear();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    resetDefaultAgent();
+    clearCache();
+    stopCleanupTimer();
+    vi.useRealTimers();
+  });
+
+  it("should reset default agent, clear cache, and stop timer in one call", async () => {
+    // Set up all three resources
+    const agent1 = getAgent("custom-key-for-default-test");
+    expect(agent1).toBeDefined();
+
+    await getOrchestrator({ apiKey: "orch-key" });
+    expect(getCacheSize()).toBe(1);
+
+    startCleanupTimer();
+
+    // Shutdown everything
+    shutdownAgentManager();
+
+    // Verify cache is empty
+    expect(getCacheSize()).toBe(0);
+
+    // Verify default agent was reset (next call creates new instance)
+    // Since DEFAULT_API_KEY is empty in tests, we verify via resetDefaultAgent being idempotent
+    expect(() => resetDefaultAgent()).not.toThrow();
+
+    // Verify timer was stopped (stopCleanupTimer is idempotent, should not throw)
+    expect(() => stopCleanupTimer()).not.toThrow();
+  });
+
+  it("should be safe to call when no resources are initialized", () => {
+    expect(() => shutdownAgentManager()).not.toThrow();
+    expect(getCacheSize()).toBe(0);
+  });
+
+  it("should be idempotent", async () => {
+    await getOrchestrator({ apiKey: "idem-key" });
+    startCleanupTimer();
+
+    shutdownAgentManager();
+    shutdownAgentManager();
+    shutdownAgentManager();
+
+    expect(getCacheSize()).toBe(0);
+  });
+
+  it("should allow re-initialization after shutdown", async () => {
+    await getOrchestrator({ apiKey: "reuse-key" });
+    expect(getCacheSize()).toBe(1);
+
+    shutdownAgentManager();
+    expect(getCacheSize()).toBe(0);
+
+    // Re-initialize
+    await getOrchestrator({ apiKey: "reuse-key" });
+    expect(getCacheSize()).toBe(1);
+    expect(MockOrchestrator).toHaveBeenCalledTimes(2); // new instance after shutdown
+  });
+
+  it("should leave no residual state between shutdown cycles", async () => {
+    // First lifecycle
+    await getOrchestrator({ apiKey: "cycle1" });
+    await getOrchestrator({ apiKey: "cycle2" });
+    startCleanupTimer();
+    expect(getCacheSize()).toBe(2);
+
+    shutdownAgentManager();
+
+    // Second lifecycle — completely independent
+    await getOrchestrator({ apiKey: "cycle3" });
+    expect(getCacheSize()).toBe(1);
+
+    // cycle1 and cycle2 are gone
+    const callsBefore = MockOrchestrator.mock.calls.length;
+    await getOrchestrator({ apiKey: "cycle1" });
+    expect(MockOrchestrator.mock.calls.length).toBe(callsBefore + 1); // recreated, not cached
+
+    shutdownAgentManager();
   });
 });

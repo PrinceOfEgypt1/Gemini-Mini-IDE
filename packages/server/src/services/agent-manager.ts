@@ -150,6 +150,20 @@ export function clearCache(): void {
 }
 
 /**
+ * BG-09: Full shutdown of all agent-manager resources.
+ * Resets the default agent singleton, clears the orchestrator cache,
+ * and stops the periodic cleanup timer.
+ *
+ * Should be called during server shutdown (e.g., Fastify onClose hook)
+ * to ensure deterministic cleanup of all managed resources.
+ */
+export function shutdownAgentManager(): void {
+  resetDefaultAgent();
+  clearCache();
+  stopCleanupTimer();
+}
+
+/**
  * Returns a cached InteractiveOrchestrator for the given LLM config.
  * Lazy-loads the class on first call.
  *
