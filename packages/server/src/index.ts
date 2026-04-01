@@ -6,7 +6,7 @@ import { getGlobalESAAOrchestrator } from "@gemini-mini-ide/analysis-agent";
 import { registerAnalysisRoutes } from "./routes/analysis.routes.js";
 import { registerConversationRoutes } from "./routes/conversation.routes.js";
 import { registerESAARoutes } from "./routes/esaa.routes.js";
-import { getDefaultApiKey } from "./services/agent-manager.js";
+import { getDefaultApiKey, shutdownAgentManager } from "./services/agent-manager.js";
 
 dotenv.config({ path: "../../.env" });
 
@@ -58,6 +58,11 @@ export async function buildApp(): Promise<FastifyInstance> {
   await registerAnalysisRoutes(app, defaultApiKey);
   await registerConversationRoutes(app, defaultApiKey);
   await registerESAARoutes(app, getGlobalESAAOrchestrator());
+
+  // BG-09: Deterministic cleanup of agent-manager resources on server shutdown
+  app.addHook("onClose", () => {
+    shutdownAgentManager();
+  });
 
   return app;
 }
