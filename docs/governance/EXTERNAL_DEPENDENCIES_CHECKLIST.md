@@ -14,20 +14,22 @@ Este documento lista todas as configuracoes que devem ser aplicadas **fora do re
 **Onde aplicar:** GitHub > Settings > Branches > Branch protection rules
 
 ### Branch: `main`
-- [ ] Require a pull request before merging
-- [ ] Require approvals (minimo: 1)
-- [ ] Require status checks to pass before merging
-  - [ ] Adicionar check: `CI Status`
-  - [ ] Adicionar check: `Quality Gate (BLOCKING)`
-  - [ ] Adicionar check: `Smoke Test (BLOCKING)`
-- [ ] Require branches to be up to date before merging
-- [ ] Do not allow bypassing the above settings
+- [x] Require a pull request before merging
+- [x] Require approvals (minimo: 1)
+- [x] Require status checks to pass before merging
+  - [x] Adicionar check: `CI Status`
+  - [x] Adicionar check: `Quality Gate (BLOCKING)`
+  - [x] Adicionar check: `Smoke Test (BLOCKING)`
+- [x] Require branches to be up to date before merging
+- [x] Do not allow bypassing the above settings
+
+> **Verified:** 2026-03-23 — branch protection active on main, required reviews active,
+> required status checks active and strict, enforce_admins active, force-push disabled,
+> deletion disabled. Ruleset 14243549 active with update restriction. See DEVELOPMENT.md
+> "External Step — Real Main Protection" for full evidence.
 
 ### Branch: `develop`
-- [ ] Require a pull request before merging
-- [ ] Require status checks to pass before merging
-  - [ ] Adicionar check: `Quality Gate (BLOCKING)`
-- [ ] Require branches to be up to date before merging
+N/A — project uses only `main` as official branch. No `develop` branch exists.
 
 ---
 
@@ -81,10 +83,10 @@ Se preferir usar GitHub Rulesets em vez de Branch Protection:
 
 Apos aplicar as configuracoes, verificar:
 
-1. [ ] Criar PR de teste para `main`
-2. [ ] Verificar que CI roda automaticamente
-3. [ ] Verificar que merge e bloqueado ate checks passarem
-4. [ ] Verificar que modificacao de arquivo critico exige justificativa
+1. [x] Criar PR de teste para `main`
+2. [x] Verificar que CI roda automaticamente
+3. [x] Verificar que merge e bloqueado ate checks passarem
+4. [x] Verificar que modificacao de arquivo critico exige justificativa
 
 ---
 
@@ -92,8 +94,8 @@ Apos aplicar as configuracoes, verificar:
 
 | Data | Acao | Responsavel | Verificado? |
 |------|------|-------------|-------------|
-| - | - | - | - |
+| 2026-03-23 | Branch protection, required reviews, required status checks, enforce_admins, force-push disabled, deletion disabled, ruleset 14243549 applied | Operator (external) | Yes — see DEVELOPMENT.md "External Step — Real Main Protection" |
 
 ---
 
-**Ultima atualizacao:** 2026-03-08 (Rodada 3 - Fase 1)
+**Ultima atualizacao:** 2026-04-02 (Prompt 20 — aligned with DEVELOPMENT.md evidence)

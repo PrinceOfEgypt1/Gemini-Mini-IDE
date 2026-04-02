@@ -50,6 +50,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Structural Integrity (BLOCKING)
+        run: bash scripts/active/validate-structure.sh
+
       - name: Lint (BLOCKING)
         run: pnpm lint
 
