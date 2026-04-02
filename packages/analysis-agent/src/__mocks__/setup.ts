@@ -1,28 +1,16 @@
 /**
- * Vitest setup file for mocking native modules
+ * Vitest setup file for mocking native modules.
+ *
+ * Note: better-sqlite3 is handled via resolve.alias in vitest.config.ts,
+ * which redirects imports to ./better-sqlite3.ts (a complete mock class).
+ * No vi.mock() needed here — the alias provides proper return values
+ * (e.g., run() returns {changes, lastInsertRowid}) and full API surface.
  */
 
 import { vi } from 'vitest';
 
-// Mock better-sqlite3 globally
-vi.mock('better-sqlite3', () => {
-  return {
-    default: vi.fn().mockImplementation(() => ({
-      prepare: vi.fn().mockReturnValue({
-        run: vi.fn(),
-        get: vi.fn(),
-        all: vi.fn().mockReturnValue([]),
-        bind: vi.fn(),
-      }),
-      exec: vi.fn(),
-      close: vi.fn(),
-      pragma: vi.fn(),
-      transaction: vi.fn((fn: () => void) => fn),
-    })),
-  };
-});
-
-// Mock fs for tests that need it
+// Mock fs to prevent side-effects during SessionDatabase construction
+// (e.g., mkdirSync creating real directories when tests use default db path).
 vi.mock('fs', async () => {
   const actual = await vi.importActual('fs');
   return {
