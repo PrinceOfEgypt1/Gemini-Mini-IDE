@@ -16,6 +16,8 @@
 #   - CODEOWNERS exists
 #   - Pipeline script exists and is executable
 #   - All packages have vitest coverage thresholds
+#   - Governance documents exist
+#   - PR template exists and is in Portuguese
 #   - Root package.json has required scripts
 ################################################################################
 
@@ -121,8 +123,44 @@ for pkg in "${PACKAGES[@]}"; do
 done
 echo ""
 
-# ─── 6. Root package.json scripts ────────────────────────
-echo "[6] Root package.json required scripts"
+# ─── 6. Governance documents ─────────────────────────────
+echo "[6] Governance documents"
+
+GOV_DOCS=(
+    "docs/governance/MASTER_COMPLIANCE_MATRIX.md"
+    "docs/governance/CRITICAL_OPEN_ITEMS.md"
+    "docs/governance/SANITATION_COMPLIANCE_MATRIX.md"
+    "docs/governance/EXTERNAL_DEPENDENCIES_CHECKLIST.md"
+    "docs/governance/ROUND_STATUS_LOG.md"
+)
+for doc in "${GOV_DOCS[@]}"; do
+    BASENAME=$(basename "$doc")
+    if [[ -f "$doc" ]]; then
+        check "$BASENAME exists" "0"
+    else
+        check "$BASENAME exists" "1"
+    fi
+done
+echo ""
+
+# ─── 7. PR template ──────────────────────────────────────
+echo "[7] PR template"
+
+if [[ -f ".github/pull_request_template.md" ]]; then
+    check "PR template exists" "0"
+else
+    check "PR template exists" "1"
+fi
+
+if [[ -f ".github/pull_request_template.md" ]] && grep -q "Descrição" .github/pull_request_template.md && grep -q "Checklist" .github/pull_request_template.md; then
+    check "PR template contains Portuguese sections" "0"
+else
+    check "PR template contains Portuguese sections" "1"
+fi
+echo ""
+
+# ─── 8. Root package.json scripts ────────────────────────
+echo "[8] Root package.json required scripts"
 
 REQUIRED_SCRIPTS=("lint" "typecheck" "test" "build")
 for script in "${REQUIRED_SCRIPTS[@]}"; do

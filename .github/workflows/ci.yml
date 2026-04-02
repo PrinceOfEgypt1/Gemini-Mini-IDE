@@ -270,6 +270,46 @@ jobs:
             }
 
   # ===========================================================================
+  # PR TEMPLATE COMPLIANCE - BLOCKING
+  # Verifies PR body uses the Portuguese template
+  # ===========================================================================
+  pr-template-compliance:
+    name: PR Template Compliance (BLOCKING)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Verify PR uses Portuguese template
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prBody = (context.payload.pull_request.body || '').toLowerCase();
+
+            // Required Portuguese sections from .github/pull_request_template.md
+            const requiredSections = [
+              { marker: 'descrição', label: 'Descrição' },
+              { marker: 'tipo de mudança', label: 'Tipo de Mudança' },
+              { marker: 'checklist geral', label: 'Checklist Geral' },
+              { marker: 'checklist de qualidade', label: 'Checklist de Qualidade' }
+            ];
+
+            const missing = requiredSections.filter(s => !prBody.includes(s.marker));
+
+            if (missing.length > 0) {
+              const missingLabels = missing.map(s => s.label).join(', ');
+              core.setFailed(`
+              ❌ BLOQUEADO: O corpo do PR não contém as seções obrigatórias do template.
+
+              Seções ausentes: ${missingLabels}
+
+              O PR deve usar o template oficial (.github/pull_request_template.md).
+              Idioma operacional obrigatório: português.
+              `);
+            } else {
+              console.log('✅ PR usa o template em português');
+            }
+
+  # ===========================================================================
   # FINAL STATUS - Required for merge
   # ===========================================================================
   ci-status:
