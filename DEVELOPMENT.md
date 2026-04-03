@@ -90,7 +90,7 @@ This suite:
 
 ### Como `pnpm test` executa os testes
 
-O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada pacote individualmente. Cada pacote usa seu próprio `vitest.config.ts`. O `vitest.config.ts` da raiz não é usado pelo fluxo real de `pnpm test` e só serve para referência ou execução manual a partir da raiz.
+O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada pacote individualmente. Cada pacote usa seu próprio `vitest.config.ts`. Não existe `vitest.config.ts` na raiz — a execução de testes é exclusivamente por pacote, garantindo que cada pacote use seu ambiente, setup e aliases corretos.
 
 ### Distinção fundamental: escrito vs. executado
 
