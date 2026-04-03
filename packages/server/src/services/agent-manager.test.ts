@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   getOrchestrator,
   getAgent,
+  getDefaultApiKey,
   cleanupExpiredEntries,
   getCacheSize,
   clearCache,
@@ -321,6 +322,29 @@ describe("agent-manager default agent lazy init (BG-05)", () => {
     const agent = getAgent("custom-key-123");
     expect(agent).toBeDefined();
     expect(MockAnalysisAgent).toHaveBeenCalledWith("custom-key-123");
+  });
+
+  it("P10: getDefaultApiKey reads process.env lazily, not a captured constant", () => {
+    const original = process.env["OPENAI_API_KEY"];
+    try {
+      // Set env AFTER module import — lazy read should see it
+      process.env["OPENAI_API_KEY"] = "lazy-test-key-789";
+      expect(getDefaultApiKey()).toBe("lazy-test-key-789");
+
+      // Change it again — still reads live value
+      process.env["OPENAI_API_KEY"] = "updated-key-456";
+      expect(getDefaultApiKey()).toBe("updated-key-456");
+
+      // Remove it — should return empty string
+      delete process.env["OPENAI_API_KEY"];
+      expect(getDefaultApiKey()).toBe("");
+    } finally {
+      if (original !== undefined) {
+        process.env["OPENAI_API_KEY"] = original;
+      } else {
+        delete process.env["OPENAI_API_KEY"];
+      }
+    }
   });
 
   it("resetDefaultAgent should not throw when no instance exists", () => {

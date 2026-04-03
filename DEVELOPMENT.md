@@ -504,7 +504,7 @@ Stateless or lightweight singletons (`globalPolicyEngine`, `globalInvariantEngin
 
 - Consumers must now call getter functions instead of accessing bare constants. The old export names (`globalEventStore`, `globalESAAOrchestrator`, `globalAnalysisCache`) are removed.
 - No automatic process-exit cleanup hook is installed; callers are responsible for calling `close*()` on shutdown if needed.
-- `dotenv.config()` in `server/src/index.ts` still runs at import time (acceptable — needed before any env-dependent code).
+- `dotenv.config()` in `server/src/index.ts` now runs inside `start()`, not at import time (P10). `getDefaultApiKey()` reads `process.env` lazily.
 
 
 ## Future Roadmap

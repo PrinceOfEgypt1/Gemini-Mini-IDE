@@ -8,10 +8,6 @@ import { registerConversationRoutes } from "./routes/conversation.routes.js";
 import { registerESAARoutes } from "./routes/esaa.routes.js";
 import { getDefaultApiKey, shutdownAgentManager } from "./services/agent-manager.js";
 
-dotenv.config({ path: "../../.env" });
-
-const PORT = process.env["PORT"] ? parseInt(process.env["PORT"]) : 3200;
-
 /**
  * Builds and configures the Fastify app with all routes and plugins.
  * Exported for testability — tests can use app.inject() without starting a listener.
@@ -68,6 +64,8 @@ export async function buildApp(): Promise<FastifyInstance> {
 }
 
 const start = async (): Promise<void> => {
+  dotenv.config({ path: "../../.env" });
+  const PORT = process.env["PORT"] ? parseInt(process.env["PORT"]) : 3200;
   const app = await buildApp();
   await app.listen({ port: PORT, host: "0.0.0.0" });
   app.log.info(`🚀 Server running at http://localhost:${PORT}`);
