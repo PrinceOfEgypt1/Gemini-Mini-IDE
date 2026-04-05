@@ -6,6 +6,16 @@ Este documento descreve as configurações de proteção de branch que DEVEM ser
 
 As configurações abaixo NÃO podem ser aplicadas via código. Requerem acesso admin ao repositório.
 
+## Contexto operacional: repositório solo
+
+Este repositório é mantido por um único mantenedor (`@PrinceOfEgypt1`).
+A governança deve equilibrar proteção real com operabilidade solo:
+
+- **Proteções automatizadas** (status checks, CI guards): MANTER — não dependem de revisão humana.
+- **Aprovações obrigatórias**: REMOVER — o autor do PR é o único mantenedor e não pode aprovar o próprio PR no GitHub.
+- **Code owner review obrigatório**: REMOVER — o code owner é o autor do PR; exigir review do code owner cria dependência impossível.
+- **Enforce admins / Do not allow bypassing**: deve ser compatível com operação solo. Se approvals forem 0, enforce admins pode permanecer ativo sem bloquear o fluxo.
+
 ---
 
 ## Configurações Obrigatórias para `main`
@@ -19,9 +29,9 @@ Navegue para: Settings → Branches → Add branch protection rule
 **Marcar as seguintes opções:**
 
 - [x] **Require a pull request before merging**
-  - [x] Require approvals: **1** (mínimo)
-  - [x] Dismiss stale pull request approvals when new commits are pushed
-  - [x] Require review from Code Owners
+  - Require approvals: **0** (zero — repositório solo, sem reviewer externo disponível)
+  - [ ] Dismiss stale pull request approvals when new commits are pushed (N/A com 0 approvals)
+  - [ ] Require review from Code Owners (DESMARCAR — code owner = autor do PR)
 
 - [x] **Require status checks to pass before merging**
   - [x] Require branches to be up to date before merging
@@ -38,20 +48,15 @@ Navegue para: Settings → Branches → Add branch protection rule
 
 - [ ] **Allow deletions** (DESMARCAR)
 
-### 2. Rulesets (Alternativa mais moderna)
+### 2. Ruleset complementar (já ativa)
 
-Se preferir usar Rulesets ao invés de Branch Protection Rules:
+Ruleset `14243549` — `Protect main — restrict direct updates`:
+- Enforcement: Active
+- Target: `refs/heads/main`
+- Rule: `update` (bloqueia push direto)
+- Bypass mode: `pull_request` (permite merge via PR)
 
-1. Settings → Rules → Rulesets → New ruleset
-2. Nome: `main-protection`
-3. Enforcement: Active
-4. Target: Include `refs/heads/main`
-5. Rules:
-   - Restrict deletions
-   - Require linear history
-   - Require signed commits (opcional)
-   - Require a pull request before merging
-   - Required status checks: `Quality Gate (BLOCKING)`, `CI Status`
+Esta ruleset complementa a branch protection impedindo atualizações diretas.
 
 ---
 
@@ -59,24 +64,26 @@ Se preferir usar Rulesets ao invés de Branch Protection Rules:
 
 Após configurar, verifique:
 
-- [ ] PRs para main requerem aprovação
-- [ ] PRs para main requerem CI verde
+- [ ] PRs para main requerem CI verde (status checks)
+- [ ] PRs para main NÃO exigem aprovação humana (0 approvals)
 - [ ] Force push está desabilitado
-- [ ] CODEOWNERS está sendo respeitado
+- [ ] CODEOWNERS existe e registra ownership (sem enforcement de review obrigatório)
 - [ ] Status checks aparecem como required
+- [ ] O mantenedor solo consegue criar, passar CI e mergear um PR sem depender de terceiros
 
 ---
 
 ## Evidência de Configuração
 
-Após configurar, tire um screenshot e adicione ao PR de setup ou documente:
+Após configurar, registrar:
 
 ```
 Data de configuração: ____
 Configurado por: ____
 Status checks required: Quality Gate (BLOCKING), Smoke Test (BLOCKING), CI Status
-Approvals required: 1
-CODEOWNERS enforced: Sim/Não
+Approvals required: 0
+Code owner review required: Não
+Enforce admins: Sim (compatível porque approvals = 0)
 ```
 
 ---
@@ -85,3 +92,10 @@ CODEOWNERS enforced: Sim/Não
 
 **SEM ESTAS CONFIGURAÇÕES**, os workflows de CI são apenas informativos.
 O bloqueio real só acontece com branch protection rules configuradas no GitHub.
+
+## Histórico de mudanças
+
+| Data | Mudança | Motivo |
+|------|---------|--------|
+| 2026-03-23 | Configuração inicial com 1 approval + code owner review | Setup original |
+| 2026-04-05 | Approvals reduzido para 0, code owner review removido (P19) | Governança excessivamente rígida para repositório solo |

@@ -569,12 +569,12 @@ If a file matching these patterns is found tracked in the repository, it should 
 ## External Step — Real Main Protection
 
 Date of recording: 2026-03-23
+Updated: 2026-04-05 (P19 — ajuste de governança para repositório solo)
 
 Official reference state recorded after Prompt 10 completion:
 - main @ `865f3e2`
 - PR #49 merged successfully
 - branch protection active on `main`
-- required reviews active
 - required status checks active and strict
 - conversation resolution active
 - enforce_admins active
@@ -583,8 +583,22 @@ Official reference state recorded after Prompt 10 completion:
 - additional ruleset `14243549` active with `update` restriction on `refs/heads/main`
 - bypass mode for the configured repository role: `pull_request`
 
+### Ajuste P19 — Governança Solo (2026-04-05)
+
+A configuração original incluía 1 approval obrigatório + code owner review + enforce admins.
+Essa combinação é incompatível com repositório de mantenedor solo:
+- O autor do PR não pode aprovar o próprio PR no GitHub.
+- O code owner (`@PrinceOfEgypt1`) é o mesmo que o autor do PR.
+
+**Configuração alvo após P19:**
+- required approvals: **0** (era 1)
+- code owner review: **desabilitado** (era habilitado)
+- Demais proteções mantidas integralmente.
+
+**AÇÃO MANUAL REQUERIDA:** aplicar no GitHub UI (Settings → Branches).
+
 Practical result:
-- changes to `main` are governed by PR + review + green checks
+- changes to `main` are governed by PR + green checks (automated)
 - direct branch update is explicitly restricted by ruleset
-- `main` is now materially hardened as the official protected branch
+- `main` continues materially hardened, without artificial dependency on external reviewer
 
