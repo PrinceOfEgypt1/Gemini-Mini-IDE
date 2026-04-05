@@ -563,7 +563,7 @@ If a file matching these patterns is found tracked in the repository, it should 
 - Follow existing code patterns.
 - Add tests for new functionality.
 - Ensure all merge gates pass.
-- Request review from core maintainers for governance changes.
+- Request review from the repository owner for governance changes.
 
 
 ## External Step — Real Main Protection

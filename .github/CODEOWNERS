@@ -1,6 +1,6 @@
 # CODEOWNERS - Gemini Mini-IDE
 #
-# Repository owner: PrinceOfEgypt1 (sole maintainer)
-# All files require review from the repository owner.
+# Default code owner: PrinceOfEgypt1 (sole maintainer)
+# Operational enforcement depends on branch protection settings.
 
 * @PrinceOfEgypt1
