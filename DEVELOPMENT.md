@@ -48,10 +48,7 @@ The governance system ensures code quality without being coupled to any specific
 
 ### Files Protected by CODEOWNERS
 
-- `packages/analysis-agent/src/agent.ts @core-maintainers`
-- `packages/analysis-agent/src/governance/ @core-maintainers`
-- `packages/analysis-agent/src/validators/ @core-maintainers`
-- `packages/analysis-agent/src/prompts/ @core-maintainers`
+All files are owned by `@PrinceOfEgypt1` (sole repository maintainer).
 
 ## Testing Strategy
 
@@ -566,7 +563,7 @@ If a file matching these patterns is found tracked in the repository, it should 
 - Follow existing code patterns.
 - Add tests for new functionality.
 - Ensure all merge gates pass.
-- Request review from core maintainers for governance changes.
+- Request review from the repository owner for governance changes.
 
 
 ## External Step — Real Main Protection

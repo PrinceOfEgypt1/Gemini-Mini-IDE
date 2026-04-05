@@ -1,37 +1,6 @@
 # CODEOWNERS - Gemini Mini-IDE
 #
-# Define os responsáveis por cada área do código.
-# Qualquer mudança nestas áreas requer aprovação dos owners.
+# Default code owner: PrinceOfEgypt1 (sole maintainer)
+# Operational enforcement depends on branch protection settings.
 
-# Default - Requer aprovação para qualquer mudança
-* @project-maintainers
-
-# Arquivos Críticos - Requerem revisão especial
-packages/analysis-agent/src/agent.ts @core-maintainers
-packages/analysis-agent/src/governance/ @core-maintainers
-packages/analysis-agent/src/validators/ @core-maintainers
-
-# Prompts - Impactam qualidade do output
-packages/analysis-agent/src/prompts/ @core-maintainers
-
-# Configurações - Impactam build e deploy
-package.json @core-maintainers
-tsconfig*.json @core-maintainers
-pnpm-workspace.yaml @core-maintainers
-
-# CI/CD - Impactam pipeline
-.github/workflows/ @core-maintainers
-
-# Server - Impacta API
-packages/server/src/index.ts @core-maintainers
-
-# UI Core - Impacta experiência
-packages/ui/src/App.tsx @core-maintainers
-packages/ui/src/main.tsx @core-maintainers
-
-# Scripts - Revisão obrigatória
-scripts/ @core-maintainers
-
-# Documentação de governança
-docs/adr/ @core-maintainers
-.github/ @core-maintainers
+* @PrinceOfEgypt1
