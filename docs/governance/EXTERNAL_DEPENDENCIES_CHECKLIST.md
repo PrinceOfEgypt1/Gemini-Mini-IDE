@@ -15,7 +15,8 @@ Este documento lista todas as configuracoes que devem ser aplicadas **fora do re
 
 ### Branch: `main`
 - [x] Require a pull request before merging
-- [x] Require approvals (minimo: 1)
+- [ ] Require approvals — **ALTERADO para 0** (P19: repositório solo, sem reviewer externo)
+- [ ] Require review from Code Owners — **REMOVIDO** (P19: code owner = autor do PR)
 - [x] Require status checks to pass before merging
   - [x] Adicionar check: `CI Status`
   - [x] Adicionar check: `Quality Gate (BLOCKING)`
@@ -23,10 +24,12 @@ Este documento lista todas as configuracoes que devem ser aplicadas **fora do re
 - [x] Require branches to be up to date before merging
 - [x] Do not allow bypassing the above settings
 
-> **Verified:** 2026-03-23 — branch protection active on main, required reviews active,
-> required status checks active and strict, enforce_admins active, force-push disabled,
-> deletion disabled. Ruleset 14243549 active with update restriction. See DEVELOPMENT.md
-> "External Step — Real Main Protection" for full evidence.
+> **Configuração original (2026-03-23):** 1 approval + code owner review + enforce_admins.
+> **Ajuste P19 (2026-04-05):** Approvals reduzido para 0, code owner review removido.
+> Motivo: configuração original era incompatível com operação de mantenedor solo.
+> **AÇÃO MANUAL REQUERIDA:** aplicar a mudança de approvals e code owner review
+> no GitHub UI (Settings → Branches → main protection rule).
+> Status checks, force-push disabled, deletion disabled e ruleset permanecem inalterados.
 
 ### Branch: `develop`
 N/A — project uses only `main` as official branch. No `develop` branch exists.
@@ -98,4 +101,4 @@ Apos aplicar as configuracoes, verificar:
 
 ---
 
-**Ultima atualizacao:** 2026-04-02 (Prompt 20 — aligned with DEVELOPMENT.md evidence)
+**Ultima atualizacao:** 2026-04-05 (Prompt 19 — governança solo: approvals 1→0, code owner review removido)
