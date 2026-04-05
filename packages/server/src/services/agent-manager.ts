@@ -12,8 +12,6 @@ import type { LLMConfig } from "../helpers.js";
  * - Cleanup: periodic sweep removes expired entries every CLEANUP_INTERVAL_MS (default 5 minutes)
  */
 
-const DEFAULT_API_KEY = process.env["OPENAI_API_KEY"] ?? "";
-
 // BG-05: Lazy singleton — avoids creating TCP/TLS connection at import time.
 // Previously created eagerly (HU-MINI-IDE-PERF-001); now deferred to first getAgent() call.
 let defaultAgentInstance: AnalysisAgent | null = null;
@@ -40,8 +38,12 @@ const orchestrators = new Map<string, CacheEntry>();
 /** BG-06: Periodic cleanup timer reference (for shutdown/testing) */
 let cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
+/**
+ * P10: Reads API key lazily from process.env to avoid capturing stale value
+ * at module evaluation time (before dotenv.config() has run).
+ */
 export function getDefaultApiKey(): string {
-  return DEFAULT_API_KEY;
+  return process.env["OPENAI_API_KEY"] ?? "";
 }
 
 /**
@@ -51,9 +53,10 @@ export function getDefaultApiKey(): string {
  * BG-05: Default agent created lazily on first call instead of at import time.
  */
 export function getAgent(apiKey: string): AnalysisAgent {
-  if (apiKey === DEFAULT_API_KEY && DEFAULT_API_KEY) {
+  const defaultKey = getDefaultApiKey();
+  if (apiKey === defaultKey && defaultKey) {
     if (!defaultAgentInstance) {
-      defaultAgentInstance = new AnalysisAgent(DEFAULT_API_KEY);
+      defaultAgentInstance = new AnalysisAgent(defaultKey);
     }
     return defaultAgentInstance;
   }
