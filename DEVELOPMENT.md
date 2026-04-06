@@ -1,10 +1,10 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 20.1 (Prompt 10 completed + external main protection recorded)
-> **Date:** 2026-03-22
-> **Reference State:** `main @ fd816d9` (BG-05 + FG-09 pending merge)
+> **Document Version:** 20.2 (P12 — reconciliação documental com estado real pós-P19)
+> **Date:** 2026-04-05
+> **Reference State:** `main @ 895f1a2` (P19 materializado; PR #66 merged)
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`)
-> **Testes:** 41 arquivos executados / 44 escritos — 3 excluídos ativamente em `analysis-agent`
+> **Testes:** 70 arquivos executados / 70 escritos — 0 excluídos
 
 ---
 
@@ -105,16 +105,16 @@ O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada paco
 - Tratar o número de tests passing de uma execução anterior como representativo do estado atual sem revalidação local.
 - Assumir que todos os pacotes têm cobertura homogênea.
 
-### Contagem real por pacote (`main @ 5d6b1da`)
+### Contagem real por pacote (`main @ 895f1a2`)
 
 | Pacote | Arquivos escritos | Arquivos executados | Arquivos excluídos | Participação | Observações |
 |---|---:|---:|---:|---|---|
-| analysis-agent | 23 | 23 | 0 | Total | Todos os arquivos de teste executam (P03 resolvido) |
-| ui | 14 | 14 | 0 | Total | `src/` e `test/` cobertos |
-| server | 4 | 4 | 0 | Total | — |
+| analysis-agent | 32 | 32 | 0 | Total | Todos os arquivos de teste executam (P03 resolvido) |
+| ui | 30 | 30 | 0 | Total | `src/` e `test/` cobertos (P05 + P07 expandiram cobertura) |
+| server | 5 | 5 | 0 | Total | — |
 | shared | 2 | 2 | 0 | Total | — |
 | cli | 1 | 1 | 0 | Total | — |
-| **TOTAL** | **44** | **44** | **0** | — | — |
+| **TOTAL** | **70** | **70** | **0** | — | — |
 
 ### Arquivos de teste anteriormente excluídos (`analysis-agent`) — RESOLVIDO
 
@@ -143,13 +143,13 @@ O `analysis-agent` adicionalmente exclui `*.spec.ts`.
 
 | Pacote | Lines | Functions | Branches | Statements | Observação |
 |---|---:|---:|---:|---:|---|
-| analysis-agent | 15% | 45% | 70% | 15% | Threshold de lines/statements baixo |
+| analysis-agent | 55% | 55% | 70% | 55% | Elevados em P05 |
 | cli | 40% | 80% | 80% | 40% | — |
 | server | 40% | 30% | 55% | 40% | Threshold de functions baixo |
 | shared | 80% | 50% | 80% | 80% | Functions threshold abaixo das demais métricas |
-| ui | 20% | 35% | 60% | 20% | Thresholds baixos para pacote React |
+| ui | 60% | 60% | 73% | 60% | Elevados em P05 |
 
-Nota: thresholds não representam a cobertura real alcançada; são apenas pisos mínimos configurados. Thresholds baixos em `analysis-agent` e `ui` indicam que áreas não cobertas podem passar pelo gate.
+Nota: thresholds não representam a cobertura real alcançada; são apenas pisos mínimos configurados.
 
 ### Contagens históricas de tests passing
 
