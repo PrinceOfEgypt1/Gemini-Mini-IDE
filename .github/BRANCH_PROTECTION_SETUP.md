@@ -1,97 +1,109 @@
-# Branch Protection Setup (Manual Configuration Required)
+# Proteção da Branch `main` — Referência Operacional
 
-Este documento descreve as configurações de proteção de branch que DEVEM ser aplicadas manualmente no GitHub.
+Este documento registra a configuração real de proteção da branch `main`, conforme verificada via API do GitHub.
 
-## Status: DEPENDÊNCIA EXTERNA
+## Status: CONFIGURADA E ATIVA
 
-As configurações abaixo NÃO podem ser aplicadas via código. Requerem acesso admin ao repositório.
+A proteção da `main` está ativa e é implementada por meio de **3 rulesets** no GitHub.
 
 ## Contexto operacional: repositório solo
 
 Este repositório é mantido por um único mantenedor (`@PrinceOfEgypt1`).
-A governança deve equilibrar proteção real com operabilidade solo:
+A governança equilibra proteção real com operabilidade solo:
 
-- **Proteções automatizadas** (status checks, CI guards): MANTER — não dependem de revisão humana.
-- **Aprovações obrigatórias**: REMOVER — o autor do PR é o único mantenedor e não pode aprovar o próprio PR no GitHub.
-- **Code owner review obrigatório**: REMOVER — o code owner é o autor do PR; exigir review do code owner cria dependência impossível.
-- **Enforce admins / Do not allow bypassing**: deve ser compatível com operação solo. Se approvals forem 0, enforce admins pode permanecer ativo sem bloquear o fluxo.
+- **Proteções automatizadas** (status checks, CI guards): ATIVAS — não dependem de revisão humana.
+- **Aprovações obrigatórias**: 0 — o autor do PR é o único mantenedor.
+- **Code owner review obrigatório**: Não — o code owner é o autor do PR.
 
 ---
 
-## Configurações Obrigatórias para `main`
+## Rulesets Ativas
 
-### 1. Branch Protection Rules
+### 1. Ruleset `13644761` — `main`
 
-Navegue para: Settings → Branches → Add branch protection rule
-
-**Branch name pattern:** `main`
-
-**Marcar as seguintes opções:**
-
-- [x] **Require a pull request before merging**
-  - Require approvals: **0** (zero — repositório solo, sem reviewer externo disponível)
-  - [ ] Dismiss stale pull request approvals when new commits are pushed (N/A com 0 approvals)
-  - [ ] Require review from Code Owners (DESMARCAR — code owner = autor do PR)
-
-- [x] **Require status checks to pass before merging**
-  - [x] Require branches to be up to date before merging
-  - **Required status checks:**
+- **Enforcement:** Active
+- **Target:** Default branch (`main`)
+- **Regras:**
+  - Required status checks (strict):
     - `Quality Gate (BLOCKING)`
     - `Smoke Test (BLOCKING)`
     - `CI Status`
+  - `strict_required_status_checks_policy`: true
+  - `do_not_enforce_on_create`: false
 
-- [x] **Require conversation resolution before merging**
+### 2. Ruleset `13621578` — `main-branch-protection`
 
-- [x] **Do not allow bypassing the above settings**
+- **Enforcement:** Active
+- **Target:** Default branch (`main`)
+- **Regras:**
+  - `deletion` — impede exclusão da branch
+  - `non_fast_forward` — impede force push
 
-- [ ] **Allow force pushes** (DESMARCAR)
+### 3. Ruleset `14243549` — `Protect main — restrict direct updates`
 
-- [ ] **Allow deletions** (DESMARCAR)
+- **Enforcement:** Active
+- **Target:** `refs/heads/main`
+- **Regras:**
+  - `update` — bloqueia push direto na `main`
+  - Bypass mode: `pull_request` (permite merge via PR)
 
-### 2. Ruleset complementar (já ativa)
+---
 
-Ruleset `14243549` — `Protect main — restrict direct updates`:
-- Enforcement: Active
-- Target: `refs/heads/main`
-- Rule: `update` (bloqueia push direto)
-- Bypass mode: `pull_request` (permite merge via PR)
+## Branch Protection Clássica
 
-Esta ruleset complementa a branch protection impedindo atualizações diretas.
+A API pública do GitHub retorna 401 para o endpoint de branch protection clássica (`/branches/main/protection`), o que impede verificação sem credenciais admin.
+
+As rulesets acima cobrem as proteções essenciais (status checks, force push, deletion, direct push). Configurações adicionais que podem existir na branch protection clássica (conversation resolution, enforce admins) não são verificáveis externamente.
+
+**Se houver necessidade de reconfigurar a proteção clássica**, as configurações compatíveis com repositório solo são:
+
+- Require a pull request before merging: **Sim**
+- Required approvals: **0**
+- Code owner review: **Não**
+- Require conversation resolution: **Sim** (recomendado)
+- Do not allow bypassing: **Sim**
+- Enforce admins: **Sim** (compatível porque approvals = 0)
+
+---
+
+## Checks Bloqueantes no CI
+
+O workflow `.github/workflows/ci.yml` define 6 jobs:
+
+| Job | Nome no GitHub | Bloqueante por ruleset? |
+|-----|---------------|------------------------|
+| quality | Quality Gate (BLOCKING) | **Sim** — required status check |
+| smoke-test | Smoke Test (BLOCKING) | **Sim** — required status check |
+| ci-status | CI Status | **Sim** — required status check |
+| critical-files-guard | Critical Files Guard (BLOCKING) | Não — auto-enforcement via falha do job |
+| large-deletion-guard | Large Deletion Guard (BLOCKING) | Não — auto-enforcement via falha do job |
+| pr-template-compliance | PR Template Compliance (BLOCKING) | Não — auto-enforcement via falha do job |
+
+Os 3 primeiros são obrigatórios via ruleset. Os 3 últimos falham o PR diretamente se as condições não forem atendidas, mas não estão na lista de required status checks.
 
 ---
 
 ## Checklist de Verificação
 
-Após configurar, verifique:
-
-- [ ] PRs para main requerem CI verde (status checks)
-- [ ] PRs para main NÃO exigem aprovação humana (0 approvals)
-- [ ] Force push está desabilitado
-- [ ] CODEOWNERS existe e registra ownership (sem enforcement de review obrigatório)
-- [ ] Status checks aparecem como required
-- [ ] O mantenedor solo consegue criar, passar CI e mergear um PR sem depender de terceiros
+- [x] PRs para main requerem CI verde (3 status checks obrigatórios)
+- [x] PRs para main NÃO exigem aprovação humana (0 approvals)
+- [x] Force push desabilitado (ruleset 13621578)
+- [x] Exclusão de branch desabilitada (ruleset 13621578)
+- [x] Push direto bloqueado (ruleset 14243549)
+- [x] CODEOWNERS registra ownership sem enforcement de review obrigatório
 
 ---
 
-## Evidência de Configuração
+## Fonte de verdade
 
-Após configurar, registrar:
+A fonte de verdade para a configuração de proteção é a API do GitHub:
+```
+GET /repos/PrinceOfEgypt1/Gemini-Mini-IDE/rulesets
+```
 
-```
-Data de configuração: ____
-Configurado por: ____
-Status checks required: Quality Gate (BLOCKING), Smoke Test (BLOCKING), CI Status
-Approvals required: 0
-Code owner review required: Não
-Enforce admins: Sim (compatível porque approvals = 0)
-```
+Este documento é uma referência operacional derivada. Em caso de conflito, a configuração real do GitHub prevalece.
 
 ---
-
-## Nota Importante
-
-**SEM ESTAS CONFIGURAÇÕES**, os workflows de CI são apenas informativos.
-O bloqueio real só acontece com branch protection rules configuradas no GitHub.
 
 ## Histórico de mudanças
 
@@ -99,3 +111,4 @@ O bloqueio real só acontece com branch protection rules configuradas no GitHub.
 |------|---------|--------|
 | 2026-03-23 | Configuração inicial com 1 approval + code owner review | Setup original |
 | 2026-04-05 | Approvals reduzido para 0, code owner review removido (P19) | Governança excessivamente rígida para repositório solo |
+| 2026-04-07 | Documento reescrito como referência operacional (P14) | Eliminação de drift: documento descrevia classic BP + 1 ruleset; realidade são 3 rulesets |
