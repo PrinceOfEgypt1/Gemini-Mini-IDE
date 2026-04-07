@@ -1,6 +1,15 @@
 # CONTEXTO DE CONTINUIDADE — GEMINI-MINI-IDE
 
-## Estado oficial registrado
+> **⚠ DOCUMENTO HISTÓRICO — NÃO REPRESENTA O ESTADO OFICIAL ATUAL**
+>
+> Este documento é um **marco histórico** registrado após a conclusão do Prompt 10
+> (proteção real da main, 2026-03-23), com adendo de governança do P19 (2026-04-05).
+> Os hashes, PRs e estados aqui refletem o momento do registro, **não** o estado
+> corrente do projeto.
+>
+> **Fonte mantida de governança da main:** [`DEVELOPMENT.md` § External Step — Real Main Protection](../../DEVELOPMENT.md#external-step--real-main-protection)
+
+## Estado oficial registrado (snapshot do momento do P10)
 - Data do registro: `2026-03-23`
 - Branch oficial única: `main`
 - HEAD oficial de referência no momento do registro: `865f3e2` (`865f3e22c84afa6fc75bb5a07da01d6b9bc25599`)
@@ -63,10 +72,13 @@ O Prompt 19 identificou que a configuração original (1 approval + code owner r
 **Ajuste documentado:** approvals → 0, code owner review → desabilitado.
 **Status da aplicação remota:** PENDENTE DE AÇÃO MANUAL no GitHub UI.
 
-## Próxima referência de continuidade
-Qualquer novo ciclo deve partir deste estado:
+## Princípios de governança registrados neste marco
+Os princípios abaixo foram válidos no momento do registro e permanecem como referência histórica:
 - `main` como única branch oficial
 - proteção clássica ativa (PR obrigatório + status checks, sem approval humano)
 - ruleset de restrict direct updates ativa
 - mudanças somente via PR
 - governança proporcional a repositório solo
+
+> Para o estado oficial **atual** da governança de main, consulte
+> [`DEVELOPMENT.md` § External Step — Real Main Protection](../../DEVELOPMENT.md#external-step--real-main-protection).
