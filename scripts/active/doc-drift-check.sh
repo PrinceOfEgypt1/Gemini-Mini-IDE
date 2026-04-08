@@ -1,7 +1,22 @@
 #!/usr/bin/env bash
 # doc-drift-check.sh — Verifica drift entre documentação e estado real do repositório
 # Uso: bash scripts/active/doc-drift-check.sh
-# Saída: 0 se não houver drift crítico, 1 se houver divergência
+#
+# NATUREZA: ferramenta ADVISORY — não bloqueante.
+# Exit code: sempre 0 (apenas avisos informativos; nunca bloqueia pipeline).
+# Exit code 1 apenas se houver ERRO CRÍTICO (ex: arquivo de documento não encontrado
+# quando era esperado).
+#
+# AVISO DE HASH: a verificação de hash compara o hash documentado em README.md e
+# DEVELOPMENT.md contra o HEAD ATUAL. Em contexto de branch/PR, o HEAD da branch
+# é sempre diferente do hash referenciado nos docs (que aponta para o último estado
+# auditado da main). Avisos de hash são ESPERADOS durante desenvolvimento em branch
+# e após cada commit — não indicam erro operacional.
+# O check de hash é útil apenas como auditoria manual pré-release.
+#
+# Verificações confiáveis (sem falsos positivos estruturais):
+# - contagem de arquivos de teste vs documentado em DEVELOPMENT.md
+# - presença de marcadores de classificação em documentos históricos
 
 set -euo pipefail
 
