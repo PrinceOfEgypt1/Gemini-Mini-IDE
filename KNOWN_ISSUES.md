@@ -20,8 +20,8 @@ This document honestly tracks incomplete work and known limitations.
 
 ### Resumo quantitativo
 
-- Arquivos de teste escritos em `analysis-agent`: **23**
-- Arquivos de teste efetivamente executados: **23**
+- Arquivos de teste escritos em `analysis-agent`: **32** (era 23 ao P03; cresceu via P11–P18)
+- Arquivos de teste efetivamente executados: **32**
 - Arquivos de teste excluídos pelo runner: **0**
 
 ### Resolução aplicada (P03)
@@ -93,4 +93,4 @@ N asserções — execução YYYY-MM-DD @ commit XXXXXXX
 
 ---
 
-**Last Updated:** 2026-03-20 (Prompt 5 — Testing Transparency)
+**Last Updated:** 2026-04-08 (P15 — Drift global entre documentação histórica e estado atual)

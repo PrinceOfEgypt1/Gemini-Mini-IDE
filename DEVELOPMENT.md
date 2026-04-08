@@ -1,8 +1,8 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 20.2 (P12 — reconciliação documental com estado real pós-P19)
-> **Date:** 2026-04-05
-> **Reference State:** `main @ 895f1a2` (P19 materializado; PR #66 merged)
+> **Document Version:** 20.3 (P15 — correção de drift global entre documentação histórica e estado atual)
+> **Date:** 2026-04-08
+> **Reference State:** `main @ 7b1b456` (P14 materializado; PR #69 merged)
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`)
 > **Testes:** 70 arquivos executados / 70 escritos — 0 excluídos
 
@@ -311,7 +311,7 @@ See `docs/adr/001-remocao-overfitting-prompt7.md` for details.
 | `README.md` | Quick start and overview | Active |
 | `DEVELOPMENT.md` | Engineering details | Active |
 | `KNOWN_ISSUES.md` | Known limitations and exclusions | Active |
-| `FORENSIC_AUDIT_REPORT.md` | Forensic audit of project state | Active |
+| `FORENSIC_AUDIT_REPORT.md` | Snapshot forense do estado do projeto (2026-03-15, commit e3729ce) | Historical |
 | `docs/AI_POLICY.md` | Guidelines for AI-assisted development | Active |
 | `docs/REVIEW_CHECKLIST.md` | Code review checklist | Active |
 | `docs/ESAA_ARCHITECTURE.md` | ESAA architecture | Experimental |

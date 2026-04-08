@@ -2,9 +2,9 @@
 
 > **Nota de classificação:** Este documento mistura itens concluídos (estado real) com itens pendentes (aspiracionais).
 > Itens marcados 📅 são **visão futura**, não funcionalidades implementadas.
-> Última atualização de status geral: Rodada 18 concluída.
+> Última atualização de status geral: 2026-04-08 (Prompts documentais P12–P15 aplicados).
 
-**Status Geral:** Rodada 18 Concluída. Projeto em fase de reconciliação documental e estabilização.
+**Status Geral:** Rodadas 1–20 concluídas. Prompts documentais P12–P15 aplicados (2026-04-08). Projeto estabilizado.
 
 ## Legenda
 - ✅ **Concluído**: Implementado, testado e mergeado na main.

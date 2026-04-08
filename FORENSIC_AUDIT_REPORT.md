@@ -1,5 +1,10 @@
 # RELATÓRIO FORENSE INTEGRAL — GEMINI-MINI-IDE
 
+> **Classificação: DOCUMENTO HISTÓRICO**
+> Este relatório é um snapshot forense do estado do projeto em 2026-03-15 (commit `e3729ce`).
+> Não descreve o estado atual — consulte `README.md` e `DEVELOPMENT.md` para informações atuais.
+> Para o backlog de itens de conformidade abertos, consulte `docs/governance/CRITICAL_OPEN_ITEMS.md`.
+
 **Data:** 2026-03-15
 **Branch:** `claude/comprehensive-project-audit-eVbB5`
 **Commit:** `e3729ce`
