@@ -3,10 +3,10 @@
 Ambiente de desenvolvimento assistido por IA para transformar intenções em planos e código.
 
 > **Status:** Em desenvolvimento ativo
-> **Estado oficial de referência:** `main @ 21d77f4`
-> **Testes:** 39 arquivos de teste executados / 42 escritos — 3 excluídos ativamente em `analysis-agent` (ver [KNOWN_ISSUES.md](./KNOWN_ISSUES.md))
-> **Contagens por arquivo de teste:** `shared: 2`, `ui: 14`, `cli: 1`, `analysis-agent: 19 executados (22 escritos)`, `server: 3`
-> **Contagens por asserção (referência histórica):** `shared: ~35`, `ui: ~73`, `cli: ~25`, `analysis-agent: ~306`, `server: ~74` — revalidar após `pnpm install && pnpm test`
+> **Estado oficial de referência:** `main @ 7b1b456`
+> **Testes:** 70 arquivos de teste executados / 70 escritos — 0 excluídos
+> **Contagens por arquivo de teste:** `shared: 2`, `ui: 30`, `cli: 1`, `analysis-agent: 32`, `server: 5`
+> **Contagens por asserção (referência histórica):** `shared: ~35`, `ui: ~155`, `cli: ~25`, `analysis-agent: ~461`, `server: ~155` — revalidar após `pnpm install && pnpm test`
 > **Build:** revalidar localmente com `pnpm build`
 > **Pipeline:** revalidar localmente com `pnpm lint`, `pnpm typecheck`, `pnpm test` e `bash scripts/active/pipeline.sh`
 
@@ -67,14 +67,14 @@ bash scripts/active/pipeline.sh
 
 ```text
 packages/
-├── analysis-agent/  # Motor de análise e governança — 22 arquivos escritos, 19 executados, 3 excluídos
-├── ui/              # Frontend React + Vite + Tailwind — 14 arquivos escritos e executados
-├── server/          # Backend Fastify — 3 arquivos escritos e executados
+├── analysis-agent/  # Motor de análise e governança — 32 arquivos escritos e executados
+├── ui/              # Frontend React + Vite + Tailwind — 30 arquivos escritos e executados
+├── server/          # Backend Fastify — 5 arquivos escritos e executados
 ├── shared/          # Tipos e utilitários compartilhados — 2 arquivos escritos e executados
 └── cli/             # Interface de linha de comando — 1 arquivo escrito e executado
 ```
 
-**Nota:** as contagens acima são de **arquivos de teste**, não de asserções individuais. Contagens de asserções variam por execução e devem ser tratadas como referência histórica até nova validação local. Os 3 arquivos excluídos em `analysis-agent` estão documentados em [KNOWN_ISSUES.md](./KNOWN_ISSUES.md).
+**Nota:** as contagens acima são de **arquivos de teste**, não de asserções individuais. Contagens de asserções variam por execução e devem ser tratadas como referência histórica até nova validação local.
 
 Todos os pacotes usam o namespace `@gemini-mini-ide/*`.
 

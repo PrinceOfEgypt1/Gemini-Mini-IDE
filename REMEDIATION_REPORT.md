@@ -2,7 +2,7 @@
 
 > **Classificação: DOCUMENTO HISTÓRICO**
 > Este relatório documenta a recuperação do projeto durante as Rodadas 1-5.
-> Não descreve o estado atual — consulte README.md e FORENSIC_AUDIT_REPORT.md para informações atuais.
+> Não descreve o estado atual — consulte `README.md` e `DEVELOPMENT.md` para informações atuais.
 
 **Date:** 2026-03-11
 **Version:** 1.1
