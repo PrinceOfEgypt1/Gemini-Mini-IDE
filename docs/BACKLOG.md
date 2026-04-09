@@ -2,9 +2,9 @@
 
 > **Nota de classificação:** Este documento mistura itens concluídos (estado real) com itens pendentes (aspiracionais).
 > Itens marcados 📅 são **visão futura**, não funcionalidades implementadas.
-> Última atualização de status geral: 2026-04-08 (Prompts documentais P12–P15 aplicados).
+> Última atualização de status geral: 2026-04-09 (P21 — correção de drift documental pós-merge P15).
 
-**Status Geral:** Rodadas 1–20 concluídas. Prompts documentais P12–P15 aplicados (2026-04-08). Projeto estabilizado.
+**Status Geral:** Rodadas 1–20 concluídas. Prompts documentais P12–P15 e P21 aplicados (2026-04-09). Projeto estabilizado.
 
 ## Legenda
 - ✅ **Concluído**: Implementado, testado e mergeado na main.
