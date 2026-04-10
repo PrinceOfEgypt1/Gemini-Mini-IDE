@@ -1,9 +1,9 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 20.4 (P21 — atualização de referência pós-merge do P15)
-> **Date:** 2026-04-09
+> **Document Version:** 20.5 (P22 — enforcement real de drift documental)
+> **Date:** 2026-04-10
 > **Reference State:** `main @ f56ec95` (P15 materializado; PR #70 merged)
-> **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`)
+> **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`, `doc-drift-enforcement`)
 > **Testes:** 70 arquivos executados / 70 escritos — 0 excluídos
 
 ---
@@ -228,6 +228,33 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
 - Build: production builds
 - Critical Files Detection: warns on changes to governance files
 - Large Deletion Warning: alerts on deletions above the configured threshold
+- **Doc Drift Enforcement (BLOCKING):** `bash scripts/active/doc-drift-check.sh`
+  — bloqueia se a contagem real de arquivos de teste divergir do documentado em `DEVELOPMENT.md`,
+  ou se documentos marcados como históricos perderem o marcador de classificação.
+  Hash divergence é advisory (esperada em branches) e não bloqueia.
+
+### Como validar localmente antes de abrir PR
+
+```bash
+# Verificação rápida de drift documental:
+bash scripts/active/doc-drift-check.sh
+
+# Pipeline completa (inclui doc-drift):
+bash scripts/active/pipeline.sh
+```
+
+**Interpretação dos resultados:**
+
+| Resultado | Exit code | Significado |
+|---|---|---|
+| `OK — documentação íntegra` | 0 | Tudo alinhado |
+| `OK (com avisos advisory)` | 0 | Hash diverge do HEAD — esperado em branch |
+| `FALHOU — N erro(s) bloqueante(s)` | 1 | Drift material: corrija antes de mergear |
+
+**Erros bloqueantes comuns:**
+
+- `total real=X vs documentado=Y` → atualize a tabela de contagem em `DEVELOPMENT.md`
+- `sem marcador histórico — arquivo.md` → adicione `DOCUMENTO HISTÓRICO` ao cabeçalho do arquivo
 
 ## Lint Governance
 

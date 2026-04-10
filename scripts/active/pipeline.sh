@@ -48,6 +48,9 @@ run_step() {
 # Pipeline - Structural integrity
 run_step "Structural integrity" "bash scripts/active/validate-structure.sh"
 
+# Pipeline - Documentary drift enforcement
+run_step "Doc drift enforcement" "bash scripts/active/doc-drift-check.sh"
+
 # Pipeline - Static checks
 run_step "Lint" "pnpm lint"
 run_step "Typecheck" "pnpm typecheck"
