@@ -1,8 +1,8 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 20.5 (P22 — enforcement real de drift documental)
+> **Document Version:** 20.6 (P23 — fechamento definitivo do SSE provisório)
 > **Date:** 2026-04-10
-> **Reference State:** `main @ f56ec95` (P15 materializado; PR #70 merged)
+> **Reference State:** `main @ 0d0fdfd` (P22 materializado; PR #72 merged)
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`, `doc-drift-enforcement`)
 > **Testes:** 70 arquivos executados / 70 escritos — 0 excluídos
 
@@ -346,14 +346,18 @@ See `docs/adr/001-remocao-overfitting-prompt7.md` for details.
 | `docs/adr/*.md` | Architecture Decision Records | Historical |
 | `REMEDIATION_REPORT.md` | Recovery report (Rounds 1–5) | Historical |
 
-## SSE Endpoint — Provisional Status (BG-07)
+## SSE Endpoint — EXPERIMENTAL, Not Part of Stable API Surface (P23)
 
-The endpoint GET /generation/progress/:sessionId is explicitly provisional.
+**Classification: EXPERIMENTAL** — Formally demoted from provisional to experimental in P23.
 
-### What it does today
+The endpoint `GET /generation/progress/:sessionId` does NOT stream real generation progress. It establishes a valid SSE connection with heartbeat keep-alive and proper security, but emits no real-time progress data. No client-side consumer exists in the UI package. This endpoint must not be treated as a stable, contractual feature. It may be removed, redesigned, or left indefinitely in this state without notice.
 
+### What it does
+
+- Requires authentication (same API key pattern as all conversation endpoints) — added P11
 - Validates sessionId format: 1–100 characters, alphanumeric, hyphens, and underscores only
-- Returns 400 for invalid sessionId
+- Validates that sessionId corresponds to an existing session in the orchestrator — added P11
+- Returns 400 for invalid sessionId format, 401 for missing auth, 404 for non-existent session
 - Establishes a valid SSE connection (text/event-stream)
 - Sends a connected event with `{ type: "connected", sessionId, provisional: true }`
 - Sends heartbeat comments every 15 seconds
@@ -364,31 +368,41 @@ The endpoint GET /generation/progress/:sessionId is explicitly provisional.
 ### What it does NOT do
 
 - Stream actual generation progress events
-- Validate that sessionId corresponds to an existing session
 - Bridge with `generate-incremental` progress callbacks
-- Require authentication (unlike other conversation endpoints)
+- Deliver any real-time information about code generation state
 
-### Why it is provisional
+### Why it is experimental — not provisional
 
-The `generate-incremental` endpoint logs progress via `request.log.info` server-side, but there is no pub/sub mechanism to push those events to the SSE stream. Building that bridge would require an event emitter or channel system per session, which is outside the scope of the current hardening execution.
+Previous documentation (BG-07) classified this endpoint as "provisional", implying a clear path to promotion. P23 audited the endpoint and determined that:
 
-### Hardening applied (BG-07)
+1. **No real progress streaming exists.** The endpoint emits only a "connected" event, heartbeats, and a timeout — no progress data.
+2. **No pub/sub bridge exists.** The `generate-incremental` endpoint logs progress via `request.log.info()` server-side, but nothing pushes those events to this SSE stream.
+3. **No client consumer exists.** The UI package does not reference this endpoint.
+4. **Promotion would require new architecture** — an event emitter or channel system per session — which is outside the scope of saneamento.
 
-| Aspect | Before | After |
-|---|---|---|
-| sessionId validation | None | Regex: `^[a-zA-Z0-9_-]{1,100}$` |
-| Timeout | None (indefinite) | 5 minutes, with explicit timeout event |
-| Cleanup | Only heartbeat cleared on close | All timers cleared + stream ended on close, timeout, or error |
-| Fastify integration | No `hijack()` — potential double-response | `reply.hijack()` used |
-| Error handling | None | `reply.raw.on("error", cleanup)` |
-| Provisional marker | None | `connected` event includes `provisional: true` |
+The security and infrastructure hardening (authentication, session validation, cleanup, timeout) is solid. The endpoint is well-implemented for what it is. But what it is does not include its nominal purpose: streaming real progress.
+
+### Hardening history
+
+| Aspect | BG-07 | P11 | Current |
+|---|---|---|---|
+| sessionId validation | Added regex `^[a-zA-Z0-9_-]{1,100}$` | — | Active |
+| Authentication | Not present | Added (same pattern as all endpoints) | Active |
+| Session existence check | Not present | Added (orchestrator.getSession) | Active |
+| Timeout | Added 5-minute with explicit event | — | Active |
+| Cleanup | Added comprehensive cleanup | — | Active |
+| Fastify integration | Added `reply.hijack()` | — | Active |
+| Error handling | Added `reply.raw.on("error", cleanup)` | — | Active |
+| Provisional marker | Added `provisional: true` in connected event | — | Active |
 
 ### Boundary contract for sessionId
 
 | Input | Behavior | Origin |
 |---|---|---|
+| Missing/invalid API key | 401 `{ error }` | Handler (P11) |
 | Valid (1–100 chars, `[a-zA-Z0-9_-]`) | SSE connection established | Handler |
 | Invalid format (special chars, empty, dots) | 400 with `{ error, details }` | Handler |
+| Non-existent session | 404 `{ error }` | Handler (P11) |
 | Exceeds 100 chars | 404 (route does not match) | Fastify `maxParamLength` default (100) |
 
 The handler's own regex (`^[a-zA-Z0-9_-]{1,100}$`) and Fastify's `maxParamLength` are aligned at 100 characters. For inputs > 100 chars, Fastify intercepts before the handler runs and returns 404. There is no gap between the two boundaries.

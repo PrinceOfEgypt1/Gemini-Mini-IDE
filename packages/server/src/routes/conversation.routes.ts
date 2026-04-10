@@ -180,18 +180,23 @@ export async function registerConversationRoutes(
   });
 
   /**
-   * SSE endpoint for generation progress streaming — PROVISIONAL
+   * SSE endpoint for generation progress streaming.
    *
-   * STATUS: This endpoint is explicitly provisional. It establishes a valid SSE
-   * connection with heartbeat keep-alive but does NOT stream real progress data.
-   * The generate-incremental endpoint logs progress server-side via request.log
-   * but there is no pub/sub bridge to push events to this SSE stream.
+   * @experimental NOT PART OF THE STABLE API SURFACE.
    *
-   * WHAT IT DOES TODAY:
+   * This endpoint is classified as EXPERIMENTAL (P23). It establishes a valid
+   * SSE connection with heartbeat keep-alive but does NOT stream real progress
+   * data. No pub/sub bridge exists between generate-incremental progress
+   * callbacks and this SSE stream. No client-side consumer exists in the UI.
+   *
+   * It must NOT be treated as a stable, contractual feature. It may be removed,
+   * redesigned, or left indefinitely in this state without notice.
+   *
+   * WHAT IT DOES:
    * - Requires authentication (same API key check as all conversation endpoints)
    * - Validates sessionId format (1-100 alphanumeric/hyphen/underscore characters)
    * - Validates that sessionId corresponds to an existing session
-   * - Sends a "connected" event upon successful connection
+   * - Sends a "connected" event with { provisional: true }
    * - Sends heartbeat comments every 15 seconds
    * - Enforces a 5-minute connection timeout
    * - Cleans up all resources (timers, listeners) on close, timeout, or error
@@ -199,20 +204,16 @@ export async function registerConversationRoutes(
    * WHAT IT DOES NOT DO:
    * - Stream actual generation progress events
    * - Bridge with generate-incremental progress callbacks
+   * - Deliver any real-time information about code generation state
    *
    * BOUNDARY CONTRACT:
    * - Requires valid API key via Authorization header or server default
    * - Missing/invalid API key → 401 { error }
    * - sessionId must match /^[a-zA-Z0-9_-]{1,100}$/
    * - Invalid sessionId → 400 { error, details }
-   * - sessionId > 100 chars → Fastify's default maxParamLength (100) intercepts
-   *   before the handler runs, returning 404 (framework-level, not handler-level)
+   * - sessionId > 100 chars → Fastify's maxParamLength (100) intercepts with 404
    * - Non-existent session → 404 { error }
-   * - Connected event includes provisional: true to signal no real progress streaming
-   *
-   * P11: Authentication and session validation added. Endpoint secured with same
-   * auth pattern as all other conversation endpoints. Session existence verified
-   * before establishing SSE connection.
+   * - Connected event includes provisional: true to signal no real progress
    */
   const SSE_SESSION_ID_PATTERN = /^[a-zA-Z0-9_-]{1,100}$/;
   const SSE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
