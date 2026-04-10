@@ -310,12 +310,29 @@ jobs:
             }
 
   # ===========================================================================
+  # DOC DRIFT ENFORCEMENT - BLOCKING
+  # Fails if test file counts or historical classification markers diverge
+  # from what is documented in DEVELOPMENT.md and tracked .md files.
+  # Hash divergence is advisory only (expected on branches).
+  # ===========================================================================
+  doc-drift-enforcement:
+    name: Doc Drift Enforcement (BLOCKING)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check documentary drift
+        run: bash scripts/active/doc-drift-check.sh
+
+  # ===========================================================================
   # FINAL STATUS - Required for merge
   # ===========================================================================
   ci-status:
     name: CI Status
     runs-on: ubuntu-latest
-    needs: [quality, smoke-test]
+    needs: [quality, smoke-test, doc-drift-enforcement]
     if: always()
 
     steps:
@@ -327,6 +344,10 @@ jobs:
           fi
           if [ "${{ needs.smoke-test.result }}" != "success" ]; then
             echo "❌ Smoke test failed"
+            exit 1
+          fi
+          if [ "${{ needs.doc-drift-enforcement.result }}" != "success" ]; then
+            echo "❌ Doc drift enforcement failed"
             exit 1
           fi
           echo "✅ All required checks passed"
