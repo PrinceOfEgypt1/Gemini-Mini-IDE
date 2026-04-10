@@ -3,7 +3,7 @@
 Ambiente de desenvolvimento assistido por IA para transformar intenções em planos e código.
 
 > **Status:** Em desenvolvimento ativo
-> **Estado oficial de referência:** `main @ 7b1b456`
+> **Estado oficial de referência:** `main @ f56ec95`
 > **Testes:** 70 arquivos de teste executados / 70 escritos — 0 excluídos
 > **Contagens por arquivo de teste:** `shared: 2`, `ui: 30`, `cli: 1`, `analysis-agent: 32`, `server: 5`
 > **Contagens por asserção (referência histórica):** `shared: ~35`, `ui: ~155`, `cli: ~25`, `analysis-agent: ~461`, `server: ~155` — revalidar após `pnpm install && pnpm test`

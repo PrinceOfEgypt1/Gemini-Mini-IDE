@@ -1,8 +1,8 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 20.3 (P15 — correção de drift global entre documentação histórica e estado atual)
-> **Date:** 2026-04-08
-> **Reference State:** `main @ 7b1b456` (P14 materializado; PR #69 merged)
+> **Document Version:** 20.4 (P21 — atualização de referência pós-merge do P15)
+> **Date:** 2026-04-09
+> **Reference State:** `main @ f56ec95` (P15 materializado; PR #70 merged)
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`)
 > **Testes:** 70 arquivos executados / 70 escritos — 0 excluídos
 
@@ -105,7 +105,7 @@ O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada paco
 - Tratar o número de tests passing de uma execução anterior como representativo do estado atual sem revalidação local.
 - Assumir que todos os pacotes têm cobertura homogênea.
 
-### Contagem real por pacote (`main @ 895f1a2`)
+### Contagem real por pacote (`main @ f56ec95`)
 
 | Pacote | Arquivos escritos | Arquivos executados | Arquivos excluídos | Participação | Observações |
 |---|---:|---:|---:|---|---|
