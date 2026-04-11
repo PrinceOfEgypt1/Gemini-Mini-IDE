@@ -110,11 +110,11 @@ O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada paco
 | Pacote | Arquivos escritos | Arquivos executados | Arquivos excluídos | Participação | Observações |
 |---|---:|---:|---:|---|---|
 | analysis-agent | 38 | 38 | 0 | Total | Todos os arquivos de teste executam (P03 resolvido, P24 adicionou 6 arquivos) |
-| ui | 30 | 30 | 0 | Total | `src/` e `test/` cobertos (P05 + P07 expandiram cobertura) |
+| ui | 39 | 39 | 0 | Total | `src/` e `test/` cobertos (P05 + P07 + P25 expandiram cobertura) |
 | server | 5 | 5 | 0 | Total | — |
 | shared | 2 | 2 | 0 | Total | — |
 | cli | 1 | 1 | 0 | Total | — |
-| **TOTAL** | **76** | **76** | **0** | — | — |
+| **TOTAL** | **85** | **85** | **0** | — | — |
 
 ### Arquivos de teste anteriormente excluídos (`analysis-agent`) — RESOLVIDO
 
@@ -147,7 +147,7 @@ O `analysis-agent` adicionalmente exclui `*.spec.ts`.
 | cli | 40% | 80% | 80% | 40% | — |
 | server | 40% | 30% | 55% | 40% | Threshold de functions baixo |
 | shared | 80% | 50% | 80% | 80% | Functions threshold abaixo das demais métricas |
-| ui | 60% | 60% | 73% | 60% | Elevados em P05 |
+| ui | 85% | 70% | 80% | 85% | Elevados em P05, endurecidos em P25 |
 
 Nota: thresholds não representam a cobertura real alcançada; são apenas pisos mínimos configurados.
 
@@ -158,7 +158,7 @@ As contagens abaixo são referências de execuções anteriores e precisam ser r
 | Pacote | Tests passing (última execução conhecida) |
 |---|---:|
 | analysis-agent | 306 |
-| ui | 73 |
+| ui | 251 |
 | server | 88 |
 | shared | 35 |
 | cli | 25 |
