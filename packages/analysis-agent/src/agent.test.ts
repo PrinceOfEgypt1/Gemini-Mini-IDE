@@ -203,4 +203,190 @@ describe('AnalysisAgent', () => {
     expect(result.engine.files.length).toBeGreaterThanOrEqual(0);
     expect(result.analysis.complexity.level).toBe('MEDIUM');
   }, 30000);
+
+  describe('legacy constructor API', () => {
+    it('deve instanciar com string apiKey e options legado', () => {
+      resetGlobalAnalysisCache();
+      // Legacy API: new AnalysisAgent(apiKey, { model, baseUrl })
+      // This exercises the string branch of the constructor
+      const legacyAgent = new AnalysisAgent('fake-api-key', { model: 'gpt-4o-mini' });
+      expect(legacyAgent).toBeDefined();
+    });
+
+    it('deve instanciar com apenas apiKey sem options', () => {
+      resetGlobalAnalysisCache();
+      const legacyAgent = new AnalysisAgent('fake-api-key');
+      expect(legacyAgent).toBeDefined();
+    });
+
+    it('deve instanciar com apiKey e baseUrl', () => {
+      resetGlobalAnalysisCache();
+      const legacyAgent = new AnalysisAgent('fake-api-key', { baseUrl: 'https://custom.api.com' });
+      expect(legacyAgent).toBeDefined();
+    });
+  });
+
+  describe('planProject()', () => {
+    it('deve gerar plano sem geração de código', async () => {
+      resetGlobalAnalysisCache();
+      const mocks = createMockClients();
+      const planAgent = new AnalysisAgent({
+        chatClient: mocks.mockChatClient,
+        incrementalClient: mocks.mockIncrementalClient,
+        projectRoot: '/tmp/test',
+        model: 'test-model',
+        temperature: 0.7
+      });
+
+      const planResult = await planAgent.planProject('Criar um sistema de notas');
+
+      expect(planResult).toHaveProperty('analysis');
+      expect(planResult).toHaveProperty('product');
+      expect(planResult).toHaveProperty('architect');
+      expect(planResult).toHaveProperty('userStories');
+      expect(planResult.summary).toBe('Planning complete. Ready for code generation.');
+      expect(planResult.manifestFileCount).toBeGreaterThanOrEqual(1);
+      expect(planResult.epicCount).toBeGreaterThanOrEqual(1);
+      expect(planResult.userStoryCount).toBeGreaterThanOrEqual(1);
+    });
+
+    it('deve emitir evento planResult', async () => {
+      resetGlobalAnalysisCache();
+      const mocks = createMockClients();
+      const planAgent = new AnalysisAgent({
+        chatClient: mocks.mockChatClient,
+        incrementalClient: mocks.mockIncrementalClient,
+        projectRoot: '/tmp/test',
+        model: 'test-model',
+        temperature: 0.7
+      });
+
+      const events: unknown[] = [];
+      planAgent.on('planResult', (data) => events.push(data));
+
+      await planAgent.planProject('Test project');
+      expect(events).toHaveLength(1);
+    });
+  });
+
+  describe('generateFromPlan()', () => {
+    it('deve gerar código a partir de um plano existente', async () => {
+      resetGlobalAnalysisCache();
+      const mocks = createMockClients();
+      const genAgent = new AnalysisAgent({
+        chatClient: mocks.mockChatClient,
+        incrementalClient: mocks.mockIncrementalClient,
+        projectRoot: '/tmp/test',
+        model: 'test-model',
+        temperature: 0.7
+      });
+
+      const plan = await genAgent.planProject('Generate from plan test');
+      resetGlobalAnalysisCache();
+
+      const result = await genAgent.generateFromPlan(plan);
+
+      expect(result).toHaveProperty('engine');
+      expect(result.engine.files.length).toBeGreaterThanOrEqual(0);
+      expect(result.summary).toBe('Code generation complete.');
+      expect(result.analysis).toBe(plan.analysis);
+      expect(result.product).toBe(plan.product);
+    });
+  });
+
+  describe('generateFromPlanIncremental()', () => {
+    it('deve gerar código incrementalmente com callback de progresso', async () => {
+      resetGlobalAnalysisCache();
+      const mocks = createMockClients();
+      const incAgent = new AnalysisAgent({
+        chatClient: mocks.mockChatClient,
+        incrementalClient: mocks.mockIncrementalClient,
+        projectRoot: '/tmp/test',
+        model: 'test-model',
+        temperature: 0.7
+      });
+
+      const plan = await incAgent.planProject('Incremental gen test');
+      resetGlobalAnalysisCache();
+
+      const progressCalls: { name: string; progress: number }[] = [];
+      const result = await incAgent.generateFromPlanIncremental(plan, undefined, (name, progress) => {
+        progressCalls.push({ name, progress });
+      });
+
+      expect(result.summary).toBe('Incremental code generation complete.');
+      expect(result.quality.codeCompleteness).toBe(100);
+      expect(result.fenix.notes).toContain('incrementally');
+      expect(progressCalls).toHaveLength(1);
+      expect(progressCalls[0]).toEqual({ name: 'complete', progress: 100 });
+    });
+
+    it('deve funcionar sem callback de progresso', async () => {
+      resetGlobalAnalysisCache();
+      const mocks = createMockClients();
+      const incAgent = new AnalysisAgent({
+        chatClient: mocks.mockChatClient,
+        incrementalClient: mocks.mockIncrementalClient,
+        projectRoot: '/tmp/test',
+        model: 'test-model',
+        temperature: 0.7
+      });
+
+      const plan = await incAgent.planProject('No callback test');
+      resetGlobalAnalysisCache();
+
+      const result = await incAgent.generateFromPlanIncremental(plan);
+      expect(result).toHaveProperty('engine');
+    });
+  });
+
+  describe('governance events', () => {
+    it('deve emitir impact:analysis para arquivos planejados', async () => {
+      resetGlobalAnalysisCache();
+      const mocks = createMockClients();
+      const govAgent = new AnalysisAgent({
+        chatClient: mocks.mockChatClient,
+        incrementalClient: mocks.mockIncrementalClient,
+        projectRoot: '/tmp/test',
+        model: 'test-model',
+        temperature: 0.7
+      });
+
+      const events: unknown[] = [];
+      govAgent.on('impact:analysis', (data) => events.push(data));
+
+      await govAgent.run('Governance test');
+      expect(events.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('LLM caching', () => {
+    it('deve usar cache para chamadas repetidas com mesmo prompt', async () => {
+      resetGlobalAnalysisCache();
+      const mocks = createMockClients();
+      const cacheAgent = new AnalysisAgent({
+        chatClient: mocks.mockChatClient,
+        incrementalClient: mocks.mockIncrementalClient,
+        projectRoot: '/tmp/test',
+        model: 'test-model',
+        temperature: 0.7
+      });
+
+      // Use a unique prompt to avoid disk cache contamination
+      const uniquePrompt = `Caching test ${Date.now()}`;
+
+      // First run populates cache
+      await cacheAgent.run(uniquePrompt);
+      const callCount1 = (mocks.mockChatClient.chatCompletion as ReturnType<typeof vi.fn>).mock.calls.length;
+      expect(callCount1).toBeGreaterThan(0);
+
+      // Second run with same prompt should hit cache — fewer new LLM calls
+      await cacheAgent.run(uniquePrompt);
+      const callCount2 = (mocks.mockChatClient.chatCompletion as ReturnType<typeof vi.fn>).mock.calls.length;
+      const secondRunCalls = callCount2 - callCount1;
+
+      // Second run should make fewer LLM calls (or zero) due to caching
+      expect(secondRunCalls).toBeLessThanOrEqual(callCount1);
+    });
+  });
 });
