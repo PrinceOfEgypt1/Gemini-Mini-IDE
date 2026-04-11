@@ -105,16 +105,16 @@ O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada paco
 - Tratar o número de tests passing de uma execução anterior como representativo do estado atual sem revalidação local.
 - Assumir que todos os pacotes têm cobertura homogênea.
 
-### Contagem real por pacote (`main @ f56ec95`)
+### Contagem real por pacote (`main @ f7ff0f3`)
 
 | Pacote | Arquivos escritos | Arquivos executados | Arquivos excluídos | Participação | Observações |
 |---|---:|---:|---:|---|---|
-| analysis-agent | 32 | 32 | 0 | Total | Todos os arquivos de teste executam (P03 resolvido) |
+| analysis-agent | 38 | 38 | 0 | Total | Todos os arquivos de teste executam (P03 resolvido, P24 adicionou 6 arquivos) |
 | ui | 30 | 30 | 0 | Total | `src/` e `test/` cobertos (P05 + P07 expandiram cobertura) |
 | server | 5 | 5 | 0 | Total | — |
 | shared | 2 | 2 | 0 | Total | — |
 | cli | 1 | 1 | 0 | Total | — |
-| **TOTAL** | **70** | **70** | **0** | — | — |
+| **TOTAL** | **76** | **76** | **0** | — | — |
 
 ### Arquivos de teste anteriormente excluídos (`analysis-agent`) — RESOLVIDO
 
