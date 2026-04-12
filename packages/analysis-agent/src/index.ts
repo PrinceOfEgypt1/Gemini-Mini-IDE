@@ -43,8 +43,37 @@ export { TransformativeContext } from "./context/transformative-context.js";
 export * from "./types/index.js";
 export * from "./governance/index.js";
 
-// Exporta o sistema ESAA Hardened v2 (experimental — desabilitado por padrão via ESAA_ENABLED=false)
-export * from "./esaa/index.js";
+// ─── ESAA Hardened v2 (EXPERIMENTAL / CONTAINED — P27 + P27.1) ───────────────
+//
+// @experimental
+//
+// O subsistema ESAA é oficialmente classificado como experimental e contido
+// (ver docs/ESAA_ARCHITECTURE.md § 0 — "Política de Contenção"). Antes do
+// P27.1 este barrel re-exportava todo o módulo `./esaa/index.js` como parte
+// da superfície pública de `@gemini-mini-ide/analysis-agent`, expondo
+// EventStore, IntentionGateway, WorkspaceExecutor, PromotionController,
+// RecoveryController, ProjectionEngine, PolicyEngine, InvariantEngine, etc.
+// como se fossem API estável — sem nenhum consumidor real.
+//
+// O P27.1 reduz a superfície ao mínimo absoluto exigido pelos consumidores
+// reais, hoje só o pacote `@gemini-mini-ide/server`:
+//
+//   - `getGlobalESAAOrchestrator` (valor) — usado por `server/src/index.ts`
+//     dentro do gate `if (isESAAEnabled())` introduzido pelo P27.
+//   - `ESAAOrchestrator` (tipo) — usado por `server/src/routes/esaa.routes.ts`
+//     para tipar o orchestrator passado ao registrador de rotas.
+//   - `ESAAEventType` (tipo) — usado pelo type guard `isESAAEventType` no
+//     mesmo arquivo de rotas, para validar query strings.
+//
+// Tudo o mais permanece acessível via deep import dentro do próprio pacote
+// `analysis-agent` (testes internos como `esaa.test.ts` continuam usando
+// imports relativos diretos), mas NÃO compõe a superfície pública estável.
+// Re-expandir este export é uma regressão de governança e exige reverter
+// a contenção do ESAA segundo os 6 pré-requisitos listados em
+// docs/ESAA_ARCHITECTURE.md § 0 ("Como reverter a contenção").
+export { getGlobalESAAOrchestrator } from "./esaa/index.js";
+export type { ESAAOrchestrator } from "./esaa/index.js";
+export type { ESAAEventType } from "./esaa/index.js";
 
 // Exporta o sistema de geração incremental
 export * from "./generation/index.js";
