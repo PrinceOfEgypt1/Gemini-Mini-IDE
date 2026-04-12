@@ -9,6 +9,25 @@ import { registerESAARoutes } from "./routes/esaa.routes.js";
 import { getDefaultApiKey, shutdownAgentManager } from "./services/agent-manager.js";
 
 /**
+ * P27 — Containment gate for the ESAA HTTP surface.
+ *
+ * The ESAA subsystem is officially classified as EXPERIMENTAL and CONTAINED
+ * (see `docs/ESAA_ARCHITECTURE.md`, README "Feature experimental: ESAA"
+ * section, and DEVELOPMENT.md). Until P27 the `/esaa/*` routes were
+ * registered unconditionally, which contradicted that classification —
+ * the routes were part of the live HTTP surface even when the orchestrator
+ * itself was disabled (`ESAA_ENABLED=false`, the default).
+ *
+ * To eliminate that ambiguity, the routes are now only registered when
+ * `ESAA_ENABLED === "true"`. With the default configuration the entire
+ * `/esaa/*` namespace returns 404, matching the "not part of stable API
+ * surface" discourse in the docs.
+ */
+export function isESAAEnabled(): boolean {
+  return process.env["ESAA_ENABLED"] === "true";
+}
+
+/**
  * Builds and configures the Fastify app with all routes and plugins.
  * Exported for testability — tests can use app.inject() without starting a listener.
  */
@@ -53,7 +72,13 @@ export async function buildApp(): Promise<FastifyInstance> {
   const defaultApiKey = getDefaultApiKey();
   await registerAnalysisRoutes(app, defaultApiKey);
   await registerConversationRoutes(app, defaultApiKey);
-  await registerESAARoutes(app, getGlobalESAAOrchestrator());
+
+  // P27: ESAA routes are only registered when explicitly opted-in via
+  // ESAA_ENABLED=true. With the default configuration the /esaa/* namespace
+  // is not part of the stable HTTP surface and returns 404.
+  if (isESAAEnabled()) {
+    await registerESAARoutes(app, getGlobalESAAOrchestrator());
+  }
 
   // BG-09: Deterministic cleanup of agent-manager resources on server shutdown
   app.addHook("onClose", () => {

@@ -1,10 +1,10 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 20.6 (P23 — fechamento definitivo do SSE provisório)
-> **Date:** 2026-04-10
-> **Reference State:** `main @ 0d0fdfd` (P22 materializado; PR #72 merged)
+> **Document Version:** 20.7 (P27 — fechamento arquitetural do ESAA experimental)
+> **Date:** 2026-04-12
+> **Reference State:** `main @ 45a828a` (P26 materializado; PR #76 merged)
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`, `doc-drift-enforcement`)
-> **Testes:** 70 arquivos executados / 70 escritos — 0 excluídos
+> **Testes:** 87 arquivos executados / 87 escritos — 0 excluídos
 
 ---
 
@@ -105,16 +105,16 @@ O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada paco
 - Tratar o número de tests passing de uma execução anterior como representativo do estado atual sem revalidação local.
 - Assumir que todos os pacotes têm cobertura homogênea.
 
-### Contagem real por pacote (`main @ f7ff0f3`)
+### Contagem real por pacote (`main @ 45a828a`)
 
 | Pacote | Arquivos escritos | Arquivos executados | Arquivos excluídos | Participação | Observações |
 |---|---:|---:|---:|---|---|
 | analysis-agent | 38 | 38 | 0 | Total | Todos os arquivos de teste executam (P03 resolvido, P24 adicionou 6 arquivos) |
 | ui | 39 | 39 | 0 | Total | `src/` e `test/` cobertos (P05 + P07 + P25 expandiram cobertura) |
-| server | 6 | 6 | 0 | Total | P26 adicionou `routes/esaa.routes.test.ts` cobrindo o type guard e o contrato `ESAAOrchestratorLike` |
+| server | 7 | 7 | 0 | Total | P26 adicionou `routes/esaa.routes.test.ts` (type guard + `ESAAOrchestratorLike`); P27 adicionou `routes/esaa.containment.test.ts` (prova executável de contenção do namespace `/esaa/*`) |
 | shared | 2 | 2 | 0 | Total | — |
 | cli | 1 | 1 | 0 | Total | — |
-| **TOTAL** | **86** | **86** | **0** | — | — |
+| **TOTAL** | **87** | **87** | **0** | — | — |
 
 ### Arquivos de teste anteriormente excluídos (`analysis-agent`) — RESOLVIDO
 
@@ -411,6 +411,54 @@ The security and infrastructure hardening (authentication, session validation, c
 The handler's own regex (`^[a-zA-Z0-9_-]{1,100}$`) and Fastify's `maxParamLength` are aligned at 100 characters. For inputs > 100 chars, Fastify intercepts before the handler runs and returns 404. There is no gap between the two boundaries.
 
 
+## ESAA — Experimental, Contained Subsystem (P27)
+
+**Classification: EXPERIMENTAL / CONTAINED.** The Event-Sourced Agent Architecture (ESAA) subsystem is officially **not part of the stable surface** of Gemini Mini-IDE. P27 closed the architectural ambiguity that surrounded the subsystem after P03–P26: ESAA code remains in the repository, but every public-facing channel (HTTP routes, runtime pipeline, public docs, env defaults) now reflects the same containment regime.
+
+### Where ESAA lives in the code
+
+| Layer | Path | Status |
+|---|---|---|
+| Core engine | `packages/analysis-agent/src/esaa/` (orchestrator, store, projections, gateway, policy, invariants, workspace, promotion, recovery) | Experimental — ~2 000 LOC, exercised only by `esaa.test.ts` (38 unit tests) |
+| HTTP routes | `packages/server/src/routes/esaa.routes.ts` (12 endpoints) | Experimental — registered with Fastify **only** when `ESAA_ENABLED=true` (P27 gate) |
+| HTTP DTO contracts | `packages/shared/src/esaa/contracts.ts` | Experimental — internal package surface for the routes file; no external client |
+| Re-exports | `packages/analysis-agent/src/index.ts` (`export * from "./esaa/index.js"`) | Experimental — kept for the server route module that imports `ESAAOrchestrator` types |
+
+### Containment guarantees enforced by code
+
+| Guarantee | Where | How it is enforced |
+|---|---|---|
+| Pipeline bypass | `analysis-agent/src/esaa/orchestrator.ts` `runPipeline()` | First line returns `{ skipped: true }` when `config.enabled === false` |
+| HTTP route gate | `server/src/index.ts` `buildApp()` | Calls `registerESAARoutes()` only when `isESAAEnabled() === true`; with default env every `/esaa/*` URL returns 404 |
+| Containment proof | `server/src/routes/esaa.containment.test.ts` | Boots the app with `ESAA_ENABLED` unset and asserts that all 12 documented `/esaa/*` endpoints return 404; also pins `isESAAEnabled()` semantics (only the literal string `"true"` enables) |
+| Positive proof | `server/src/routes.test.ts` | Sets `process.env.ESAA_ENABLED = 'true'` in `beforeAll` so the existing 12 endpoint assertions still cover the enabled path |
+
+### Why CONTAINMENT and not a maturation track
+
+P27 chose **Caminho A — contenção formal** over Caminho B (trilha de maturação) based on objective evidence in the repository:
+
+1. **Zero production consumer.** `agent.ts`, `orchestrator.ts` (`TransformativeOrchestrator`), `orchestrator-interactive.ts` (`InteractiveOrchestrator`), the UI package, and the CLI package contain **zero** references to ESAA. `runPipeline()` is never called by any production code path.
+2. **Flag has been false for 20+ prompts.** `ESAA_ENABLED` defaults to `false` since the subsystem was introduced. There is no observable trajectory toward enabling it.
+3. **Promotion would be out of scope.** Promoting ESAA would require: enabling by default, full integration tests through real generation pipelines, contract guarantees on the 12 HTTP endpoints, performance audit of the SQLite event store under load, and a UI/CLI client. None of this is in scope for a saneamento cycle.
+4. **Principle of prudence.** The internal `esaa.test.ts` suite covers the core engine (EventStore, projections, gateway, policy, invariants, promotion, recovery) at the unit level, but unit-level coverage of an unused subsystem does not equal product-level maturity. Pretending otherwise would violate the project's discourse-honesty rule.
+
+### What CONTAINMENT does NOT mean
+
+- It does **not** mean the ESAA code is dead. The unit suite still runs in CI, the orchestrator still constructs cleanly when toggled on, and an operator can still experiment locally with `ESAA_ENABLED=true`.
+- It does **not** mean ESAA cannot be promoted later. Promotion is not forbidden — but it requires an explicit, dedicated cycle that addresses the four points above. Until then, no part of the stable surface may rely on ESAA.
+
+### How to verify the containment locally
+
+```bash
+# 1. Default state — /esaa/* must return 404
+unset ESAA_ENABLED
+pnpm --filter @gemini-mini-ide/server test -- routes/esaa.containment.test.ts
+
+# 2. Opted-in state — /esaa/* must return the documented payloads
+ESAA_ENABLED=true pnpm --filter @gemini-mini-ide/server test -- routes.test.ts
+```
+
+
 ## BG-08 — UI Duplicate Elimination + Consumer Regression Coverage
 
 Prepared as technical handoff for local application. This execution consolidates the official UI implementations for timeline and discovery notes, removes duplicate stubs, and adds consumer-level regression coverage.
@@ -557,7 +605,14 @@ Nota: esta seção é aspiracional. Os itens abaixo são visão futura, não fun
 - Plugin system for custom validators
 - Database persistence (SQLite/Postgres)
 - Docker deployment
-- ESAA habilitado por padrão (atualmente **experimental e desabilitado**, `ESAA_ENABLED=false`; ver `docs/ESAA_ARCHITECTURE.md`)
+
+> **P27 — ESAA não consta deste roadmap.** O subsistema ESAA é oficialmente
+> classificado como experimental e contido (ver § "ESAA — Experimental,
+> Contained Subsystem (P27)" abaixo). Não há trilha de promoção planejada
+> nem cronograma para torná-lo parte estável do produto. A versão anterior
+> deste roadmap listava "ESAA habilitado por padrão" como item aspiracional;
+> esse item foi removido em P27 para eliminar a ambiguidade entre discurso
+> documental e estado real do código.
 
 ## Branch Policy
 

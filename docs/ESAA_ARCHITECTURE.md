@@ -1,11 +1,61 @@
 # ESAA Hardened v2 — Arquitetura
 
-> **Classificação: FEATURE EXPERIMENTAL / DESABILITADA**
-> O ESAA existe no código (`packages/analysis-agent/src/esaa/`) mas está **desabilitado por padrão** (`ESAA_ENABLED=false`).
+> **Classificação: FEATURE EXPERIMENTAL / CONTIDA (P27)**
+> O ESAA existe no código (`packages/analysis-agent/src/esaa/`) mas está **desabilitado por padrão** (`ESAA_ENABLED=false`) **e** suas rotas HTTP **não são registradas** quando o flag está desabilitado (P27).
 > Este documento descreve a arquitetura planejada, não o comportamento atual em produção.
-> Para ativar: defina `ESAA_ENABLED=true` como variável de ambiente.
+> Não há trilha de promoção planejada para tornar o ESAA parte estável do produto.
+> Para experimentar localmente: defina `ESAA_ENABLED=true` como variável de ambiente.
 
 **Event-Sourced Agent Architecture** com orquestração determinística, promoção protegida por gates e capacidade de recovery.
+
+---
+
+## 0. Política de Contenção (P27)
+
+O ESAA é **oficialmente classificado como experimental e contido**. Esta seção é a fronteira contratual canônica entre o que o ESAA é e o que ele não é.
+
+### O que o ESAA é
+
+- Um experimento arquitetural completo de event sourcing + intention gateway + promotion gates + recovery, vivo em `packages/analysis-agent/src/esaa/` (~2 000 LOC).
+- Um conjunto de invariantes (INV-001 a INV-006) e gates de promoção (SYNTAX, COMPLETENESS, STRUCTURE, INTEGRITY, MANIFEST) implementados e exercitados por uma suíte de testes unitários (`esaa.test.ts`, 38 it()) que cobre EventStore, projeções, gateway, policy, invariantes, promoção e recovery.
+- Um modo opt-in (`ESAA_ENABLED=true`) para experimentação local.
+
+### O que o ESAA NÃO é
+
+- **Não é parte da superfície estável do produto.** Nenhuma das 12 rotas HTTP `/esaa/*` é registrada com a default config; qualquer chamada retorna `404`. A prova executável está em `packages/server/src/routes/esaa.containment.test.ts`.
+- **Não é consumido por nenhum fluxo de produção.** `AnalysisAgent`, `TransformativeOrchestrator`, `InteractiveOrchestrator`, a UI e o CLI **não importam** ESAA. `runPipeline()` nunca é invocado por código de produção.
+- **Não tem trilha de promoção.** Não há cronograma, plano ou backlog para tornar o ESAA estável. A entrada "ESAA habilitado por padrão" foi removida do `Future Roadmap` em P27.
+- **Não tem cliente.** Os 18 contratos HTTP em `packages/shared/src/esaa/contracts.ts` existem como tipagem interna do módulo de rotas; nenhum cliente externo (UI, CLI, SDK) os consome.
+
+### Garantias de contenção (verificáveis)
+
+| Garantia | Onde está enforçada | Como provar |
+|---|---|---|
+| Pipeline bypassed por padrão | `analysis-agent/src/esaa/orchestrator.ts` (`runPipeline` early return) | `esaa.test.ts` cobre `runPipeline`; `runPipeline` retorna `{ skipped: true }` quando `enabled === false` |
+| Rotas HTTP não registradas por padrão | `server/src/index.ts` (`isESAAEnabled()` gate em `buildApp`) | `routes/esaa.containment.test.ts` boota `buildApp` sem `ESAA_ENABLED` e exige 404 em todas as 12 rotas |
+| `isESAAEnabled()` é estrito | `server/src/index.ts` | `routes/esaa.containment.test.ts` rejeita `"TRUE"`, `"1"`, `"yes"`, etc. — apenas o literal `"true"` ativa |
+| Documentação alinhada ao código | README, DEVELOPMENT, este doc, .env.example | `scripts/active/doc-drift-check.sh` exige marcador `experimental` neste arquivo |
+
+### Como ativar (estritamente local)
+
+```bash
+ESAA_ENABLED=true pnpm --filter @gemini-mini-ide/server start
+```
+
+Quando ativado, todas as 12 rotas `/esaa/*` documentadas em § 5 ficam disponíveis e o orchestrator executa o pipeline ESAA real. Esse modo é destinado **exclusivamente** a experimentação local e auditoria; não deve ser ativado em ambientes de produção, staging ou CI sem uma decisão arquitetural explícita que reverta a classificação de contenção.
+
+### Como reverter a contenção (se um futuro ciclo decidir promover)
+
+Promover o ESAA a feature estável exige, no mínimo:
+
+1. um cliente real (UI, CLI, ou SDK) consumindo as rotas;
+2. testes de integração ponta-a-ponta cobrindo o pipeline real (não apenas unit tests do core);
+3. contrato HTTP estabilizado e versionado em `packages/shared/src/esaa/contracts.ts`;
+4. auditoria de performance do EventStore SQLite sob carga;
+5. atualização coordenada de README, DEVELOPMENT, este doc e da matriz de saneamento;
+6. remoção do gate `isESAAEnabled()` em `server/src/index.ts` (ou conversão dele em uma kill-switch defensiva).
+
+Até que esses seis pontos sejam atendidos por um ciclo dedicado, qualquer mudança que registre rotas `/esaa/*` na superfície padrão é uma regressão de governança e deve ser revertida.
 
 ---
 
@@ -302,7 +352,7 @@ Cache em memória é perdido ao reiniciar o processo. Persistir as projeções n
 
 ### Por que `ESAA_ENABLED=false` por padrão?
 
-Backward compatibility: o endpoint `/analyze` existente continua funcionando sem mudanças. ESAA é ativado explicitamente via variável de ambiente.
+Backward compatibility: o endpoint `/analyze` existente continua funcionando sem mudanças. ESAA é ativado explicitamente via variável de ambiente. P27 endureceu essa decisão: além do pipeline ser bypassado, as rotas HTTP `/esaa/*` também só são registradas quando `ESAA_ENABLED=true`. Ver § 0 — Política de Contenção.
 
 ### Por que dois tipos de projeção?
 
