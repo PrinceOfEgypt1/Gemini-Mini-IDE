@@ -564,6 +564,29 @@ describe('Server Routes', () => {
       });
       expect(res.statusCode).toBe(200);
     });
+
+    // P26: accepts a valid ESAAEventType literal in the type filter
+    it('should accept a valid ESAAEventType literal', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/esaa/events?type=EXECUTION_SUCCEEDED',
+      });
+      expect(res.statusCode).toBe(200);
+      const body = JSON.parse(res.payload);
+      expect(body.events).toEqual([]);
+      expect(body.total).toBe(0);
+    });
+
+    // P26: rejects an arbitrary string that is not part of the ESAAEventType union
+    it('should return 400 for an invalid event type literal', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/esaa/events?type=NOT_A_REAL_EVENT',
+      });
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.payload);
+      expect(body.error).toContain('NOT_A_REAL_EVENT');
+    });
   });
 
   describe('GET /esaa/projections/operational', () => {
@@ -967,9 +990,12 @@ describe('Server Routes', () => {
       // Clear orchestrator cache so a fresh mock instance is created
       clearCache();
 
-      // Override the mock to return a valid session for this test
+      // Override the mock to return a valid session for this test.
+      // We build a `Partial<InteractiveOrchestrator>` and then cast to the
+      // full type — no `any` involved — because the routes under test only
+      // exercise the methods listed below.
       const MockOrchestrator = vi.mocked(InteractiveOrchestrator);
-      MockOrchestrator.mockImplementationOnce(() => ({
+      const partialMock: Partial<InteractiveOrchestrator> = {
         getSession: vi.fn().mockReturnValue({ sessionId: 'existing-session', status: 'active' }),
         startConversation: vi.fn(),
         respondToAgent: vi.fn(),
@@ -978,8 +1004,10 @@ describe('Server Routes', () => {
         generateCodeFromPlan: vi.fn(),
         generateCodeFromPlanIncremental: vi.fn(),
         generateFinalResult: vi.fn(),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any));
+      };
+      MockOrchestrator.mockImplementationOnce(
+        () => partialMock as InteractiveOrchestrator
+      );
 
       // Start server on ephemeral port for real HTTP capture
       const address = await app.listen({ port: 0, host: '127.0.0.1' });

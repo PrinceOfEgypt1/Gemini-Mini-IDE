@@ -111,10 +111,10 @@ O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada paco
 |---|---:|---:|---:|---|---|
 | analysis-agent | 38 | 38 | 0 | Total | Todos os arquivos de teste executam (P03 resolvido, P24 adicionou 6 arquivos) |
 | ui | 39 | 39 | 0 | Total | `src/` e `test/` cobertos (P05 + P07 + P25 expandiram cobertura) |
-| server | 5 | 5 | 0 | Total | — |
+| server | 6 | 6 | 0 | Total | P26 adicionou `routes/esaa.routes.test.ts` cobrindo o type guard e o contrato `ESAAOrchestratorLike` |
 | shared | 2 | 2 | 0 | Total | — |
 | cli | 1 | 1 | 0 | Total | — |
-| **TOTAL** | **85** | **85** | **0** | — | — |
+| **TOTAL** | **86** | **86** | **0** | — | — |
 
 ### Arquivos de teste anteriormente excluídos (`analysis-agent`) — RESOLVIDO
 
@@ -302,8 +302,11 @@ The following `eslint-disable-next-line` comments remain in production code and 
 | File | Rule suppressed | Reason |
 |---|---|---|
 | `packages/server/src/index.ts` | `no-console` | Last-resort `console.error` in the uncatchable top-level catch before Fastify logger is available |
-| `packages/server/src/services/agent-manager.ts` | `no-explicit-any` | `InteractiveOrchestrator` is lazily imported; native type is not available at declaration site |
-| `packages/server/src/routes/esaa.routes.ts` | `no-explicit-any` (×3) | ESAA orchestrator is typed as `any` pending full ESAA type export; tracked as technical debt |
+
+> P26: the two `no-explicit-any` suppressions previously listed here
+> (`services/agent-manager.ts` and `routes/esaa.routes.ts`) were removed once
+> `ESAAOrchestratorLike` and a typed `InteractiveOrchestratorCtor` replaced the
+> `any` aliases. No ESAA-related suppression remains in the server package.
 
 ### Package-specific overrides
 
