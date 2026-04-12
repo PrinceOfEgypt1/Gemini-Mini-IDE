@@ -1,6 +1,67 @@
 import type { FastifyInstance } from "fastify";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ESAAOrchestrator = any;
+import type { ESAAOrchestrator, ESAAEventType } from "@gemini-mini-ide/analysis-agent";
+
+/**
+ * Conjunto fechado dos tipos de evento ESAA aceitos pela API /esaa/events.
+ *
+ * Mantido em sincronia com {@link ESAAEventType}. Usado pelo type guard
+ * `isESAAEventType` para validar o parâmetro `?type=` da query string.
+ */
+const ESAA_EVENT_TYPES = new Set<ESAAEventType>([
+  "INTENTION_PROPOSED",
+  "INTENTION_APPROVED",
+  "INTENTION_REJECTED",
+  "EXECUTION_STARTED",
+  "EXECUTION_SUCCEEDED",
+  "EXECUTION_FAILED",
+  "PROMOTION_REQUESTED",
+  "PROMOTION_GATE_PASSED",
+  "PROMOTION_GATE_FAILED",
+  "PROMOTION_APPROVED",
+  "PROMOTION_REJECTED",
+  "PROMOTION_ROLLED_BACK",
+  "ROLLBACK_REQUESTED",
+  "ROLLBACK_COMPLETED",
+  "SNAPSHOT_CREATED",
+  "AGENT_QUARANTINED",
+  "AGENT_REINSTATED",
+  "WORKSPACE_CREATED",
+  "WORKSPACE_DESTROYED",
+  "INVARIANT_VIOLATED",
+  "CONCURRENCY_CONFLICT",
+]);
+
+/**
+ * Type guard para {@link ESAAEventType}. Permite estreitar uma `string`
+ * recebida de query-string para o literal union sem recorrer a `as`.
+ */
+export function isESAAEventType(value: string): value is ESAAEventType {
+  return ESAA_EVENT_TYPES.has(value as ESAAEventType);
+}
+
+/**
+ * Minimal structural contract used by routes that only need to reach into
+ * orchestrator.store / orchestrator.recovery / orchestrator.promotion.
+ *
+ * We accept the concrete ESAAOrchestrator OR any object that exposes the
+ * same public surface, which keeps tests able to pass in lightweight mocks
+ * without resorting to `any`.
+ */
+export type ESAAOrchestratorLike = Pick<
+  ESAAOrchestrator,
+  | "healthStatus"
+  | "queryEvents"
+  | "getOperationalProjection"
+  | "getAuditProjection"
+  | "store"
+  | "quarantineAgent"
+  | "reinstateAgent"
+  | "createSnapshots"
+  | "rollbackToSnapshot"
+  | "fullReplay"
+  | "recovery"
+  | "promotion"
+>;
 
 /**
  * ESAA Hardened v2 Routes — Event-Sourced Agent Architecture
@@ -11,7 +72,7 @@ type ESAAOrchestrator = any;
 
 export async function registerESAARoutes(
   app: FastifyInstance,
-  orchestrator: ESAAOrchestrator
+  orchestrator: ESAAOrchestratorLike
 ): Promise<void> {
   // Health
   app.get("/esaa/health", async (_request, reply) => {
@@ -28,10 +89,20 @@ export async function registerESAARoutes(
       limit?: string;
     };
 
+    let typeFilter: ESAAEventType | undefined;
+    if (query.type !== undefined) {
+      if (!isESAAEventType(query.type)) {
+        return reply.status(400).send({
+          error: `Tipo de evento inválido: ${query.type}`,
+        });
+      }
+      typeFilter = query.type;
+    }
+
     const events = orchestrator.queryEvents({
       streamId: query.streamId,
       correlationId: query.correlationId,
-      type: query.type,
+      type: typeFilter,
       sinceVersion: query.sinceVersion ? parseInt(query.sinceVersion) : undefined,
       limit: query.limit ? parseInt(query.limit) : 100,
     });
@@ -42,8 +113,7 @@ export async function registerESAARoutes(
   // Operational projection
   app.get("/esaa/projections/operational", async (_request, reply) => {
     const proj = orchestrator.getOperationalProjection();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const agents = Object.values(proj.agents) as any[];
+    const agents = Object.values(proj.agents);
     return reply.send({
       lastAppliedVersion: proj.lastAppliedVersion,
       updatedAt: proj.updatedAt,
@@ -63,10 +133,11 @@ export async function registerESAARoutes(
     const audit = orchestrator.getAuditProjection();
     const intentionIds = audit.correlationIndex[correlationId] ?? [];
     const intentions = intentionIds
-      .map((id: string) => audit.intentions[id])
-      .filter(Boolean)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((i: any) => ({
+      .map((id) => audit.intentions[id])
+      .filter(
+        (entry): entry is NonNullable<typeof entry> => entry !== undefined
+      )
+      .map((i) => ({
         intentionId: i.intentionId,
         type: i.type,
         agentId: i.agentId,
@@ -77,8 +148,7 @@ export async function registerESAARoutes(
         durationMs: i.durationMs,
       }));
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const allPromotions = Object.values(audit.promotions) as any[];
+    const allPromotions = Object.values(audit.promotions);
     const promotions = allPromotions
       .filter(p => p.correlationId === correlationId)
       .map(p => ({
@@ -94,10 +164,10 @@ export async function registerESAARoutes(
 
   // List agents
   app.get("/esaa/agents", async (_request, reply) => {
-    const agents = orchestrator.store.listAgents() as Record<string, unknown>[];
+    const agents = orchestrator.store.listAgents();
     const total = agents.length;
-    const active = agents.filter((a: Record<string, unknown>) => a["status"] === "active").length;
-    const quarantined = agents.filter((a: Record<string, unknown>) => a["status"] === "quarantined").length;
+    const active = agents.filter(a => a["status"] === "active").length;
+    const quarantined = agents.filter(a => a["status"] === "quarantined").length;
     return reply.send({ agents, total, active, quarantined });
   });
 

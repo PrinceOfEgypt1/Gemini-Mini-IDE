@@ -1,4 +1,5 @@
 import { AnalysisAgent } from "@gemini-mini-ide/analysis-agent";
+import type { InteractiveOrchestrator } from "@gemini-mini-ide/analysis-agent";
 import type { LLMConfig } from "../helpers.js";
 
 /**
@@ -16,9 +17,19 @@ import type { LLMConfig } from "../helpers.js";
 // Previously created eagerly (HU-MINI-IDE-PERF-001); now deferred to first getAgent() call.
 let defaultAgentInstance: AnalysisAgent | null = null;
 
-// Lazy-load InteractiveOrchestrator (depends on better-sqlite3 native)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let InteractiveOrchestratorClass: any = null;
+/**
+ * Constructor contract of {@link InteractiveOrchestrator}, captured as a type
+ * so we can lazy-load the class reference at runtime without importing it
+ * eagerly (the underlying module chain pulls in native SQLite bindings).
+ */
+type InteractiveOrchestratorCtor = new (
+  apiKey: string,
+  dbPath?: string,
+  options?: { model?: string; baseUrl?: string }
+) => InteractiveOrchestrator;
+
+// Lazy-load InteractiveOrchestrator (depends on native SQLite bindings)
+let InteractiveOrchestratorClass: InteractiveOrchestratorCtor | null = null;
 
 /** BG-06: Cache lifecycle constants */
 export const ORCHESTRATOR_TTL_MS = 30 * 60 * 1000; // 30 minutes
@@ -27,8 +38,7 @@ export const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 /** BG-06: Cache entry with lifecycle metadata */
 interface CacheEntry {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  orchestrator: any;
+  orchestrator: InteractiveOrchestrator;
   createdAt: number;
   lastAccessed: number;
 }
@@ -174,10 +184,10 @@ export function shutdownAgentManager(): void {
  * - Expired entries are replaced transparently on access.
  * - When cache is full, the oldest entry (by lastAccessed) is evicted.
  */
-export async function getOrchestrator(config: LLMConfig) {
+export async function getOrchestrator(config: LLMConfig): Promise<InteractiveOrchestrator> {
   if (!InteractiveOrchestratorClass) {
     const mod = await import("@gemini-mini-ide/analysis-agent");
-    InteractiveOrchestratorClass = mod.InteractiveOrchestrator;
+    InteractiveOrchestratorClass = mod.InteractiveOrchestrator as InteractiveOrchestratorCtor;
   }
   const cacheKey = `${config.apiKey}:${config.model || "default"}:${config.baseUrl || "default"}`;
   const now = Date.now();
@@ -201,7 +211,7 @@ export async function getOrchestrator(config: LLMConfig) {
 
   const orchestrator = new InteractiveOrchestratorClass(config.apiKey, undefined, {
     model: config.model,
-    baseUrl: config.baseUrl
+    baseUrl: config.baseUrl,
   });
 
   orchestrators.set(cacheKey, {
