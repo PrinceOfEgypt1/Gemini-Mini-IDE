@@ -1,10 +1,10 @@
 # Gemini Mini-IDE — Engineering Manual
 
-> **Document Version:** 20.7 (P27 — fechamento arquitetural do ESAA experimental)
+> **Document Version:** 20.8 (P27.1 — micro-adendo de superfície pública do ESAA)
 > **Date:** 2026-04-12
-> **Reference State:** `main @ 45a828a` (P26 materializado; PR #76 merged)
+> **Reference State:** `main @ 9f7bb75` (P27 materializado; PR #77 merged)
 > **Pipeline:** CI/CD via GitHub Actions (`lint`, `typecheck`, `test`, `build`, `doc-drift-enforcement`)
-> **Testes:** 87 arquivos executados / 87 escritos — 0 excluídos
+> **Testes:** 89 arquivos executados / 89 escritos — 0 excluídos
 
 ---
 
@@ -105,16 +105,16 @@ O comando `pnpm test` executa `pnpm -r test`, que roda `vitest run` em cada paco
 - Tratar o número de tests passing de uma execução anterior como representativo do estado atual sem revalidação local.
 - Assumir que todos os pacotes têm cobertura homogênea.
 
-### Contagem real por pacote (`main @ 45a828a`)
+### Contagem real por pacote (`main @ 9f7bb75`)
 
 | Pacote | Arquivos escritos | Arquivos executados | Arquivos excluídos | Participação | Observações |
 |---|---:|---:|---:|---|---|
-| analysis-agent | 38 | 38 | 0 | Total | Todos os arquivos de teste executam (P03 resolvido, P24 adicionou 6 arquivos) |
+| analysis-agent | 39 | 39 | 0 | Total | P24 adicionou 6 arquivos; P27.1 adicionou `esaa-public-surface.test.ts` (prova de contenção do barrel público) |
 | ui | 39 | 39 | 0 | Total | `src/` e `test/` cobertos (P05 + P07 + P25 expandiram cobertura) |
 | server | 7 | 7 | 0 | Total | P26 adicionou `routes/esaa.routes.test.ts` (type guard + `ESAAOrchestratorLike`); P27 adicionou `routes/esaa.containment.test.ts` (prova executável de contenção do namespace `/esaa/*`) |
-| shared | 2 | 2 | 0 | Total | — |
+| shared | 3 | 3 | 0 | Total | P27.1 adicionou `esaa-surface.test.ts` (prova de contenção dos 18 contratos HTTP do ESAA na superfície pública) |
 | cli | 1 | 1 | 0 | Total | — |
-| **TOTAL** | **87** | **87** | **0** | — | — |
+| **TOTAL** | **89** | **89** | **0** | — | — |
 
 ### Arquivos de teste anteriormente excluídos (`analysis-agent`) — RESOLVIDO
 
@@ -411,9 +411,9 @@ The security and infrastructure hardening (authentication, session validation, c
 The handler's own regex (`^[a-zA-Z0-9_-]{1,100}$`) and Fastify's `maxParamLength` are aligned at 100 characters. For inputs > 100 chars, Fastify intercepts before the handler runs and returns 404. There is no gap between the two boundaries.
 
 
-## ESAA — Experimental, Contained Subsystem (P27)
+## ESAA — Experimental, Contained Subsystem (P27 + P27.1)
 
-**Classification: EXPERIMENTAL / CONTAINED.** The Event-Sourced Agent Architecture (ESAA) subsystem is officially **not part of the stable surface** of Gemini Mini-IDE. P27 closed the architectural ambiguity that surrounded the subsystem after P03–P26: ESAA code remains in the repository, but every public-facing channel (HTTP routes, runtime pipeline, public docs, env defaults) now reflects the same containment regime.
+**Classification: EXPERIMENTAL / CONTAINED.** The Event-Sourced Agent Architecture (ESAA) subsystem is officially **not part of the stable surface** of Gemini Mini-IDE. P27 closed the architectural ambiguity that surrounded the subsystem after P03–P26: ESAA code remains in the repository, but every public-facing channel (HTTP routes, runtime pipeline, public docs, env defaults) now reflects the same containment regime. **P27.1** completed the closure by also containing the *public-surface* exposure: the 18 HTTP DTO contracts in `packages/shared/src/esaa/contracts.ts` are no longer re-exported by `@gemini-mini-ide/shared`'s public barrel, and the ESAA primitives are no longer wildcard-re-exported by `@gemini-mini-ide/analysis-agent`'s public barrel.
 
 ### Where ESAA lives in the code
 
@@ -421,8 +421,8 @@ The handler's own regex (`^[a-zA-Z0-9_-]{1,100}$`) and Fastify's `maxParamLength
 |---|---|---|
 | Core engine | `packages/analysis-agent/src/esaa/` (orchestrator, store, projections, gateway, policy, invariants, workspace, promotion, recovery) | Experimental — ~2 000 LOC, exercised only by `esaa.test.ts` (38 unit tests) |
 | HTTP routes | `packages/server/src/routes/esaa.routes.ts` (12 endpoints) | Experimental — registered with Fastify **only** when `ESAA_ENABLED=true` (P27 gate) |
-| HTTP DTO contracts | `packages/shared/src/esaa/contracts.ts` | Experimental — internal package surface for the routes file; no external client |
-| Re-exports | `packages/analysis-agent/src/index.ts` (`export * from "./esaa/index.js"`) | Experimental — kept for the server route module that imports `ESAAOrchestrator` types |
+| HTTP DTO contracts | `packages/shared/src/esaa/contracts.ts` | Experimental — frozen reference. **P27.1**: removed from `packages/shared/src/index.ts` barrel; not part of `@gemini-mini-ide/shared` public surface; zero external client. Pinned by `packages/shared/src/esaa-surface.test.ts`. |
+| Re-exports (`analysis-agent`) | `packages/analysis-agent/src/index.ts` | Experimental. **P27.1** narrowed the barrel from `export * from "./esaa/index.js"` to three explicit symbols only: `getGlobalESAAOrchestrator` (used by `server/src/index.ts`) and the type-only `ESAAOrchestrator`/`ESAAEventType` (used by `server/src/routes/esaa.routes.ts`). All other ESAA primitives (EventStore, IntentionGateway, WorkspaceExecutor, PromotionController, RecoveryController, ProjectionEngine, PolicyEngine, InvariantEngine, etc.) are no longer part of the public surface. Pinned by `packages/analysis-agent/src/esaa-public-surface.test.ts`. |
 
 ### Containment guarantees enforced by code
 
@@ -430,8 +430,10 @@ The handler's own regex (`^[a-zA-Z0-9_-]{1,100}$`) and Fastify's `maxParamLength
 |---|---|---|
 | Pipeline bypass | `analysis-agent/src/esaa/orchestrator.ts` `runPipeline()` | First line returns `{ skipped: true }` when `config.enabled === false` |
 | HTTP route gate | `server/src/index.ts` `buildApp()` | Calls `registerESAARoutes()` only when `isESAAEnabled() === true`; with default env every `/esaa/*` URL returns 404 |
-| Containment proof | `server/src/routes/esaa.containment.test.ts` | Boots the app with `ESAA_ENABLED` unset and asserts that all 12 documented `/esaa/*` endpoints return 404; also pins `isESAAEnabled()` semantics (only the literal string `"true"` enables) |
-| Positive proof | `server/src/routes.test.ts` | Sets `process.env.ESAA_ENABLED = 'true'` in `beforeAll` so the existing 12 endpoint assertions still cover the enabled path |
+| Containment proof (HTTP) | `server/src/routes/esaa.containment.test.ts` | Boots the app with `ESAA_ENABLED` unset and asserts that all 12 documented `/esaa/*` endpoints return 404; also pins `isESAAEnabled()` semantics (only the literal string `"true"` enables) |
+| Positive proof (HTTP) | `server/src/routes.test.ts` | Sets `process.env.ESAA_ENABLED = 'true'` in `beforeAll` so the existing 12 endpoint assertions still cover the enabled path |
+| Containment proof (`shared` public surface — P27.1) | `packages/shared/src/esaa-surface.test.ts` | Imports `@gemini-mini-ide/shared`'s public barrel and asserts that no symbol whose name starts with `ESAA` is exposed and that none of the 18 contract names appear; also pings the deep-import path to confirm the file is preserved on disk |
+| Containment proof (`analysis-agent` public surface — P27.1) | `packages/analysis-agent/src/esaa-public-surface.test.ts` | Imports `@gemini-mini-ide/analysis-agent`'s public barrel and asserts that `getGlobalESAAOrchestrator` is exposed but that EventStore, IntentionGateway, WorkspaceExecutor, PromotionController, RecoveryController, ProjectionEngine, PolicyEngine, InvariantEngine and the close/reset helpers are NOT |
 
 ### Why CONTAINMENT and not a maturation track
 

@@ -2,10 +2,26 @@
  * @fileoverview Contratos HTTP da API ESAA Hardened v2.
  *
  * Define os shapes de request/response para todos os endpoints ESAA.
- * Compartilhado entre server e clientes.
+ *
+ * @experimental
+ *
+ * **STATUS: EXPERIMENTAL / CONTIDO (P27 + P27.1).** Estes 18 contratos
+ * fazem parte do subsistema ESAA, oficialmente classificado como
+ * experimental e contido. Detalhes em
+ * `docs/ESAA_ARCHITECTURE.md` § 0 ("Política de Contenção").
+ *
+ * **NÃO compõem a superfície pública estável de `@gemini-mini-ide/shared`.**
+ * A partir do P27.1, este arquivo não é mais re-exportado pelo barrel
+ * `packages/shared/src/index.ts` — ele permanece em disco apenas como
+ * referência congelada para um eventual ciclo futuro que decida reviver
+ * o ESAA. Nenhum consumidor (UI, CLI, server, analysis-agent) importa
+ * estes tipos atualmente.
+ *
+ * Importar daqui é equivalente a opt-in explícito em superfície
+ * experimental e deve ser evitado em código de produção.
  *
  * @module shared/esaa/contracts
- * @version 2.0.0
+ * @version 2.0.0-experimental
  */
 
 // ─── Health ───────────────────────────────────────────────────────────────────

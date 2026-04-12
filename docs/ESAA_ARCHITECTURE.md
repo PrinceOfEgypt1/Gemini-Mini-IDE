@@ -25,7 +25,8 @@ O ESAA é **oficialmente classificado como experimental e contido**. Esta seçã
 - **Não é parte da superfície estável do produto.** Nenhuma das 12 rotas HTTP `/esaa/*` é registrada com a default config; qualquer chamada retorna `404`. A prova executável está em `packages/server/src/routes/esaa.containment.test.ts`.
 - **Não é consumido por nenhum fluxo de produção.** `AnalysisAgent`, `TransformativeOrchestrator`, `InteractiveOrchestrator`, a UI e o CLI **não importam** ESAA. `runPipeline()` nunca é invocado por código de produção.
 - **Não tem trilha de promoção.** Não há cronograma, plano ou backlog para tornar o ESAA estável. A entrada "ESAA habilitado por padrão" foi removida do `Future Roadmap` em P27.
-- **Não tem cliente.** Os 18 contratos HTTP em `packages/shared/src/esaa/contracts.ts` existem como tipagem interna do módulo de rotas; nenhum cliente externo (UI, CLI, SDK) os consome.
+- **Não tem cliente.** Os 18 contratos HTTP em `packages/shared/src/esaa/contracts.ts` permanecem em disco como referência congelada, mas a partir do **P27.1 não compõem a superfície pública** de `@gemini-mini-ide/shared` — o barrel `packages/shared/src/index.ts` não os re-exporta. Nenhum cliente externo (UI, CLI, SDK) os consome.
+- **Não compõe a superfície pública de `@gemini-mini-ide/analysis-agent`** (P27.1). Antes do P27.1 o barrel `packages/analysis-agent/src/index.ts` continha `export * from "./esaa/index.js"`, expondo todas as primitivas internas do ESAA (EventStore, IntentionGateway, WorkspaceExecutor, PromotionController, RecoveryController, ProjectionEngine, PolicyEngine, InvariantEngine, etc.) como API estável. P27.1 reduziu essa re-exportação ao mínimo absoluto exigido pelo único consumidor real, o pacote `server`: três símbolos (`getGlobalESAAOrchestrator` valor, e os tipos `ESAAOrchestrator` e `ESAAEventType`).
 
 ### Garantias de contenção (verificáveis)
 
@@ -34,6 +35,8 @@ O ESAA é **oficialmente classificado como experimental e contido**. Esta seçã
 | Pipeline bypassed por padrão | `analysis-agent/src/esaa/orchestrator.ts` (`runPipeline` early return) | `esaa.test.ts` cobre `runPipeline`; `runPipeline` retorna `{ skipped: true }` quando `enabled === false` |
 | Rotas HTTP não registradas por padrão | `server/src/index.ts` (`isESAAEnabled()` gate em `buildApp`) | `routes/esaa.containment.test.ts` boota `buildApp` sem `ESAA_ENABLED` e exige 404 em todas as 12 rotas |
 | `isESAAEnabled()` é estrito | `server/src/index.ts` | `routes/esaa.containment.test.ts` rejeita `"TRUE"`, `"1"`, `"yes"`, etc. — apenas o literal `"true"` ativa |
+| Superfície pública do `shared` sem ESAA (P27.1) | `packages/shared/src/index.ts` (sem `export * from './esaa/...'`) | `packages/shared/src/esaa-surface.test.ts` importa o barrel público e exige zero símbolos com prefixo `ESAA` |
+| Superfície pública do `analysis-agent` reduzida ao mínimo (P27.1) | `packages/analysis-agent/src/index.ts` (3 re-exports explícitos em vez de wildcard) | `packages/analysis-agent/src/esaa-public-surface.test.ts` exige `getGlobalESAAOrchestrator` presente e nega EventStore/IntentionGateway/WorkspaceExecutor/PromotionController/RecoveryController/ProjectionEngine/PolicyEngine/InvariantEngine |
 | Documentação alinhada ao código | README, DEVELOPMENT, este doc, .env.example | `scripts/active/doc-drift-check.sh` exige marcador `experimental` neste arquivo |
 
 ### Como ativar (estritamente local)
