@@ -64,14 +64,26 @@ import { InteractiveOrchestrator } from '@gemini-mini-ide/analysis-agent';
 
 describe('Server Routes', () => {
   let app: FastifyInstance;
+  let originalEsaaEnabled: string | undefined;
 
   beforeAll(async () => {
+    // P27: this suite asserts the full ESAA HTTP surface, so it must run
+    // with the containment gate explicitly opened. Without ESAA_ENABLED=true
+    // the /esaa/* routes are not registered and would return 404 — that
+    // negative path is covered by routes/esaa.containment.test.ts.
+    originalEsaaEnabled = process.env['ESAA_ENABLED'];
+    process.env['ESAA_ENABLED'] = 'true';
     app = await buildApp();
     await app.ready();
   });
 
   afterAll(async () => {
     await app.close();
+    if (originalEsaaEnabled === undefined) {
+      delete process.env['ESAA_ENABLED'];
+    } else {
+      process.env['ESAA_ENABLED'] = originalEsaaEnabled;
+    }
   });
 
   // ── Health check ──────────────────────────────────────────────────────

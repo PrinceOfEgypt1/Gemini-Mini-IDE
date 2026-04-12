@@ -92,9 +92,16 @@ O projeto inclui validadores genéricos para qualidade de código:
 
 Esses validadores são integrados ao CI em modo blocking.
 
-## Feature experimental: ESAA
+## Feature experimental: ESAA — contida (P27)
 
-O sistema Event-Sourced Agent Architecture (ESAA) existe no código, mas permanece desabilitado por padrão (`ESAA_ENABLED=false`). Consulte `docs/ESAA_ARCHITECTURE.md` para detalhes da arquitetura planejada.
+O sistema Event-Sourced Agent Architecture (ESAA) existe no código (`packages/analysis-agent/src/esaa/`), mas é **oficialmente classificado como experimental e contido**. Não é parte da superfície estável do produto.
+
+- **Pipeline desabilitado por padrão.** Sem `ESAA_ENABLED=true` o orquestrador ESAA bypassa o pipeline (`runPipeline()` retorna `skipped: true`).
+- **Rotas HTTP não registradas por padrão.** Sem `ESAA_ENABLED=true` o servidor Fastify não monta o namespace `/esaa/*` — todos os 12 endpoints retornam 404. Comprovado pelo teste `packages/server/src/routes/esaa.containment.test.ts`.
+- **Sem consumidor de produção.** Nem a UI, nem o CLI, nem o `AnalysisAgent`, nem o `TransformativeOrchestrator`, nem o `InteractiveOrchestrator` invocam código ESAA.
+- **Sem trilha de promoção.** Não há plano nem cronograma para promover ESAA a feature estável; ativá-lo é exclusivamente para experimentação local.
+
+Consulte `docs/ESAA_ARCHITECTURE.md` (em particular § 0 — Política de contenção) para a justificativa completa.
 
 ## Limitações conhecidas
 

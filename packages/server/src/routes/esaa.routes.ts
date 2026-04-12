@@ -68,6 +68,18 @@ export type ESAAOrchestratorLike = Pick<
  *
  * All ESAA management endpoints live here.
  * Previously inlined in index.ts; extracted in Round 16.
+ *
+ * @experimental
+ *
+ * P27 — CONTAINMENT POLICY:
+ * The ESAA subsystem is officially classified as EXPERIMENTAL and CONTAINED.
+ * These routes are NOT part of the stable HTTP API surface and are NOT
+ * registered with the Fastify app unless `ESAA_ENABLED=true` is set in the
+ * environment. With the default configuration the `/esaa/*` namespace
+ * returns 404. There is no production consumer of these endpoints in the
+ * UI, CLI, server orchestrators, or analysis-agent pipelines. There is no
+ * promotion roadmap toward stabilization. See `docs/ESAA_ARCHITECTURE.md`
+ * § 0 ("Política de contenção") for the full classification rationale.
  */
 
 export async function registerESAARoutes(
