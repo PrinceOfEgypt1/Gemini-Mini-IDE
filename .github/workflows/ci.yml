@@ -328,16 +328,35 @@ jobs:
 
   # ===========================================================================
   # FINAL STATUS - Required for merge
+  # This job is the SINGLE transitive gate for branch protection on main.
+  # It aggregates ALL other CI jobs, so `CI Status` being required at the
+  # ruleset level transitively requires every subordinate job:
+  #   - quality                  (unconditional: push + PR)
+  #   - smoke-test               (unconditional: push + PR)
+  #   - doc-drift-enforcement    (unconditional: push + PR)
+  #   - critical-files-guard     (PR only — tolerated as `skipped` on push)
+  #   - large-deletion-guard     (PR only — tolerated as `skipped` on push)
+  #   - pr-template-compliance   (PR only — tolerated as `skipped` on push)
+  # This eliminates the previous hybrid model in which the 3 PR guards were
+  # only advisory (their job names were not in the required-status-checks list
+  # and they were not transitively required via ci-status `needs`).
   # ===========================================================================
   ci-status:
     name: CI Status
     runs-on: ubuntu-latest
-    needs: [quality, smoke-test, doc-drift-enforcement]
+    needs:
+      - quality
+      - smoke-test
+      - doc-drift-enforcement
+      - critical-files-guard
+      - large-deletion-guard
+      - pr-template-compliance
     if: always()
 
     steps:
       - name: Check all jobs passed
         run: |
+          # Unconditional jobs (run on push AND pull_request): must be success
           if [ "${{ needs.quality.result }}" != "success" ]; then
             echo "❌ Quality gate failed"
             exit 1
@@ -350,4 +369,20 @@ jobs:
             echo "❌ Doc drift enforcement failed"
             exit 1
           fi
+
+          # PR-only guards: must be success on PR events, tolerated as skipped on push events.
+          # On push to main these jobs are skipped by design (`if: github.event_name == 'pull_request'`).
+          if [ "${{ needs.critical-files-guard.result }}" != "success" ] && [ "${{ needs.critical-files-guard.result }}" != "skipped" ]; then
+            echo "❌ Critical files guard failed (result=${{ needs.critical-files-guard.result }})"
+            exit 1
+          fi
+          if [ "${{ needs.large-deletion-guard.result }}" != "success" ] && [ "${{ needs.large-deletion-guard.result }}" != "skipped" ]; then
+            echo "❌ Large deletion guard failed (result=${{ needs.large-deletion-guard.result }})"
+            exit 1
+          fi
+          if [ "${{ needs.pr-template-compliance.result }}" != "success" ] && [ "${{ needs.pr-template-compliance.result }}" != "skipped" ]; then
+            echo "❌ PR template compliance failed (result=${{ needs.pr-template-compliance.result }})"
+            exit 1
+          fi
+
           echo "✅ All required checks passed"
