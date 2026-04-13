@@ -1,3 +1,23 @@
+/**
+ * @fileoverview Public surface of `@gemini-mini-ide/shared`.
+ *
+ * This package is the single source of truth for cross-package contracts:
+ * HTTP DTOs of the `/analyze` endpoint, wizard/user-story value objects and
+ * the `impact-analysis` library (consumed by both the CLI and the analysis
+ * agent). Anything re-exported from this barrel is considered stable API for
+ * internal consumers (`ui`, `server`, `analysis-agent`, `cli`) — breaking
+ * changes here ripple across every package and therefore must go through
+ * explicit review.
+ *
+ * Stability rules:
+ * - Only types and helpers whose shape is genuinely shared across packages
+ *   belong in this barrel.
+ * - Experimental or contained subsystems (e.g. ESAA) are intentionally kept
+ *   off this surface — see the note below.
+ *
+ * @module shared
+ */
+
 export * from './types/analyze-response.js';
 export * from './types/analyze-request.js';
 export * from './types/wizard.js';

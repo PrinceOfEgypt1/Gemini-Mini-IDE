@@ -5,11 +5,35 @@ import { exportController } from "../controllers/export.controller.js";
 import { getAgent } from "../services/agent-manager.js";
 
 /**
- * ANALYSIS ROUTES — Core analysis, impact, health and export endpoints.
+ * @fileoverview ANALYSIS ROUTES — core HTTP surface of the server.
  *
- * Previously inlined in index.ts; extracted in Round 16.
+ * Endpoints registered by this module:
+ * - `GET  /healthz` — liveness probe, returns `{ status, timestamp }`.
+ * - `POST /impact-analysis` — wraps `analyzeImpact` from `@gemini-mini-ide/shared`
+ *   and returns `{ report, formatted }`. Body validated against
+ *   {@link ImpactAnalysisSchema}.
+ * - `GET  /impact-analysis` — self-description endpoint (not the analyzer).
+ * - `POST /analyze` — runs the analysis agent. Body validated against
+ *   {@link AnalyzeRequestSchema}. Supports two special modes:
+ *   - `X-Dry-Run: true` — skips agent execution and returns a canned
+ *     response (used by smoke tests and the integration pipeline);
+ *   - LLM config is derived from request headers via {@link extractLLMConfig}
+ *     (Bearer token, `X-LLM-Model`, `X-LLM-Base-URL`). A missing API key
+ *     yields `401`; any agent error is wrapped as `502 Falha no Agente`.
+ * - `POST /export` — delegates to {@link exportController} (ZIP export).
+ *
+ * Previously inlined in `index.ts`; extracted in Round 16.
+ *
+ * @module server/routes/analysis
  */
 
+/**
+ * Registers the core analysis routes on a Fastify instance.
+ *
+ * @param app Fastify instance to register the routes on.
+ * @param defaultApiKey Server-level fallback API key used when the request
+ *                      does not carry an `Authorization: Bearer` header.
+ */
 export async function registerAnalysisRoutes(
   app: FastifyInstance,
   defaultApiKey: string

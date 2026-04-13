@@ -1,3 +1,21 @@
+/**
+ * @fileoverview Pure, side-effect-free implementation of the impact analysis
+ * pipeline.
+ *
+ * The library takes a set of file paths (typically from `git diff --name-only`)
+ * and produces an {@link ImpactReport} with a deterministic classification,
+ * aggregated risk level and recommended validation actions. It contains no
+ * I/O and no randomness — the output is a pure function of the input and the
+ * classification tables below, which makes it safe to call from any runtime
+ * (CLI, Fastify handlers, agent pipelines, tests).
+ *
+ * See `docs/AGENT_GUIDE.md` and `docs/ARCHITECTURE.md` for how the risk
+ * levels map to the mandatory validation matrix in CI and the analysis
+ * agent's architecture phase.
+ *
+ * @module shared/impact-analysis/impact-analysis
+ */
+
 import type {
   RiskLevel,
   ImpactArea,
@@ -6,6 +24,14 @@ import type {
   ImpactReport,
 } from './types.js';
 
+/**
+ * Numeric ordering of {@link RiskLevel} values used internally for the
+ * monotonic aggregation (`max`) of per-file risks.
+ *
+ * IMPORTANT: this is ordinal, not ordinal-linear — the numeric distance
+ * between levels carries no semantic meaning. Callers must only rely on the
+ * ordering property (`RISK_ORDER[a] >= RISK_ORDER[b]`).
+ */
 const RISK_ORDER: Record<RiskLevel, number> = {
   NENHUM: 0,
   BAIXO: 1,
@@ -14,16 +40,37 @@ const RISK_ORDER: Record<RiskLevel, number> = {
   CRITICO: 4,
 };
 
+/**
+ * Returns the higher of two risk levels according to {@link RISK_ORDER}.
+ * Used to fold per-file risks into per-area and overall risks.
+ */
 function maxRisk(a: RiskLevel, b: RiskLevel): RiskLevel {
   return RISK_ORDER[a] >= RISK_ORDER[b] ? a : b;
 }
 
+/**
+ * Internal result of classifying a single file path. Kept private because it
+ * is only a carrier between {@link classifyFile} and {@link analyzeImpact} —
+ * external consumers work with {@link AreaImpact} aggregates instead.
+ */
 interface FileClassification {
   area: ImpactArea;
   risk: RiskLevel;
   validations: ValidationAction[];
 }
 
+/**
+ * Classifies a single file path into an {@link ImpactArea} with its intrinsic
+ * risk and recommended validations.
+ *
+ * Classification is purely syntactic — the function inspects the path string
+ * and never touches the filesystem. Rules are evaluated top-down; the first
+ * match wins. Unknown paths fall back to `{ area: 'docs', risk: 'BAIXO' }`
+ * which is the lowest safe default.
+ *
+ * @param file Path-like string, typically produced by
+ *             `git diff --name-only` (POSIX separators, repo-relative).
+ */
 function classifyFile(file: string): FileClassification {
   // Shared contracts — cross-package impact
   if (file.startsWith('packages/shared/')) {
@@ -100,6 +147,29 @@ function classifyFile(file: string): FileClassification {
   return { area: 'docs', risk: 'BAIXO', validations: ['review-manual'] };
 }
 
+/**
+ * Builds an {@link ImpactReport} for a set of changed files.
+ *
+ * Contract:
+ * - Pure function — no I/O, no randomness, deterministic output for a given
+ *   input. Safe to call from any runtime (CLI, HTTP handler, agent pipeline,
+ *   unit tests).
+ * - Empty input returns a well-formed report with `overallRisk: 'NENHUM'`
+ *   and a single `"No files to analyze."` recommendation — callers never
+ *   need to branch on `files.length`.
+ * - Input is deduplicated and sorted alphabetically; duplicates have no
+ *   effect on the aggregated risk.
+ * - `overallRisk` is the maximum of every per-file risk, per {@link RISK_ORDER}.
+ * - `requiredValidations` is the deduplicated union of validations across
+ *   all impacted areas, sorted alphabetically.
+ * - Areas are ordered by criticality (`shared`, `config`, `server`,
+ *   `analysis-agent`, `ci`, `ui`, `governance`, `scripts`, `cli`, `docs`)
+ *   so reports read top-down from highest blast radius to lowest.
+ *
+ * @param files List of file paths (typically from `git diff --name-only`).
+ *              Paths must be repo-relative with POSIX separators.
+ * @returns A fully-populated {@link ImpactReport}; the function never throws.
+ */
 export function analyzeImpact(files: string[]): ImpactReport {
   if (files.length === 0) {
     return {
@@ -172,6 +242,25 @@ export function analyzeImpact(files: string[]): ImpactReport {
   return { files: uniqueFiles, areas, overallRisk, requiredValidations, recommendations };
 }
 
+/**
+ * Renders an {@link ImpactReport} as a human-readable plaintext block.
+ *
+ * Intended for terminal output (CLI `mini-ide impact`) and server response
+ * bodies where a formatted summary is preferable to raw JSON. The output is
+ * ASCII-only and uses box-drawing characters (`─`) as separators.
+ *
+ * Contract:
+ * - Pure function; never throws on any well-formed {@link ImpactReport}.
+ * - When `overallRisk` is `ALTO` or `CRITICO`, required validations are
+ *   labeled `[MANDATORY]`; otherwise `[RECOMMENDED]`. This mirrors the
+ *   risk gating applied by the CLI (non-zero exit code on high risk).
+ * - Unknown validation labels fall through to their raw enum name instead
+ *   of throwing, keeping the formatter forward-compatible with new
+ *   {@link ValidationAction} entries.
+ *
+ * @param report Report produced by {@link analyzeImpact}.
+ * @returns Multi-line string suitable for printing to stdout.
+ */
 export function formatImpactReport(report: ImpactReport): string {
   const lines: string[] = [];
 
