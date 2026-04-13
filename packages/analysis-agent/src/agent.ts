@@ -13,6 +13,12 @@ import { OpenAILLMClient } from "./llm-clients/openai-llm-client.js";
 import type { RichAnalysis, RichProductPlan, RichArchitecture, RichUserStoriesResult, PlanResult, AgentResult } from "./types/rich-schemas.js";
 import { RichAnalysisSchema, RichProductPlanSchema, RichArchitectureSchema, RichUserStoriesResultSchema } from "./types/rich-schemas.js";
 
+/**
+ * Full dependency-injected options accepted by {@link AnalysisAgent}.
+ *
+ * Use this shape when you want explicit control over the LLM clients
+ * (e.g. tests that inject in-memory fakes) or a non-default project root.
+ */
 export interface AnalysisAgentOptions {
   chatClient: ILLMClient;
   incrementalClient: IIncrementalLLMClient;
@@ -22,13 +28,28 @@ export interface AnalysisAgentOptions {
 }
 
 /**
- * Legacy options for backward compatibility with orchestrators
+ * Minimal options accepted by the legacy `new AnalysisAgent(apiKey, legacyOpts)`
+ * constructor. Kept for backward compatibility with existing orchestrators
+ * that predate the dependency-injection refactor.
  */
 export interface LegacyAgentOptions {
   model?: string;
   baseUrl?: string;
 }
 
+/**
+ * Core analysis agent — orchestrates the planning + code-generation pipeline.
+ *
+ * The agent emits the following events:
+ * - `planResult` — fired after planning completes with the full
+ *   {@link PlanResult} (analysis + product + architecture + user stories).
+ * - `governance:warnings` / `governance:errors` — emitted during the
+ *   architecture phase when the category validator flags issues.
+ * - `impact:analysis` — emitted during the architecture phase with the
+ *   aggregated {@link ImpactReport} for the planned file changes.
+ *
+ * Extends `EventEmitter`; consumers subscribe via standard `.on(event, fn)`.
+ */
 export class AnalysisAgent extends EventEmitter {
   private readonly options: AnalysisAgentOptions;
   private readonly promptOrchestrator: PromptOrchestrator;
@@ -72,6 +93,21 @@ export class AnalysisAgent extends EventEmitter {
     );
   }
 
+  /**
+   * Full pipeline: runs planning (analysis → product → user stories →
+   * architecture) and then code generation, returning the complete
+   * {@link AgentResult}.
+   *
+   * Side effects:
+   * - Emits `planResult` after the planning phase finishes.
+   * - Emits `governance:warnings` / `governance:errors` if the category
+   *   validator produces any entries for the generated manifest.
+   * - Emits `impact:analysis` with the risk assessment for the planned
+   *   files before code generation starts.
+   *
+   * @param userPrompt Raw user prompt describing the project to generate.
+   * @returns Full agent result including generated files.
+   */
   public async run(userPrompt: string): Promise<AgentResult> {
     this.promptOrchestrator.start(userPrompt);
 

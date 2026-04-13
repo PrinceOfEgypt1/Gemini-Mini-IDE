@@ -1,3 +1,20 @@
+/**
+ * @fileoverview Public surface of `@gemini-mini-ide/analysis-agent`.
+ *
+ * This barrel is consumed by `@gemini-mini-ide/server` (and the CLI, via the
+ * server) to obtain the analysis agent, the two orchestrators (transformative
+ * and interactive), the session layer and the code-generation helpers. It is
+ * the stable API boundary of the package — anything re-exported here is
+ * expected to have JSDoc on the symbol itself, and consumers must NOT deep-
+ * import from `./agents/*`, `./esaa/*`, etc.
+ *
+ * The ESAA subsystem has a deliberately *narrow* surface here (see the
+ * P27/P27.1 block below): only the three symbols required by the live
+ * server code path are exported, everything else is internal.
+ *
+ * @module analysis-agent
+ */
+
 import { AnalysisAgent } from "./agent.js";
 import { TransformativeOrchestrator } from "./orchestrator.js";
 import { InteractiveOrchestrator } from "./orchestrator-interactive.js";
@@ -84,7 +101,19 @@ export * from "./llm-clients/index.js";
 // Exporta o sistema de execução (sandbox, VFS, todo)
 export * from "./execution/index.js";
 
-// Exporta helpers
+// ── Factory helpers ──────────────────────────────────────────────────────────
+//
+// Thin helpers that instantiate the three main entry points using the legacy
+// `(apiKey: string)` constructor. They exist so external consumers don't need
+// to import the classes themselves; prefer these when you only need a default
+// configuration. Tests and advanced consumers should use the class constructors
+// directly to inject custom options.
+
+/** Builds an {@link AnalysisAgent} with default options from an API key. */
 export const createAgent = (apiKey: string) => new AnalysisAgent(apiKey);
+
+/** Builds a {@link TransformativeOrchestrator} from an API key. */
 export const createTransformativeOrchestrator = (apiKey: string) => new TransformativeOrchestrator(apiKey);
+
+/** Builds an {@link InteractiveOrchestrator} from an API key. */
 export const createInteractiveOrchestrator = (apiKey: string) => new InteractiveOrchestrator(apiKey);

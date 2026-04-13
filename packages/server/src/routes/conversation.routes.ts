@@ -3,14 +3,46 @@ import { extractLLMConfig, StartConversationSchema, RespondSchema } from "../hel
 import { getOrchestrator } from "../services/agent-manager.js";
 
 /**
- * CONVERSATION ROUTES — Single Source of Truth
+ * @fileoverview CONVERSATION ROUTES — Single Source of Truth.
  *
- * All interactive conversation endpoints live here.
- * Previously inlined in index.ts; consolidated in Round 16.
- * The removed routes/conversations.ts (Round 15) was dead code that duplicated
- * this logic — this module is the only living implementation.
+ * All interactive conversation endpoints live here. Previously inlined in
+ * `index.ts`; consolidated in Round 16. The removed `routes/conversations.ts`
+ * (Round 15) was dead code that duplicated this logic — this module is the
+ * only living implementation.
+ *
+ * Endpoint inventory (all are `InteractiveOrchestrator`-backed):
+ * - `POST /conversations/start` — create a new session
+ *   ({@link StartConversationSchema}).
+ * - `POST /conversations/:sessionId/respond` — send the user's next message
+ *   ({@link RespondSchema}).
+ * - `GET  /conversations/:sessionId` — fetch current session state.
+ * - `POST /conversations/:sessionId/skip` — skip the current agent in the
+ *   pipeline and advance to the next one.
+ * - `POST /conversations/:sessionId/plan` — produce the plan for user review.
+ * - `POST /conversations/:sessionId/generate` — generate code from the
+ *   approved plan (one-shot).
+ * - `POST /conversations/:sessionId/generate-incremental` — incremental
+ *   code generation with batch governance callbacks.
+ * - `POST /conversations/:sessionId/finalize` — legacy one-shot finalization.
+ * - `GET  /generation/progress/:sessionId` — EXPERIMENTAL SSE endpoint;
+ *   see the JSDoc block on the handler below for the full containment
+ *   contract (P23).
+ *
+ * Every endpoint authenticates via {@link extractLLMConfig}: missing or
+ * malformed API keys produce `401 API Key não configurada`. Body validation
+ * errors produce `400 Dados inválidos` with the Zod issue list. Downstream
+ * orchestrator errors are wrapped as `502` with `details: errorMessage`.
+ *
+ * @module server/routes/conversation
  */
 
+/**
+ * Registers every interactive conversation endpoint on a Fastify instance.
+ *
+ * @param app Fastify instance to register the routes on.
+ * @param defaultApiKey Server-level fallback API key used when the request
+ *                      does not carry an `Authorization: Bearer` header.
+ */
 export async function registerConversationRoutes(
   app: FastifyInstance,
   defaultApiKey: string
