@@ -20,6 +20,21 @@ scripts/
 
 1. `pipeline.sh` - Pipeline de qualidade (lint, typecheck, test, build, runtime validation)
 2. `impact-analysis.sh` - Análise de impacto pré-mudança (wrapper para o núcleo TS em `packages/shared`)
+3. `validate-structure.sh` - Integridade estrutural do monorepo (BLOCKING no CI)
+4. `doc-drift-check.sh` - Enforcement de drift documental (BLOCKING no CI)
+5. `export_forensic_snapshot.sh` - Export forense reprodutível (P30)
+
+**Uso do export_forensic_snapshot.sh:**
+```bash
+bash scripts/active/export_forensic_snapshot.sh             # snapshot de HEAD
+bash scripts/active/export_forensic_snapshot.sh origin/main # snapshot de outra ref
+FORENSIC_EXPORT_DIR=/tmp/exp bash scripts/active/export_forensic_snapshot.sh
+```
+
+Gera um tarball reprodutível (`git archive`) + manifest (hash, sha256, lista
+de arquivos) em `.forensic-exports/` (gitignored). Uso apenas leitura — não
+modifica a árvore de trabalho. Introduzido em P30 para reconciliar a cópia
+local não versionada deste script identificada na auditoria anterior.
 
 **Uso do impact-analysis.sh (wrapper bash):**
 ```bash
